@@ -27,3 +27,16 @@
 - Choix de stocker la rareté sous forme d'entier plutôt que de texte afin de faciliter les comparaisons et les tris.
 - Compréhension du rôle de `private`, des getters et des setters.
 - Compréhension des types nullable (`?string`, `?int`, `?bool`) et de `GeneratedValue`.
+
+
+## J5
+
+- Compréhension du rôle de Doctrine ORM comme traducteur entre PHP et MySQL.
+- Compréhension de la différence entre une Entity, une Migration et une table SQL.
+- Génération de la première migration avec `php bin/console make:migration`.
+- Lecture et analyse du SQL généré automatiquement par Doctrine.
+- Compréhension des méthodes `up()` (application) et `down()` (annulation).
+- Exécution de la migration avec `php bin/console doctrine:migrations:migrate`.
+- Création de la table `stickman` dans la base `stickverse`.
+- Découverte de la table `doctrine_migration_versions` utilisée pour suivre les migrations déjà exécutées.
+- Vérification de la structure de la table dans MySQL Workbench.
