@@ -40,3 +40,71 @@
 - Création de la table `stickman` dans la base `stickverse`.
 - Découverte de la table `doctrine_migration_versions` utilisée pour suivre les migrations déjà exécutées.
 - Vérification de la structure de la table dans MySQL Workbench.
+
+## J6 - Génération et compréhension du premier CRUD Symfony
+
+### Objectif
+Créer le premier CRUD du projet StickVerse à partir de l'entité Stickman et comprendre comment les différentes parties de Symfony communiquent entre elles.
+
+### Travail réalisé
+- Génération du CRUD de l'entité Stickman avec `php bin/console make:crud`.
+- Génération automatique de :
+  - `StickmanController.php`
+  - `StickmanType.php`
+  - `index.html.twig`
+  - `show.html.twig`
+  - `new.html.twig`
+  - `edit.html.twig`
+  - `_form.html.twig`
+  - `_delete_form.html.twig`
+- Découverte des différentes opérations CRUD :
+  - Create : `new()`
+  - Read : `index()` et `show()`
+  - Update : `edit()`
+  - Delete : `delete()`
+- Compréhension du système de routes Symfony.
+- Différenciation entre l'URL d'une route et son nom interne.
+- Compréhension du rôle du Repository et de `findAll()`.
+- Compréhension du passage de données du Controller vers Twig.
+- Découverte de `StickmanType` et de son lien avec l'entité Stickman.
+- Compréhension du principe DRY avec `_form.html.twig`, réutilisé pour la création et la modification.
+- Découverte de `Request`, `handleRequest()`, `isSubmitted()` et `isValid()`.
+- Compréhension de la différence entre `persist()` et `flush()`.
+- Découverte du principe du token CSRF pour protéger la suppression.
+- Test du CRUD directement dans le navigateur.
+- Création du premier Stickman de StickVerse :
+  - Nom : Stickman Test
+  - Slug : stickman-test
+  - PV : 100
+  - Attaque : 20
+  - Défense : 10
+  - Rareté : 1
+  - Statut actif : oui
+- Vérification de l'affichage de la liste des Stickman.
+- Test de la page individuelle `show`.
+- Test du formulaire `edit`.
+
+### Difficultés et erreurs de compréhension
+- Je pensais au départ que Symfony choisissait le premier Controller disponible. J'ai compris que Symfony choisit l'action à exécuter grâce à la route correspondant à l'URL demandée.
+- J'ai d'abord confondu le chemin d'une route, par exemple `/stickman/{id}`, avec son nom interne comme `app_stickman_show`.
+- Le fonctionnement de `'stickmen' => $stickmanRepository->findAll()` était encore flou : j'ai compris que `findAll()` récupère les Stickman tandis que `stickmen` est le nom de la variable transmise au template Twig.
+- Je pensais que `StickmanType` servait principalement à vérifier les informations. J'ai compris qu'il sert surtout à définir/construire le formulaire associé à l'entité Stickman.
+- J'ai inversé au départ le rôle de `persist()` et `flush()`. `persist()` indique à Doctrine qu'un nouvel objet doit être géré/enregistré, tandis que `flush()` synchronise réellement les changements avec la base de données.
+- J'ai compris pourquoi `edit()` n'a pas besoin de `persist()` : l'objet récupéré depuis la base est déjà géré par Doctrine.
+- Beaucoup de concepts restent encore nouveaux et certaines parties sont encore floues, mais je commence à comprendre le chemin global d'une requête Symfony.
+
+### Ce que je retiens
+Le CRUD généré par Symfony repose sur plusieurs éléments qui ont chacun une responsabilité :
+
+`Route -> Controller -> Entity/Repository -> Doctrine -> MySQL -> Controller -> Twig -> Navigateur`
+
+Pour les formulaires :
+
+`Entity -> StickmanType -> Controller -> Twig -> Request -> Doctrine -> MySQL`
+
+Symfony automatise énormément de code répétitif, mais il reste nécessaire de comprendre l'architecture pour pouvoir modifier le CRUD et ajouter la logique métier du projet.
+
+### Temps passé
+Environ 4 heures.
+
+

@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stickman{% endblock %}
+
+{% block body %}
+    <h1>Stickman</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ stickman.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ stickman.nom }}</td>
+            </tr>
+            <tr>
+                <th>Slug</th>
+                <td>{{ stickman.slug }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ stickman.description }}</td>
+            </tr>
+            <tr>
+                <th>Image</th>
+                <td>{{ stickman.image }}</td>
+            </tr>
+            <tr>
+                <th>Rarete</th>
+                <td>{{ stickman.rarete }}</td>
+            </tr>
+            <tr>
+                <th>Pv</th>
+                <td>{{ stickman.pv }}</td>
+            </tr>
+            <tr>
+                <th>Attaque</th>
+                <td>{{ stickman.attaque }}</td>
+            </tr>
+            <tr>
+                <th>Defense</th>
+                <td>{{ stickman.defense }}</td>
+            </tr>
+            <tr>
+                <th>StatutActif</th>
+                <td>{{ stickman.statutActif ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_stickman_index') }}">back to list</a>
+
+    <a href="{{ path('app_stickman_edit', {'id': stickman.id}) }}">edit</a>
+
+    {{ include('stickman/_delete_form.html.twig') }}
+{% endblock %}

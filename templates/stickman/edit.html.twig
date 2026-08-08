@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Stickman{% endblock %}
+
+{% block body %}
+    <h1>Edit Stickman</h1>
+
+    {{ include('stickman/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_stickman_index') }}">back to list</a>
+
+    {{ include('stickman/_delete_form.html.twig') }}
+{% endblock %}
