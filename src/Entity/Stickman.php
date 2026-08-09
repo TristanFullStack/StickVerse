@@ -6,6 +6,8 @@ use App\Repository\StickmanRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: StickmanRepository::class)]
 class Stickman
 {
@@ -15,27 +17,35 @@ class Stickman
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le champ est obligatoire.')]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le champ est obligatoire.')]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le champ est obligatoire.')]
     private ?string $image = null;
 
     #[ORM\Column]
+    #[Assert\Range(min:1, max:5, notInRangeMessage: 'La valeur doit être entre 1 et 5.')]
     private ?int $rarete = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: 'Le nombre doit être supérieur à 0.')]
     private ?int $pv = null;
 
     #[ORM\Column]
+    #[Assert\PositiveOrZero(message: 'Le nombre doit être supérieur ou égal à 0.')]
     private ?int $attaque = null;
 
     #[ORM\Column]
+    #[Assert\PositiveOrZero(message: 'Le nombre doit être supérieur ou égal à 0.')]
     private ?int $defense = null;
 
     #[ORM\Column]
