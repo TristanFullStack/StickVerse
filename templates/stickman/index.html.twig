@@ -8,11 +8,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
                 <th>Nom</th>
-                <th>Slug</th>
-                <th>Description</th>
-                <th>Image</th>
                 <th>Rarete</th>
                 <th>Pv</th>
                 <th>Attaque</th>
@@ -24,11 +20,7 @@
         <tbody>
         {% for stickman in stickmen %}
             <tr>
-                <td>{{ stickman.id }}</td>
                 <td>{{ stickman.nom }}</td>
-                <td>{{ stickman.slug }}</td>
-                <td>{{ stickman.description }}</td>
-                <td>{{ stickman.image }}</td>
                 <td>{{ stickman.rarete }}</td>
                 <td>{{ stickman.pv }}</td>
                 <td>{{ stickman.attaque }}</td>
@@ -41,7 +33,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="11">no records found</td>
+                <td colspan="7">no records found</td>
             </tr>
         {% endfor %}
         </tbody>

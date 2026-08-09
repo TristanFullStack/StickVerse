@@ -108,3 +108,59 @@ Symfony automatise énormément de code répétitif, mais il reste nécessaire d
 Environ 4 heures.
 
 
+## J7 - Nettoyage et personnalisation du CRUD Stickman
+
+### Objectif
+Nettoyer le CRUD généré automatiquement par Symfony et commencer à personnaliser le formulaire et les templates Twig.
+
+### Travail réalisé
+- Découverte et personnalisation de `StickmanType.php`.
+- Utilisation explicite des types de formulaire Symfony :
+  - `TextType`
+  - `TextareaType`
+  - `IntegerType`
+  - `CheckboxType`
+- Ajout de labels personnalisés aux champs.
+- Compréhension de la structure `->add('propriete', Type::class, options)`.
+- Nettoyage de `index.html.twig`.
+- Suppression de l'affichage des colonnes inutiles :
+  - id
+  - slug
+  - description
+  - image
+- Conservation des colonnes utiles :
+  - nom
+  - rareté
+  - PV
+  - attaque
+  - défense
+  - statut actif
+  - actions
+- Modification du `colspan` de 11 à 7.
+- Test des pages index, new, edit et show après modification.
+
+### Difficultés / erreurs rencontrées
+- J'ai importé par erreur `Doctrine\DBAL\Types\IntegerType` au lieu du `IntegerType` du composant Form de Symfony.
+- PHP signalait alors `Duplicate symbol declaration 'IntegerType'`.
+- J'ai compris que Doctrine et Symfony Form sont deux couches différentes.
+- J'ai essayé d'utiliser `FileType` pour l'image avant de comprendre qu'un `FileType` fournit un fichier alors que la propriété `image` de mon Entity contient actuellement une string.
+- L'upload réel des images sera traité plus tard.
+- J'ai utilisé des commentaires Twig pour masquer certaines colonnes avant de comprendre qu'il était préférable de supprimer le code devenu inutile puisque Git conserve l'historique.
+
+### Ce que je retiens
+`StickmanType` définit la structure du formulaire associé à l'objet Stickman.
+
+Exemple :
+
+`->add('nom', TextType::class, ['label' => 'Nom du Stickman'])`
+
+- `nom` = propriété de l'objet Stickman.
+- `TextType::class` = type de champ du formulaire Symfony.
+- `label` = texte affiché à l'utilisateur.
+
+Twig contrôle l'affichage HTML tandis que le Controller fournit les données au template.
+
+Les types de formulaire ne sont pas les mêmes choses que les types PHP ou SQL.
+
+### Temps passé
+Environ 1 heure.
