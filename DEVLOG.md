@@ -41,6 +41,10 @@
 - Découverte de la table `doctrine_migration_versions` utilisée pour suivre les migrations déjà exécutées.
 - Vérification de la structure de la table dans MySQL Workbench.
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 ## J6 - Génération et compréhension du premier CRUD Symfony
 
 ### Objectif
@@ -108,7 +112,7 @@ Symfony automatise énormément de code répétitif, mais il reste nécessaire d
 Environ 4 heures.
 
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ## J7 - Nettoyage et personnalisation du CRUD Stickman
 
@@ -167,7 +171,7 @@ Les types de formulaire ne sont pas les mêmes choses que les types PHP ou SQL.
 ### Temps passé
 Environ 1 heure.
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ## J8 - Ajout des validations Symfony
 
@@ -238,4 +242,184 @@ J'ai également compris qu'aucune migration Doctrine n'était nécessaire aujour
 ### Temps passé
 
 Environ 1 heure.
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+## J9 - Affichage et sélection dynamique des images des Stickmen
+
+### Objectif
+
+Permettre à chaque Stickman d'utiliser une image présente dans le projet et automatiser la sélection des images disponibles dans le formulaire Symfony.
+
+### Travail réalisé
+
+- Création/utilisation du dossier `public/images/stickmen/` pour stocker les images des Stickmen.
+- Ajout des premières images PNG des personnages.
+- Compréhension du rôle du dossier `public` dans Symfony.
+- Affichage de l'image d'un Stickman dans `show.html.twig`.
+- Utilisation de la fonction Twig `asset()` pour générer le chemin public vers une image.
+- Construction dynamique du chemin de l'image avec l'opérateur Twig `~`.
+- Ajout des images dans `index.html.twig` afin d'afficher une miniature pour chaque Stickman.
+- Utilisation temporaire de l'attribut CSS `style` pour contrôler la largeur des images.
+- Remplacement du champ texte `image` du formulaire par un `ChoiceType`.
+- Première version du `ChoiceType` avec une liste d'images écrite manuellement.
+- Identification d'un problème de scalabilité : il aurait fallu modifier le PHP à chaque nouvelle image.
+- Automatisation de la récupération des images disponibles dans `public/images/stickmen/`.
+- Utilisation de `glob()` pour rechercher automatiquement les fichiers `.png`.
+- Utilisation de `basename()` pour récupérer uniquement le nom du fichier.
+- Utilisation d'une boucle `foreach` pour construire dynamiquement le tableau `$choixImages`.
+- Utilisation de `dirname(__DIR__, 2)` pour récupérer le chemin absolu vers la racine du projet.
+- Utilisation de `dd()` pour inspecter les valeurs pendant le débogage.
+- Injection du tableau `$choixImages` dans l'option `choices` du `ChoiceType`.
+- Test du système : l'ajout d'une nouvelle image PNG dans le dossier la rend automatiquement disponible dans le formulaire.
+- Ajout des 10 premiers Stickmen de StickVerse avec leurs images et leurs statistiques.
+
+### Difficultés / erreurs rencontrées
+
+- Au départ, j'utilisais directement :
+
+`glob('public/images/stickmen/*.png')`
+
+mais aucune image n'était trouvée.
+
+- J'ai utilisé `dd($images)` et obtenu un tableau vide `[]`, ce qui m'a permis de comprendre que le problème venait du chemin utilisé par PHP.
+- J'ai ensuite utilisé :
+
+`dirname(__DIR__, 2)`
+
+pour retrouver la racine réelle du projet.
+- J'ai vérifié le résultat avec `dd()` et obtenu le chemin de mon projet :
+
+`C:\Users\pelle\StickVerse`
+
+- J'ai ensuite construit le chemin complet vers les images avant d'utiliser `glob()`.
+- J'ai compris que `glob()` retourne le chemin des fichiers alors que `basename()` permet de ne conserver que leur nom.
+- J'ai eu du mal à comprendre comment transformer les fichiers récupérés en choix utilisables par `ChoiceType`.
+- J'ai compris qu'il fallait construire un tableau sous la forme :
+
+`nom affiché => valeur enregistrée`
+
+- J'avais initialement écrit les trois images directement dans `choices`, mais j'ai compris que cette méthode ne serait pas viable avec des dizaines ou centaines de Stickmen.
+- J'ai également rencontré des difficultés avec l'autocomplétion HTML/Emmet dans les fichiers `.html.twig`, notamment pour les balises et attributs HTML.
+
+### Ce que je retiens
+
+Une image n'est pas enregistrée directement dans la base de données.
+
+La base contient seulement son nom, par exemple :
+
+`Card02Archer.png`
+
+Le fichier réel se trouve dans :
+
+`public/images/stickmen/`
+
+Twig peut ensuite reconstruire son URL :
+
+`asset('images/stickmen/' ~ stickman.image)`
+
+Pour automatiser le formulaire :
+
+`dirname()` → retrouve la racine du projet.
+
+`glob()` → recherche les fichiers correspondant à un motif.
+
+`foreach` → parcourt les fichiers trouvés.
+
+`basename()` → retire le chemin et conserve uniquement le nom du fichier.
+
+`$choixImages[$nomImage] = $nomImage` → construit les choix du formulaire.
+
+`ChoiceType` → affiche ces choix dans une liste déroulante.
+
+Le flux global est donc :
+
+`Dossier PNG -> glob() -> foreach -> basename() -> $choixImages -> ChoiceType -> Entity -> BDD -> Twig -> asset() -> Navigateur`
+
+Le système est maintenant dynamique : ajouter une nouvelle image `.png` dans le dossier suffit pour qu'elle soit proposée automatiquement dans le formulaire, sans modifier manuellement la liste des images dans le PHP.
+
+### Résultat
+
+Les 10 premiers Stickmen de StickVerse sont maintenant présents dans l'application avec leurs images et leurs statistiques :
+
+- Guerrier
+- Archer
+- Lancier
+- Tank
+- Assassin
+- Mage
+- Berserker
+- Double Lancier
+- Ultra Mage
+- Roi Stick
+
+### Temps passé
+
+Environ 3 heures.
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 

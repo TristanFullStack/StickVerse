@@ -25,7 +25,9 @@
             </tr>
             <tr>
                 <th>Image</th>
-                <td>{{ stickman.image }}</td>
+                <td>
+                    <img src="{{ asset('images/stickmen/' ~ stickman.image) }}" style="width: 40px;">
+                </td>
             </tr>
             <tr>
                 <th>Rarete</th>

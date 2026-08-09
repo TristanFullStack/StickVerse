@@ -11,11 +11,20 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class StickmanType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $choixImages = [];
+        $cheminProjet = dirname(__DIR__, 2);
+        $images = glob($cheminProjet . '/public/images/stickmen/*.png');
+        foreach ($images as $image) {
+            $nomImage = basename($image);
+            $choixImages[$nomImage] = $nomImage;
+        }
+
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom du Stickman',
@@ -26,8 +35,9 @@ class StickmanType extends AbstractType
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
             ])
-            ->add('image', TextType::class, [
+            ->add('image', ChoiceType::class, [
                 'label' => 'Image',
+                'choices' => $choixImages,
             ])
             ->add('rarete', IntegerType::class, [
                 'label' => 'Rareté (1-5)',

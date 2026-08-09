@@ -8,6 +8,7 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Image</th>
                 <th>Nom</th>
                 <th>Rarete</th>
                 <th>Pv</th>
@@ -20,6 +21,9 @@
         <tbody>
         {% for stickman in stickmen %}
             <tr>
+                <td>
+                    <img src="{{ asset('images/stickmen/' ~ stickman.image) }}" style="width: 40px;">
+                </td>
                 <td>{{ stickman.nom }}</td>
                 <td>{{ stickman.rarete }}</td>
                 <td>{{ stickman.pv }}</td>
@@ -33,7 +37,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="7">no records found</td>
+                <td colspan="8">no records found</td>
             </tr>
         {% endfor %}
         </tbody>
