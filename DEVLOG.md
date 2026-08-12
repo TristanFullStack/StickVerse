@@ -522,11 +522,61 @@ StickVerse peut maintenant enregistrer des comptes utilisateurs en base de donn�
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J16 — Inscription, connexion et déconnexion — 12/08/2026
 
+### Travail réalisé
+
+- Création du formulaire d’inscription.
+- Validation de l’email, du mot de passe et des conditions.
+- Hachage sécurisé du mot de passe avant enregistrement.
+- Enregistrement du compte dans MySQL.
+- Connexion automatique après inscription.
+- Création du formulaire de connexion.
+- Ajout de la déconnexion.
+- Activation de la protection CSRF.
+- Redirections vers le wiki après connexion et déconnexion.
+
+### Ce que j’ai compris
+
+Le formulaire récupère le mot de passe brut, mais seul son hash est enregistré en BDD.
+
+Le firewall Symfony traite la connexion et la déconnexion. Le Controller de connexion affiche principalement le formulaire et les erreurs.
+
+### Problème rencontré
+
+Après déconnexion, Symfony redirigeait vers `/`, une route inexistante, ce qui provoquait une page 404. J’ai configuré `default_target_path` et `target` vers `app_wiki`.
+
+### Résultat
+
+Un visiteur peut créer un compte, se connecter et se déconnecter correctement.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J17 — Protection de l’administration — 12/08/2026
 
+### Travail réalisé
+
+- Déplacement du CRUD Stickman sous `/admin/stickman`.
+- Attribution de `ROLE_ADMIN` à mon compte.
+- Protection de toutes les URL commençant par `/admin`.
+- Redirection des visiteurs non connectés vers `/login`.
+- Retour automatique vers la page demandée après connexion.
+
+### Ce que j’ai compris
+
+`access_control` vérifie les URL dans l’ordre. La règle `^/admin` exige désormais `ROLE_ADMIN`.
+
+Un visiteur non connecté est redirigé vers la connexion. Un utilisateur connecté sans le bon rôle reçoit une erreur 403. Un administrateur peut accéder au CRUD.
+
+Les rôles sont des données MySQL : leur modification ne nécessite pas de migration.
+
+### Difficulté rencontrée
+
+phpMyAdmin ne pouvait pas se connecter avec les bons identifiants MySQL. J’ai utilisé `dbal:run-sql` pour modifier directement le rôle depuis Symfony.
+
+### Résultat
+
+Le CRUD Stickman n’est plus accessible publiquement et constitue maintenant une véritable zone d’administration.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
