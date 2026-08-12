@@ -580,7 +580,26 @@ Le CRUD Stickman n’est plus accessible publiquement et constitue maintenant un
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J18 — Entity Caisse — 12/08/2026
 
+### Travail réalisé
+
+- Création de l’Entity `Caisse`.
+- Ajout des champs `nom`, `slug`, `description`, `image`, `prix` et `statutActif`.
+- Ajout d’une contrainte unique sur le slug.
+- Création de `CaisseRepository`.
+- Génération et exécution de la migration.
+- Création de la table `caisse` dans MySQL.
+
+### Ce que j’ai compris
+
+Le prix est stocké sous forme d’entier pour représenter des pièces virtuelles ou, plus tard, des centimes sans erreur d’arrondi.
+
+Le slug unique permettra d’identifier précisément une caisse dans une future URL publique.
+
+### Résultat
+
+La structure permettant d’enregistrer les caisses de StickVerse existe maintenant dans PHP et MySQL.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
