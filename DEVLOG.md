@@ -484,9 +484,18 @@ StickVerse possède maintenant une première collection réelle de 10 Stickmans 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J14 — Vérifications et version stable — 12/08/2026
 
+### Vérifications effectuées
 
+- Les 10 templates Twig ont une syntaxe valide.
+- Le conteneur Symfony et les injections de dépendances sont valides.
+- Le mapping Doctrine est correct.
+- La structure MySQL est synchronisée avec les Entities.
 
+### Résultat
+
+La première partie de StickVerse est stable : CRUD, validations, images, wiki dynamique, fiches par slug et responsive fonctionnent correctement.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
