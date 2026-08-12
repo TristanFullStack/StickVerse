@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Wiki des Stickmans - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Wiki des Stickmans</h1>
+
+    {% if stickmen is empty %}
+        <p>Aucun Stickman actif pour le moment.</p>
+    {% else %}
+        <div class="stickmen-list">
+
+            {% for stickman in stickmen %}
+                <article class="stickman-card">
+
+                    <h2>{{ stickman.nom }}</h2>
+
+                    <img
+                        src="{{ asset('images/stickmen/' ~ stickman.image) }}"
+                        alt="{{ stickman.nom }}"
+                        width="200"
+                    >
+
+                    <p>Rareté : {{ stickman.rarete }}</p>
+                    <p>PV : {{ stickman.pv }}</p>
+                    <p>Attaque : {{ stickman.attaque }}</p>
+                    <p>Défense : {{ stickman.defense }}</p>
+
+                </article>
+            {% endfor %}
+
+        </div>
+    {% endif %}
+{% endblock %}

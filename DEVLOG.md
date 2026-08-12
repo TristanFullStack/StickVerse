@@ -361,7 +361,40 @@ Environ 3 heures.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J10 — Wiki public dynamique — 12/08/2026
 
+### Objectif
+
+Créer la page publique `/wiki` et afficher automatiquement les Stickmans actifs enregistrés dans MySQL.
+
+### Travail réalisé
+
+- Création du `WikiController`.
+- Injection de `StickmanRepository` dans la méthode `index()`.
+- Utilisation de `findBy()` avec le critère `statutActif => true`.
+- Transmission du tableau `$stickmen` au template Twig.
+- Création d’une boucle Twig pour afficher chaque Stickman.
+- Affichage dynamique du nom, de l’image, de la rareté et des statistiques.
+
+### Ce que j’ai compris
+
+Le navigateur demande `/wiki`. Symfony trouve la route et exécute `WikiController`. Le Controller demande les données au Repository. Doctrine transforme la recherche en requête SQL vers MySQL, puis reconstruit des objets `Stickman`. Le Controller transmet ces objets à Twig sous le nom `stickmen`. Twig parcourt ensuite le tableau avec une boucle `for` et génère le HTML.
+
+### Erreur rencontrée
+
+Après avoir supprimé la variable `controller_name` du Controller, le template généré par Symfony essayait encore de l’afficher. Twig a donc produit une `RuntimeError`. J’ai remplacé cette ancienne variable par un titre fixe.
+
+### Tests effectués
+
+- `dd()` a confirmé la récupération des Entities.
+- Le wiki affiche les Stickmans actifs.
+- Le Guerrier désactivé a immédiatement disparu du wiki.
+- Un nouveau Stickman actif apparaît automatiquement.
+- Les images et les statistiques s’affichent correctement.
+
+### Résultat
+
+La page `/wiki` est maintenant entièrement alimentée par MySQL. Aucun Stickman n’est écrit manuellement dans le HTML.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
