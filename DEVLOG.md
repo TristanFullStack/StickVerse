@@ -603,9 +603,29 @@ La structure permettant d’enregistrer les caisses de StickVerse existe mainten
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J19 — CRUD des caisses — 12/08/2026
 
+### Travail réalisé
 
+- Génération de `CaisseController`.
+- Génération de `CaisseType`.
+- Création des templates index, new, show, edit et delete.
+- Déplacement du CRUD vers `/admin/caisse`.
+- Protection automatique grâce à `ROLE_ADMIN`.
+- Création d’une première caisse.
+- Modification de son prix de 100 à 120.
 
+### Ce que j’ai compris
+
+Le Controller orchestre les actions CRUD, `CaisseType` construit le formulaire et Twig affiche les pages.
+
+Les noms des routes ne changent pas lorsque le préfixe passe de `/caisse` à `/admin/caisse`. Les liens générés avec `path()` continuent donc de fonctionner.
+
+La caisse créée est stockée dans MySQL et non dans Git.
+
+### Résultat
+
+L’administrateur peut créer, consulter, modifier et supprimer des caisses depuis une zone protégée.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
