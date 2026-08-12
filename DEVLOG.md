@@ -464,7 +464,23 @@ Le wiki affiche maintenant les Stickmans sous forme de cartes. La grille s’ada
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J13 — Ajout des vrais Stickmans — 12/08/2026
 
+### Travail réalisé
+
+Les 10 premiers Stickmans réels de StickVerse sont enregistrés dans MySQL avec leur nom, slug, description, image, rareté et statistiques.
+
+Le wiki les récupère et les affiche automatiquement.
+
+### Ce que j’ai compris
+
+Les Stickmans créés depuis le CRUD sont des données stockées dans MySQL. Ils ne sont pas enregistrés directement dans Git.
+
+Une migration conserve la structure de la base de données, mais pas les lignes créées depuis les formulaires.
+
+### Résultat
+
+StickVerse possède maintenant une première collection réelle de 10 Stickmans utilisables dans le wiki.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
