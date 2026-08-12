@@ -433,7 +433,34 @@ Chaque Stickman actif possède maintenant une fiche publique dynamique accessibl
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J12 — Cartes wiki responsive — 12/08/2026
 
+### Objectif
+
+Transformer la liste publique des Stickmans en grille de cartes responsive.
+
+### Travail réalisé
+
+- Identification du chargement CSS avec `importmap('app')`.
+- Vérification que `assets/app.js` importe `assets/styles/app.css`.
+- Remplacement du fond bleu Symfony par un style plus propre.
+- Création d’une grille responsive avec CSS Grid.
+- Mise en forme des cartes, images, statistiques et liens.
+- Utilisation de Flexbox pour aligner les boutons.
+- Ajout d’un effet au survol.
+- Ajout d’une Media Query pour les écrans mobiles.
+
+### Ce que j’ai compris
+
+`repeat(auto-fit, minmax(230px, 1fr))` adapte automatiquement le nombre de colonnes à la largeur disponible.
+
+`object-fit: contain` conserve les proportions des images sans les déformer.
+
+La Media Query applique des règles spécifiques lorsque l’écran mesure moins de 600 pixels.
+
+### Résultat
+
+Le wiki affiche maintenant les Stickmans sous forme de cartes. La grille s’adapte automatiquement aux ordinateurs, tablettes et mobiles.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
