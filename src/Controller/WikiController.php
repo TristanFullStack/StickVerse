@@ -20,4 +20,24 @@ final class WikiController extends AbstractController
             'stickmen' => $stickmen,
         ]);
     }
+
+    #[Route('/wiki/{slug}', name: 'app_wiki_show')]
+    public function show(
+        string $slug,
+        StickmanRepository $stickmanRepository
+    ): Response {
+        $stickman = $stickmanRepository->findOneBy([
+            'slug' => $slug,
+            'statutActif' => true,
+        ]);
+
+        if (!$stickman) {
+            throw $this->createNotFoundException('Stickman introuvable.');
+        }
+
+        return $this->render('wiki/show.html.twig', [
+            'stickman' => $stickman,
+        ]);
+    }
+
 }

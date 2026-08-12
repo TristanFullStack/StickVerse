@@ -398,7 +398,38 @@ La page `/wiki` est maintenant entièrement alimentée par MySQL. Aucun Stickman
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J11 — Fiche publique dynamique avec slug — 12/08/2026
 
+### Objectif
+
+Créer une page publique différente pour chaque Stickman avec une URL basée sur son slug, par exemple `/wiki/archer`.
+
+### Travail réalisé
+
+- Création de la route dynamique `/wiki/{slug}`.
+- Récupération du slug depuis l’URL.
+- Utilisation de `findOneBy()` pour récupérer un seul Stickman actif.
+- Création d’une erreur 404 si le Stickman n’existe pas ou est inactif.
+- Création du template public `wiki/show.html.twig`.
+- Transmission de l’objet `stickman` du Controller vers Twig.
+- Ajout d’un lien « Voir la fiche » pour chaque Stickman du wiki.
+- Génération automatique des URLs avec la fonction Twig `path()`.
+
+### Ce que j’ai compris
+
+`findBy()` renvoie un tableau de plusieurs résultats, tandis que `findOneBy()` renvoie un seul objet ou `null`.
+
+Le slug présent dans l’URL devient la variable PHP `$slug`. Le Repository recherche ensuite l’Entity correspondante dans MySQL.
+
+La fonction Twig `path()` utilise le nom de la route et le slug du Stickman pour générer automatiquement son URL.
+
+### Difficulté rencontrée
+
+Le fichier `templates/wiki/show.html.twig` n’existait pas encore. J’ai compris qu’il fallait le créer et ne pas utiliser `templates/stickman/show.html.twig`, qui appartient au CRUD.
+
+### Résultat
+
+Chaque Stickman actif possède maintenant une fiche publique dynamique accessible depuis le wiki.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

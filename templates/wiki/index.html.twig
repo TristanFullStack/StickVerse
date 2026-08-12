@@ -26,6 +26,10 @@
                     <p>Attaque : {{ stickman.attaque }}</p>
                     <p>Défense : {{ stickman.defense }}</p>
 
+                    <a href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}">
+                        Voir la fiche
+                    </a>
+
                 </article>
             {% endfor %}
 

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ stickman.nom }} - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>{{ stickman.nom }}</h1>
+
+    <img
+        src="{{ asset('images/stickmen/' ~ stickman.image) }}"
+        alt="{{ stickman.nom }}"
+        width="300"
+    >
+
+    <p>{{ stickman.description }}</p>
+
+    <p>Rareté : {{ stickman.rarete }}</p>
+    <p>PV : {{ stickman.pv }}</p>
+    <p>Attaque : {{ stickman.attaque }}</p>
+    <p>Défense : {{ stickman.defense }}</p>
+
+    <a href="{{ path('app_wiki') }}">Retour au wiki</a>
+{% endblock %}
