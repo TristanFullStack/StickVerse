@@ -499,7 +499,26 @@ La première partie de StickVerse est stable : CRUD, validations, images, wiki d
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J15 — Entity User — 12/08/2026
 
+### Travail réalisé
+
+- Génération de l’Entity `User` avec `make:user`.
+- Utilisation de l’email comme identifiant unique.
+- Ajout des rôles et du mot de passe haché.
+- Création de `UserRepository`.
+- Mise à jour de la configuration Security.
+- Génération et exécution de la migration créant la table `user`.
+
+### Ce que j’ai compris
+
+L’Entity représente un compte dans PHP et Doctrine. La migration transforme cette structure en table MySQL.
+
+Chaque utilisateur possède automatiquement `ROLE_USER`. Le champ `password` contiendra uniquement un hash sécurisé, jamais le mot de passe brut.
+
+### Résultat
+
+StickVerse peut maintenant enregistrer des comptes utilisateurs en base de données.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
