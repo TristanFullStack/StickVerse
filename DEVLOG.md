@@ -704,7 +704,34 @@ Symfony détecte automatiquement le service grâce à l’autowiring.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J22 — Page publique des caisses — 15/08/2026
 
+### Objectif
+
+Créer une page publique affichant automatiquement les caisses actives.
+
+### Réalisation
+
+- Création de `CaissePubliqueController`.
+- Création de la route publique `/caisses`.
+- Injection de `CaisseRepository`.
+- Récupération des caisses avec `statutActif = true`.
+- Transmission de la liste à Twig.
+- Création d’une boucle affichant le nom, l’image, la description et le prix.
+- Ajout du dossier public contenant les images des caisses.
+
+### Erreur rencontrée
+
+L’image ne s’affichait pas alors que son URL directe fonctionnait.
+
+La base contenait `caisse-commune.png`, mais le véritable fichier s’appelait `caisse-image-commune.png`. La valeur enregistrée dans MySQL doit correspondre exactement au nom du fichier.
+
+### Tests
+
+- Une caisse active apparaît sur `/caisses`.
+- Une caisse inactive disparaît.
+- Le message « Aucune caisse disponible » fonctionne.
+- L’image enregistrée dans la base est chargée depuis `public/images/caisses`.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

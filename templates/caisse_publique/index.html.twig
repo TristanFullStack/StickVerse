@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Caisses - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Les caisses StickVerse</h1>
+
+    {% if caisses is empty %}
+        <p>Aucune caisse disponible pour le moment.</p>
+    {% else %}
+        <div class="caisses-list">
+
+            {% for caisse in caisses %}
+                <article class="caisse-card">
+
+                    <h2>{{ caisse.nom }}</h2>
+
+                    <img
+                        src="{{ asset('images/caisses/' ~ caisse.image) }}"
+                        alt="{{ caisse.nom }}"
+                        width="250"
+                    >
+
+                    <p>{{ caisse.description }}</p>
+                    <p>Prix : {{ caisse.prix }}</p>
+
+                </article>
+            {% endfor %}
+
+        </div>
+    {% endif %}
+{% endblock %}
