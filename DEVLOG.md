@@ -673,7 +673,34 @@ Le pourcentage n’est pas enregistré en base. Il est calculé automatiquement 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J21 — Service d’ouverture aléatoire pondérée — 15/08/2026
 
+### Objectif
+
+Créer un service PHP capable de choisir un Stickman selon les poids définis dans une caisse.
+
+### Réalisation
+
+- Création de `OuvertureCaisseService`.
+- Récupération des contenus de la caisse.
+- Gestion du cas d’une caisse vide.
+- Calcul du poids total.
+- Génération d’un nombre avec `random_int()`.
+- Parcours des contenus avec un poids cumulé.
+- Retour du Stickman correspondant à la zone tirée.
+- Test du service avec une route temporaire d’administration.
+
+### Compréhension
+
+Avec les poids 60, 30 et 10, le service construit implicitement les zones suivantes :
+
+- 1 à 60 : Guerrier ;
+- 61 à 90 : Archer ;
+- 91 à 100 : Tank.
+
+Le contrôleur ne réalise pas le tirage lui-même. Il appellera le service, ce qui sépare la logique métier de la gestion HTTP.
+
+Symfony détecte automatiquement le service grâce à l’autowiring.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
