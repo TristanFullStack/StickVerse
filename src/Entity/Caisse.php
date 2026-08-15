@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CaisseRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,6 +33,17 @@ class Caisse
 
     #[ORM\Column]
     private ?bool $statutActif = null;
+
+    /**
+     * @var Collection<int, CaisseStickman>
+     */
+    #[ORM\OneToMany(targetEntity: CaisseStickman::class, mappedBy: 'caisse', orphanRemoval: true)]
+    private Collection $contenus;
+
+    public function __construct()
+    {
+        $this->contenus = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -105,6 +118,47 @@ class Caisse
     public function setStatutActif(bool $statutActif): static
     {
         $this->statutActif = $statutActif;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CaisseStickman>
+     */
+    public function getContenus(): Collection
+    {
+        return $this->contenus;
+    }
+
+    public function getPoidsTotal(): int
+    {
+        $total = 0;
+
+        foreach ($this->contenus as $contenu) {
+            $total += $contenu->getPoids() ?? 0;
+        }
+
+        return $total;
+    }
+
+    public function addContenu(CaisseStickman $contenu): static
+    {
+        if (!$this->contenus->contains($contenu)) {
+            $this->contenus->add($contenu);
+            $contenu->setCaisse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeContenu(CaisseStickman $contenu): static
+    {
+        if ($this->contenus->removeElement($contenu)) {
+            // set the owning side to null (unless already changed)
+            if ($contenu->getCaisse() === $this) {
+                $contenu->setCaisse(null);
+            }
+        }
 
         return $this;
     }

@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CaisseStickman index{% endblock %}
+
+{% block body %}
+    <h1>CaisseStickman index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Poids</th>
+                <th>Probabilité</th>
+                <th>Caisse</th>
+                <th>Stickman</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for caisse_stickman in caisse_stickmen %}
+            <tr>
+                <td>{{ caisse_stickman.id }}</td>
+                <td>{{ caisse_stickman.poids }}</td>
+                <td>{{ caisse_stickman.probabilite|round(2) }} %</td>
+                <td>{{ caisse_stickman.caisse.nom }}</td>
+                <td>{{ caisse_stickman.stickman.nom }}</td>
+                <td>
+                    <a href="{{ path('app_caisse_stickman_show', {'id': caisse_stickman.id}) }}">show</a>
+                    <a href="{{ path('app_caisse_stickman_edit', {'id': caisse_stickman.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_caisse_stickman_new') }}">Create new</a>
+{% endblock %}
