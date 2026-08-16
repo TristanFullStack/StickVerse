@@ -735,7 +735,50 @@ La base contenait `caisse-commune.png`, mais le véritable fichier s’appelait 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J23 — Inventaire utilisateur — 16/08/2026
 
+### Objectif
+
+Créer la structure permettant à chaque utilisateur de posséder des Stickmans, y compris plusieurs exemplaires du même Stickman.
+
+### Réalisation
+
+- Création de l’Entity `Inventaire`.
+- Ajout du champ `quantite`.
+- Relation `ManyToOne` entre `Inventaire` et `User`.
+- Relation `ManyToOne` entre `Inventaire` et `Stickman`.
+- Ajout de la collection `inventaires` dans `User`.
+- Quantité initialisée à 1 et obligatoirement positive.
+- Ajout d’une contrainte unique utilisateur/Stickman.
+- Création et exécution de la migration.
+- Validation du mapping Doctrine et du schéma MySQL.
+
+### Compréhension
+
+Une ligne d’inventaire représente :
+
+`un utilisateur + un Stickman + une quantité`
+
+La contrainte unique n’empêche pas les doublons. Elle empêche plusieurs lignes identiques.
+
+Si un utilisateur possède trois Guerriers, la base stocke :
+
+`Tristan + Guerrier + quantité 3`
+
+Lorsqu’il gagnera un autre Guerrier, le programme augmentera la quantité au lieu de créer une nouvelle ligne.
+
+### Erreurs rencontrées
+
+- J’ai d’abord saisi `Inventaire` comme nom de propriété au lieu de `quantite`.
+- J’ai terminé Maker avant d’ajouter la relation `stickman`.
+- J’ai ensuite écrit `yes` et `stickman` directement dans PowerShell après la fin de Maker.
+- J’ai relancé `make:entity Inventaire` pour compléter proprement l’Entity.
+
+### Tests
+
+- La migration a exécuté trois requêtes SQL.
+- Le mapping Doctrine est correct.
+- Le schéma MySQL est synchronisé avec les Entities.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
