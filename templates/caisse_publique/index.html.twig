@@ -5,6 +5,18 @@
 {% block body %}
     <h1>Les caisses StickVerse</h1>
 
+    {% for message in app.flashes('success') %}
+        <div class="flash-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="flash-error">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     {% if caisses is empty %}
         <p>Aucune caisse disponible pour le moment.</p>
     {% else %}
@@ -23,6 +35,29 @@
 
                     <p>{{ caisse.description }}</p>
                     <p>Prix : {{ caisse.prix }}</p>
+
+                    {% if app.user %}
+                        <form
+                            method="post"
+                            action="{{ path('app_caisse_ouvrir', {'id': caisse.id}) }}"
+                        >
+                            <input
+                                type="hidden"
+                                name="_token"
+                                value="{{ csrf_token('ouvrir' ~ caisse.id) }}"
+                            >
+
+                            <button type="submit">
+                                Ouvrir la caisse
+                            </button>
+                        </form>
+                    {% else %}
+                        <p>
+                            <a href="{{ path('app_login') }}">
+                                Connecte-toi pour ouvrir cette caisse
+                            </a>
+                        </p>
+                    {% endif %}
 
                 </article>
             {% endfor %}

@@ -782,7 +782,51 @@ Lorsqu’il gagnera un autre Guerrier, le programme augmentera la quantité au l
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J24 — Relier ouverture de caisse et inventaire — 16/08/2026
 
+### Objectif
+
+Enregistrer automatiquement dans l’inventaire le Stickman obtenu lors de l’ouverture d’une caisse.
+
+### Réalisation
+
+- Injection de `InventaireRepository` dans `OuvertureCaisseService`.
+- Injection de `EntityManagerInterface`.
+- Transmission de l’utilisateur connecté au service.
+- Recherche d’une ligne utilisateur/Stickman existante.
+- Création d’une ligne avec quantité 1 lors de la première obtention.
+- Augmentation de la quantité lors d’un doublon.
+- Création d’une route POST protégée par `ROLE_USER`.
+- Ajout d’une protection CSRF.
+- Création du formulaire Twig d’ouverture.
+- Affichage du résultat avec un message flash.
+
+### Compréhension
+
+Le contrôleur récupère l’utilisateur connecté et demande au service d’ouvrir la caisse.
+
+Le service effectue le tirage puis recherche dans `InventaireRepository` si l’utilisateur possède déjà le Stickman.
+
+- Première obtention : `persist()` puis `flush()`.
+- Doublon : modification de la quantité puis `flush()`.
+
+Doctrine surveille déjà une Entity récupérée depuis MySQL. Il n’est donc pas nécessaire d’appeler `persist()` pour augmenter sa quantité.
+
+### Erreur rencontrée
+
+Le code PHP du contrôleur a momentanément été collé dans le template Twig. Twig l’a traité comme du texte et le navigateur a affiché le code source sur la page.
+
+Chaque langage doit rester dans son fichier :
+
+- PHP dans `src/Controller`;
+- Twig dans `templates`.
+
+### Tests
+
+- Deux Stickmans différents ont créé deux lignes d’inventaire.
+- Un deuxième Archer n’a pas créé de doublon.
+- La quantité de l’Archer est passée de 1 à 2.
+- Le formulaire utilise une requête POST et un jeton CSRF.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
