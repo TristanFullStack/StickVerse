@@ -101,4 +101,37 @@ final class CombatService
             pvActuels: $pvActuels,
         );
     }
+
+    /**
+     * @param array<string, array{
+     *     attaquants: list<Stickman>,
+     *     defenseurs: list<Stickman>,
+     *     pvActuels: int
+     * }> $impacts
+     *
+     * @return array<string, array{
+     *     attaque: int,
+     *     defense: int,
+     *     degatsCalcules: int,
+     *     degatsEffectifs: int,
+     *     overkill: int,
+     *     pvAvant: int,
+     *     pvRestants: int
+     * }>
+     */
+    public function resoudreRound(array $impacts): array
+    {
+        $resultats = [];
+
+        foreach ($impacts as $cible => $impact) {
+            $resultats[$cible] = $this->resoudreCible(
+                attaquants: $impact['attaquants'],
+                defenseurs: $impact['defenseurs'],
+                pvActuels: $impact['pvActuels'],
+            );
+        }
+
+        return $resultats;
+    }
+
 }

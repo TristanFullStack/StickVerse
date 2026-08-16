@@ -1066,7 +1066,82 @@ La résolution complète et simultanée d’un round sera construite à partir d
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J28 — Résolution simultanée d’un round — 16/08/2026
 
+### Objectif
+
+Permettre au moteur de calculer plusieurs impacts pendant un même round sans modifier immédiatement les PV.
+
+Cette règle est importante car les choix des deux joueurs sont secrets et simultanés.
+
+### Méthode ajoutée
+
+Ajout de `resoudreRound()` dans `CombatService`.
+
+Cette méthode reçoit un tableau d’impacts. Pour chaque cible, elle reçoit :
+
+- les Stickmans attaquants ;
+- les Stickmans défenseurs ;
+- les PV de la cible au début du round.
+
+Elle appelle ensuite `resoudreCible()` pour chaque impact et retourne tous les résultats.
+
+### Identification des cibles
+
+Les clés comme :
+
+- `joueur_A` ;
+- `adversaire_A` ;
+- `adversaire_D` ;
+
+servent uniquement à identifier les résultats.
+
+Elles ne représentent pas les équipes X et Y.
+
+Les équipes restent :
+
+- X = A+B ;
+- Y = C+D.
+
+### Résolution simultanée
+
+Les PV ne sont pas changés pendant la boucle de calcul.
+
+Tous les résultats sont d’abord préparés à partir de l’état initial du round. Ils pourront ensuite être appliqués ensemble.
+
+Cela permet, par exemple, à deux Stickmans ayant chacun 5 PV de se mettre KO mutuellement pendant le même tour.
+
+### Test ajouté
+
+Ajout d’un test dans `CombatServiceTest` avec :
+
+- un attaquant joueur possédant 10 ATK ;
+- un attaquant adverse possédant 10 ATK ;
+- deux cibles possédant chacune 5 PV ;
+- aucune défense.
+
+Résultat attendu et obtenu :
+
+- le Stickman du joueur termine à 0 PV ;
+- le Stickman adverse termine à 0 PV ;
+- les deux KO sont calculés pendant le même round.
+
+### Tests PHPUnit
+
+Résultat final :
+
+- 6 tests réussis ;
+- 20 assertions réussies.
+
+### Ce que j’ai compris
+
+Une résolution simultanée ne signifie pas exécuter les calculs exactement au même instant.
+
+Le programme calcule d’abord tous les résultats à partir d’un même état initial, puis applique les changements après les calculs.
+
+### Résultat
+
+Le moteur StickVerse sait maintenant résoudre plusieurs impacts indépendants pendant un même round tout en conservant la possibilité d’un double KO.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -124,4 +124,34 @@ final class CombatServiceTest extends TestCase
         self::assertSame(1, $resultat['pvRestants']);
     }
 
+    public function testDeuxStickmansPeuventEtreKoSimultanement(): void
+    {
+        $attaqueJoueur = new Stickman();
+        $attaqueJoueur->setAttaque(10);
+
+        $attaqueAdversaire = new Stickman();
+        $attaqueAdversaire->setAttaque(10);
+
+        $service = new CombatService();
+
+        $resultats = $service->resoudreRound([
+            'joueur_A' => [
+                'attaquants' => [$attaqueAdversaire],
+                'defenseurs' => [],
+                'pvActuels' => 5,
+            ],
+            'adversaire_A' => [
+                'attaquants' => [$attaqueJoueur],
+                'defenseurs' => [],
+                'pvActuels' => 5,
+            ],
+        ]);
+
+        self::assertSame(5, $resultats['joueur_A']['pvAvant']);
+        self::assertSame(0, $resultats['joueur_A']['pvRestants']);
+
+        self::assertSame(5, $resultats['adversaire_A']['pvAvant']);
+        self::assertSame(0, $resultats['adversaire_A']['pvRestants']);
+    }
+
 }
