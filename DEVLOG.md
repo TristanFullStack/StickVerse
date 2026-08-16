@@ -830,7 +830,50 @@ Chaque langage doit rester dans son fichier :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J25 — Page Ma collection — 16/08/2026
 
+### Objectif
+
+Créer une page privée permettant à chaque utilisateur de consulter les Stickmans présents dans son inventaire.
+
+### Réalisation
+
+- Création de `CollectionController`.
+- Création de la route `/ma-collection`.
+- Protection de la route avec `ROLE_USER`.
+- Récupération de l’utilisateur connecté avec `getUser()`.
+- Recherche de ses lignes avec `InventaireRepository`.
+- Transmission des inventaires à Twig.
+- Affichage des cartes Stickmans et de leurs quantités.
+- Ajout d’un lien vers chaque fiche du wiki.
+- Gestion du cas d’une collection vide.
+
+### Compréhension
+
+Le Repository ne récupère pas tous les inventaires. Il applique ce filtre :
+
+`utilisateur = utilisateur connecté`
+
+Chaque ligne `Inventaire` permet ensuite d’accéder :
+
+- à la quantité avec `inventaire.quantite` ;
+- au Stickman associé avec `inventaire.stickman` ;
+- aux propriétés du Stickman avec `inventaire.stickman.nom`, `image`, `pv`, etc.
+
+Le raccourci Twig `{% set stickman = inventaire.stickman %}` évite de répéter `inventaire.stickman` partout.
+
+### Erreur rencontrée
+
+Le template généré utilisait encore la variable `controller_name`, alors que le nouveau contrôleur transmettait seulement `inventaires`.
+
+Twig a donc signalé que `controller_name` n’existait pas. Le remplacement du template généré par la vraie page de collection a corrigé l’erreur.
+
+### Tests
+
+- L’utilisateur connecté voit ses Stickmans.
+- Les quantités correspondent aux données de MySQL.
+- Les images et les statistiques s’affichent.
+- Les liens vers les fiches du wiki fonctionnent.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

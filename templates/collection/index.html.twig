@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ma collection - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Ma collection</h1>
+
+    {% if inventaires is empty %}
+        <p>Tu ne possèdes encore aucun Stickman.</p>
+
+        <a href="{{ path('app_caisse_publique') }}">
+            Voir les caisses
+        </a>
+    {% else %}
+        <div class="stickmen-list">
+
+            {% for inventaire in inventaires %}
+                {% set stickman = inventaire.stickman %}
+
+                <article class="stickman-card">
+
+                    <h2>{{ stickman.nom }}</h2>
+
+                    <img
+                        src="{{ asset('images/stickmen/' ~ stickman.image) }}"
+                        alt="{{ stickman.nom }}"
+                        width="200"
+                    >
+
+                    <p>
+                        <strong>Quantité : {{ inventaire.quantite }}</strong>
+                    </p>
+
+                    <p>Rareté : {{ stickman.rarete }}</p>
+                    <p>PV : {{ stickman.pv }}</p>
+                    <p>Attaque : {{ stickman.attaque }}</p>
+                    <p>Défense : {{ stickman.defense }}</p>
+
+                    <a href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}">
+                        Voir la fiche
+                    </a>
+
+                </article>
+            {% endfor %}
+
+        </div>
+    {% endif %}
+{% endblock %}
