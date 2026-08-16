@@ -961,7 +961,108 @@ L’utilisateur connecté peut maintenant créer, sauvegarder et modifier son é
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J27 — Créer le noyau du moteur de combat — 16/08/2026
 
+### Objectif
+
+Commencer le moteur de combat Symfony sans intégrer directement tout le prototype JavaScript V24.
+
+La première étape consiste à isoler les calculs fondamentaux dans un service PHP indépendant du navigateur, de Twig et de MySQL.
+
+### Service créé
+
+Création de :
+
+`src/Service/CombatService.php`
+
+Le service contient les méthodes suivantes :
+
+- `calculerImpact()` ;
+- `calculerAttaqueTotale()` ;
+- `calculerDefenseTotale()` ;
+- `resoudreCible()`.
+
+### Formule des dégâts
+
+La formule principale est :
+
+`max(0, attaque totale - défense totale)`
+
+Le service calcule également :
+
+- les dégâts calculés ;
+- les dégâts réellement subis ;
+- les PV restants ;
+- l’overkill lorsque les dégâts dépassent les PV disponibles.
+
+### Puissance des équipes
+
+Les statistiques des membres d’un duo sont additionnées.
+
+Exemple avec Guerrier et Archer :
+
+- attaque : `2 + 4 = 6` ;
+- défense : `2 + 1 = 3`.
+
+Les méthodes acceptent une liste de Stickmans. Plus tard, les Stickmans KO seront simplement retirés de cette liste avant le calcul.
+
+### Focus et défense
+
+La méthode `resoudreCible()` reçoit :
+
+- les Stickmans qui attaquent la cible ;
+- les Stickmans qui défendent la cible ;
+- les PV actuels de la cible.
+
+Elle permet déjà de représenter :
+
+- une attaque de l’équipe X ;
+- une attaque de l’équipe Y ;
+- un focus X+Y ;
+- une défense simple ;
+- une double défense ;
+- une cible sans défense.
+
+### Tests PHPUnit
+
+Création de :
+
+`tests/Service/CombatServiceTest.php`
+
+Scénarios testés :
+
+- impact normal ;
+- défense supérieure à l’attaque ;
+- KO avec overkill ;
+- calcul de l’attaque et de la défense d’un duo ;
+- focus X+Y contre une défense simple.
+
+Résultat :
+
+- 5 tests réussis ;
+- 16 assertions réussies.
+
+### Erreur rencontrée
+
+PHPUnit a temporairement indiqué que la méthode `resoudreCible()` était inconnue.
+
+La méthode était correctement écrite, mais le test avait été lancé avant l’enregistrement du fichier `CombatService.php`.
+
+Après avoir enregistré le fichier et relancé PHPUnit, tous les tests sont passés.
+
+### Ce que j’ai compris
+
+Un test unitaire appelle directement une classe PHP sans navigateur, Controller, Twig ou base de données.
+
+Cela permet de savoir immédiatement si une erreur vient du moteur de calcul lui-même.
+
+Le moteur est construit progressivement par modules testables afin d’éviter de mélanger les erreurs de calcul, d’interface, de requête HTTP et de persistance.
+
+### Résultat
+
+Le noyau mathématique du futur combat StickVerse est fonctionnel et testé.
+
+La résolution complète et simultanée d’un round sera construite à partir de cette base lors de la prochaine étape.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
