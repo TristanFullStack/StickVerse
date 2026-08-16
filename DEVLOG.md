@@ -1422,7 +1422,106 @@ Le combat peut identifier ses deux joueurs, son état actuel, son round et son �
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J32 — Ajouter les snapshots des combattants — 16/08/2026
 
+### Objectif
+
+Préparer les combats en ligne en enregistrant une copie figée des quatre Stickmans de chaque joueur au début d’un combat.
+
+Un combat complet possédera donc huit combattants :
+
+- joueur 1 : slots A, B, C et D ;
+- joueur 2 : slots A, B, C et D.
+
+### Pourquoi utiliser des snapshots ?
+
+Une équipe et les statistiques des Stickmans peuvent être modifiées après la création d’un combat.
+
+Sans snapshot, une modification effectuée depuis l’administration pourrait modifier un combat déjà commencé ou son historique.
+
+Chaque combattant conserve donc les données utilisées au démarrage du combat :
+
+- identifiant original du Stickman ;
+- nom ;
+- image ;
+- rareté ;
+- PV maximum ;
+- PV actuels ;
+- attaque ;
+- défense ;
+- joueur propriétaire ;
+- slot A, B, C ou D.
+
+Les données du snapshot restent figées. Seuls les PV actuels pourront évoluer pendant le combat.
+
+### Entity CombattantCombat
+
+Création de l’Entity `CombattantCombat` et de son Repository.
+
+Ajout d’une relation `ManyToOne` vers `Combat` et d’une relation `ManyToOne` vers `User`.
+
+La contrainte unique suivante empêche un joueur d’utiliser deux fois le même slot dans un combat :
+
+`combat + joueur + slot`
+
+La suppression d’un combat supprime automatiquement ses combattants grâce à `ON DELETE CASCADE`.
+
+La relation `Combat -> combattants` utilise également :
+
+`cascade: ['persist']`
+
+Doctrine pourra ainsi enregistrer les combattants ajoutés au combat.
+
+### Service de création
+
+Création de `CreationCombattantsCombatService`.
+
+Le service :
+
+- vérifie que l’utilisateur participe au combat ;
+- vérifie que l’équipe appartient bien à cet utilisateur ;
+- vérifie que les quatre Stickmans sont enregistrés ;
+- vérifie que les quatre Stickmans sont différents ;
+- refuse de créer deux fois les snapshots du même joueur ;
+- crée les snapshots des slots A, B, C et D.
+
+Le service ne fait pas directement de `flush()` afin que la création du combat et de ses huit combattants puisse plus tard être enregistrée dans une transaction atomique.
+
+### Erreur rencontrée
+
+PHPUnit indiquait initialement :
+
+`Class CreationCombattantsCombatServiceTest cannot be found`
+
+Le fichier de test n’était probablement pas encore enregistré dans VS Code. Après enregistrement, PHPUnit a correctement trouvé et exécuté la classe.
+
+### Tests
+
+Le test du service vérifie :
+
+- la création des quatre snapshots ;
+- la copie correcte des statistiques ;
+- l’indépendance entre le snapshot et le Stickman original ;
+- le refus d’une deuxième création ;
+- le refus d’une équipe appartenant à un autre utilisateur.
+
+Résultats finaux :
+
+- 22 tests réussis ;
+- 92 assertions ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- base de données synchronisée avec les Entities.
+
+### Compréhension retenue
+
+Une `Equipe` représente la composition actuelle choisie par l’utilisateur.
+
+Un `CombattantCombat` représente la copie historique et sécurisée d’un Stickman utilisée dans un combat précis.
+
+Le trajet prévu devient :
+
+`Equipe -> CreationCombattantsCombatService -> CombattantCombat -> Doctrine -> MySQL`
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

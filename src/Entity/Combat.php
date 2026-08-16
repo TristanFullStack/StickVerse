@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\CombatRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use InvalidArgumentException;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -63,6 +65,17 @@ class Combat
     #[ORM\Column]
     private DateTimeImmutable $dateMiseAJour;
 
+    /**
+     * @var Collection<int, CombattantCombat>
+     */
+    #[ORM\OneToMany(
+        targetEntity: CombattantCombat::class,
+        mappedBy: 'combat',
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
+    private Collection $combattants;
+
     public function __construct(User $joueur1)
     {
         $maintenant = new DateTimeImmutable();
@@ -70,6 +83,7 @@ class Combat
         $this->joueur1 = $joueur1;
         $this->dateCreation = $maintenant;
         $this->dateMiseAJour = $maintenant;
+        $this->combattants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -212,5 +226,35 @@ class Combat
     private function actualiserDate(): void
     {
         $this->dateMiseAJour = new DateTimeImmutable();
+    }
+
+    /**
+     * @return Collection<int, CombattantCombat>
+     */
+    public function getCombattants(): Collection
+    {
+        return $this->combattants;
+    }
+
+    public function addCombattant(CombattantCombat $combattant): static
+    {
+        if (!$this->combattants->contains($combattant)) {
+            $this->combattants->add($combattant);
+            $combattant->setCombat($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCombattant(CombattantCombat $combattant): static
+    {
+        if ($this->combattants->removeElement($combattant)) {
+            // set the owning side to null (unless already changed)
+            if ($combattant->getCombat() === $this) {
+                $combattant->setCombat(null);
+            }
+        }
+
+        return $this;
     }
 }
