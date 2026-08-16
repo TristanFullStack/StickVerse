@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon équipe - StickVerse{% endblock %}
+
+{% block body %}
+    <section class="team-builder">
+        <h1>Composer mon équipe</h1>
+
+        <p>
+            Les Stickmans A et B forment l’équipe X.<br>
+            Les Stickmans C et D forment l’équipe Y.
+        </p>
+
+        {% for message in app.flashes('success') %}
+            <p class="flash-success">
+                {{ message }}
+            </p>
+        {% endfor %}
+
+        {% if nombre_stickmen_disponibles < 4 %}
+            <p class="flash-error">
+                Tu possèdes seulement
+                {{ nombre_stickmen_disponibles }}
+                Stickman(s) différent(s).
+                Il en faut au moins 4 pour composer une équipe.
+            </p>
+
+            <a href="{{ path('app_caisse_publique') }}">
+                Ouvrir des caisses
+            </a>
+        {% else %}
+            {{ form_start(form) }}
+
+                {{ form_errors(form) }}
+
+                {{ form_row(form.nom) }}
+
+                <div class="team-groups">
+                    <fieldset class="team-group team-x">
+                        <legend>Équipe X</legend>
+
+                        {{ form_row(form.stickmanA) }}
+                        {{ form_row(form.stickmanB) }}
+                    </fieldset>
+
+                    <fieldset class="team-group team-y">
+                        <legend>Équipe Y</legend>
+
+                        {{ form_row(form.stickmanC) }}
+                        {{ form_row(form.stickmanD) }}
+                    </fieldset>
+                </div>
+
+                <button type="submit">
+                    Sauvegarder mon équipe
+                </button>
+
+            {{ form_end(form) }}
+        {% endif %}
+    </section>
+{% endblock %}

@@ -877,7 +877,87 @@ Twig a donc signalé que `controller_name` n’existait pas. Le remplacement du 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J26 — Création et sauvegarde d’une équipe — 16/08/2026
 
+### Objectif
+
+Permettre à un utilisateur connecté de composer et sauvegarder son équipe de quatre Stickmans possédés :
+
+- A + B = équipe X ;
+- C + D = équipe Y.
+
+### Modèle de données
+
+Création de l’Entity `Equipe` avec :
+
+- `id` ;
+- `nom` ;
+- une relation vers `User` ;
+- `stickmanA` ;
+- `stickmanB` ;
+- `stickmanC` ;
+- `stickmanD`.
+
+Les équipes X et Y ne sont pas enregistrées séparément. Elles sont déduites des quatre emplacements.
+
+### Formulaire
+
+Création de `EquipeType`.
+
+Le champ `utilisateur` généré automatiquement a été retiré du formulaire. Le propriétaire est défini directement avec l’utilisateur connecté afin d’empêcher un utilisateur de créer une équipe pour quelqu’un d’autre.
+
+Les quatre `EntityType` affichent le nom des Stickmans et utilisent uniquement les Stickmans présents dans l’inventaire de l’utilisateur.
+
+### Controller
+
+Création de `EquipeController`.
+
+Trajet des données :
+
+Navigateur  
+→ formulaire POST  
+→ `EquipeController`  
+→ `InventaireRepository`  
+→ Stickmans possédés  
+→ Entity `Equipe`  
+→ Doctrine  
+→ MySQL  
+→ redirection GET  
+→ formulaire prérempli.
+
+Le Controller recherche d’abord l’équipe existante de l’utilisateur. Si elle n’existe pas, il crée une nouvelle Entity `Equipe`.
+
+### Règles métier
+
+- Il faut posséder au moins quatre Stickmans différents.
+- Un même Stickman ne peut pas occuper plusieurs emplacements.
+- Les doublons restent autorisés dans l’inventaire grâce à `quantite`, mais ils ne permettent pas d’utiliser deux fois le même Stickman dans l’équipe.
+- La route `/equipe` est réservée aux utilisateurs connectés avec `ROLE_USER`.
+
+### Erreurs et raisonnements
+
+J’ai oublié d’ajouter `stickmanC` pendant la première génération de l’Entity.
+
+Après l’avoir ajouté, il apparaissait après `stickmanD`. Cela n’aurait pas empêché Doctrine de fonctionner, car Doctrine utilise les noms des propriétés et non leur position dans le fichier. J’ai néanmoins remis les propriétés dans l’ordre A, B, C, D pour conserver un code plus lisible.
+
+La première migration avait été générée avant cette correction. Comme elle n’avait pas encore été exécutée, je l’ai supprimée puis régénérée proprement.
+
+Lors du test avec Guerrier dans les quatre emplacements, Symfony a renvoyé un code HTTP 422. Ce n’était pas une panne : le formulaire avait bien été reçu, mais la règle métier interdisant les doublons avait refusé les données.
+
+### Tests effectués
+
+- Blocage lorsque l’inventaire ne contient que trois Stickmans différents.
+- Affichage du formulaire après l’obtention d’un quatrième Stickman.
+- Refus d’une équipe contenant plusieurs fois le même Stickman.
+- Sauvegarde d’une équipe valide.
+- Redirection après sauvegarde.
+- Réaffichage des choix enregistrés.
+- Vérification directe de la table `equipe` avec SQL.
+- Validation du mapping Doctrine et synchronisation avec MySQL.
+
+### Résultat
+
+L’utilisateur connecté peut maintenant créer, sauvegarder et modifier son équipe principale avec quatre Stickmans différents provenant réellement de son inventaire.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
