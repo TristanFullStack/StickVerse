@@ -1145,7 +1145,70 @@ Le moteur StickVerse sait maintenant résoudre plusieurs impacts indépendants p
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J29 — Plans secrets et résolution complète d’un round — 16/08/2026
 
+### Objectif
+
+Construire la logique permettant de représenter les choix secrets des deux joueurs, de suivre les PV temporaires pendant un combat et de résoudre un round complet simultanément.
+
+### Travail réalisé
+
+- Création de `PlanCombat`.
+- Stockage des quatre choix d’un joueur :
+  - cible de l’attaque de l’équipe X ;
+  - cible de l’attaque de l’équipe Y ;
+  - cible de la défense de l’équipe X ;
+  - cible de la défense de l’équipe Y.
+- Validation des emplacements autorisés : A, B, C ou D.
+- Détection d’un focus, d’un split et d’une double défense.
+- Création de `EtatEquipeCombat`.
+- Initialisation des PV actuels à partir des PV maximum des Stickmans.
+- Gestion des groupes X = A+B et Y = C+D.
+- Détection des Stickmans vivants et éliminés.
+- Création de `ResolutionRoundService`.
+- Addition des attaques lorsqu’elles ciblent le même Stickman.
+- Addition des défenses lorsqu’elles protègent le même Stickman.
+- Calcul de tous les impacts avant de modifier les PV afin de conserver la simultanéité.
+- Application des PV restants seulement après le calcul complet du round.
+- Un groupe éliminé ne peut plus contribuer à une attaque ou une défense.
+- Une cible déjà éliminée ne peut plus être choisie.
+
+### Architecture comprise
+
+`PlanCombat` représente les décisions d’un joueur pendant un round.
+
+`EtatEquipeCombat` représente l’état temporaire de son équipe pendant le combat, notamment les PV actuels.
+
+`ResolutionRoundService` transforme les deux plans en impacts, utilise `CombatService` pour calculer les dégâts, puis applique les résultats aux deux équipes.
+
+Ces classes ne sont pas des Entity Doctrine : elles représentent de la logique temporaire et ne nécessitent donc aucune migration.
+
+### Erreur rencontrée
+
+J’ai d’abord confondu le fichier de production `src/Model/EtatEquipeCombat.php` avec son fichier de test `tests/Model/EtatEquipeCombatTest.php`.
+
+PHPUnit ne trouvait donc pas la classe `EtatEquipeCombatTest`.
+
+J’ai compris que :
+
+- `src/` contient le véritable code utilisé par l’application ;
+- `tests/` contient uniquement le code qui vérifie le fonctionnement de l’application ;
+- les fichiers de test ne représentent pas le joueur 2 ;
+- dans une future version en ligne, les deux joueurs enverront leurs choix au même serveur Symfony, qui utilisera le même moteur de combat pour résoudre le round.
+
+### Tests effectués
+
+- Tests de `PlanCombat`.
+- Tests de `EtatEquipeCombat`.
+- Tests unitaires de `CombatService`.
+- Test d’intégration d’un round complet avec focus, split, défense simple et double défense.
+- Vérification de la résolution simultanée.
+- Résultat global : 12 tests et 50 assertions validés.
+- Container Symfony validé avec `lint:container`.
+
+### Résultat
+
+Le moteur peut maintenant recevoir les plans secrets des deux joueurs, calculer toutes les attaques et défenses d’un round, puis mettre à jour simultanément les PV des deux équipes.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
