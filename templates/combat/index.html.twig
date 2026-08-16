@@ -1,0 +1,163 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Combat - StickVerse{% endblock %}
+
+{% block body %}
+    <main class="combat-page">
+        <h1>Combat local</h1>
+
+        {% for message in app.flashes('success') %}
+            <p class="message-success">
+                {{ message }}
+            </p>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <p class="message-error">
+                {{ message }}
+            </p>
+        {% endfor %}
+
+        {% if equipe is null %}
+            <p>Tu dois d’abord créer une équipe.</p>
+
+            <a href="{{ path('app_equipe') }}">
+                Composer mon équipe
+            </a>
+        {% else %}
+            <h2>{{ equipe.nom }}</h2>
+
+            <p>
+                Version locale temporaire :
+                les deux joueurs utilisent la même composition.
+            </p>
+
+            {% set groupes = {
+                'Équipe X': {
+                    'A': equipe.stickmanA,
+                    'B': equipe.stickmanB
+                },
+                'Équipe Y': {
+                    'C': equipe.stickmanC,
+                    'D': equipe.stickmanD
+                }
+            } %}
+
+            <div class="combat-groupes">
+                {% for nomGroupe, slots in groupes %}
+                    <section class="combat-groupe">
+                        <h3>{{ nomGroupe }}</h3>
+
+                        <div class="combat-stickmen">
+                            {% for slot, stickman in slots %}
+                                <article class="combat-stickman">
+                                    <h4>
+                                        Slot {{ slot }} — {{ stickman.nom }}
+                                    </h4>
+
+                                    <img
+                                        src="{{ asset(
+                                            'images/stickmen/' ~ stickman.image
+                                        ) }}"
+                                        alt="{{ stickman.nom }}"
+                                        width="160"
+                                    >
+
+                                    <p>PV : {{ stickman.pv }}</p>
+                                    <p>Attaque : {{ stickman.attaque }}</p>
+                                    <p>Défense : {{ stickman.defense }}</p>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+
+            {% if planForm is defined %}
+                <section class="plan-combat">
+                    <h2>
+                        Choix secret du joueur {{ joueurActuel }}
+                    </h2>
+
+                    {% if joueurActuel == 1 %}
+                        <p>
+                            Le joueur 1 choisit son plan,
+                            puis passe l’écran au joueur 2.
+                        </p>
+                    {% else %}
+                        <p>
+                            Le plan du joueur 1 est caché.
+                            Le joueur 2 peut maintenant choisir.
+                        </p>
+                    {% endif %}
+
+                    {{ form(planForm) }}
+                </section>
+            {% endif %}
+
+            {% if resultats is defined %}
+                <section class="resultats-round">
+                    <h2>Résultats du round</h2>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cible</th>
+                                <th>Attaque</th>
+                                <th>Défense</th>
+                                <th>Dégâts calculés</th>
+                                <th>Dégâts effectifs</th>
+                                <th>Overkill</th>
+                                <th>PV restants</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for cible, resultat in resultats %}
+                                <tr>
+                                    <td>{{ cible }}</td>
+                                    <td>{{ resultat.attaque }}</td>
+                                    <td>{{ resultat.defense }}</td>
+                                    <td>
+                                        {{ resultat.degatsCalcules }}
+                                    </td>
+                                    <td>
+                                        {{ resultat.degatsEffectifs }}
+                                    </td>
+                                    <td>{{ resultat.overkill }}</td>
+                                    <td>{{ resultat.pvRestants }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h3>PV du joueur 1</h3>
+
+                    <div class="pv-joueur">
+                        {% for slot, pv in pvJoueur1 %}
+                            <span>
+                                Slot {{ slot }} : {{ pv }} PV
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    <h3>PV du joueur 2</h3>
+
+                    <div class="pv-joueur">
+                        {% for slot, pv in pvJoueur2 %}
+                            <span>
+                                Slot {{ slot }} : {{ pv }} PV
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    <p>
+                        <a href="{{ path('app_combat') }}">
+                            Préparer un nouveau round
+                        </a>
+                    </p>
+                </section>
+            {% endif %}
+        {% endif %}
+    </main>
+{% endblock %}
