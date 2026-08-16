@@ -1319,7 +1319,106 @@ choix secret du joueur 1
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J31 — Fondation des combats en ligne — 16/08/2026
 
+### Objectif
+
+Créer la première structure persistante permettant de représenter un combat entre deux utilisateurs dans MySQL.
+
+### Travail réalisé
+
+- Création de l’Entity `Combat`.
+- Création de `CombatRepository`.
+- Création de la table `combat`.
+- Ajout des relations :
+  - `joueur1` obligatoire ;
+  - `joueur2` nullable pendant l’attente d’un adversaire ;
+  - `gagnant` nullable tant que le combat n’est pas terminé.
+- Ajout du statut du combat.
+- Ajout du numéro du round.
+- Ajout des dates de création et de dernière modification.
+- Création de constantes pour les statuts :
+  - `en_attente` ;
+  - `en_cours` ;
+  - `termine` ;
+  - `abandonne`.
+- Valeurs par défaut :
+  - statut `en_attente` ;
+  - round numéro 1.
+- Mise à jour automatique de `dateMiseAJour`.
+- Ajout de méthodes permettant de vérifier l’état du combat.
+- Ajout de `passerAuRoundSuivant()`.
+
+### Règles métier ajoutées
+
+- Le joueur 1 est obligatoire dès la création du combat.
+- Le numéro du round doit être supérieur à zéro.
+- Un statut inconnu est refusé.
+- Un utilisateur ne peut pas combattre contre lui-même.
+- Le gagnant doit obligatoirement être l’un des participants.
+
+### Architecture comprise
+
+Le combat local du J30 utilisait la session Symfony.
+
+Cette session convenait pour une démonstration sur un seul navigateur, mais elle ne permet pas à deux ordinateurs différents de partager durablement un même combat.
+
+L’Entity `Combat` devient maintenant la source persistante commune :
+
+Navigateur du joueur 1
+→ Symfony
+→ MySQL
+← Symfony
+← Navigateur du joueur 2.
+
+Les deux joueurs consulteront donc le même combat enregistré en base.
+
+### Choix architectural important
+
+L’Entity `Equipe` n’est pas encore reliée directement au combat.
+
+Une équipe peut être modifiée après le lancement d’un match. Si le combat utilisait directement cette équipe, un joueur pourrait modifier sa composition ou profiter de statistiques modifiées pendant la partie.
+
+Le J32 créera donc des snapshots des quatre Stickmans au lancement du combat. Le match conservera ainsi ses propres statistiques et ses propres PV.
+
+### Différence entre validation et exception PHP
+
+Les contraintes Symfony Validator produisent des messages propres avant l’enregistrement.
+
+Les vérifications dans les méthodes comme `setStatut()` empêchent également le code PHP interne de placer l’objet dans un état invalide.
+
+Ces deux protections sont complémentaires.
+
+### Migration
+
+La migration crée :
+
+- la table `combat` ;
+- trois clés étrangères vers `user` ;
+- les index associés ;
+- les colonnes du statut, du round et des dates.
+
+La méthode `down()` permet de supprimer proprement les contraintes et la table.
+
+### Tests effectués
+
+- Syntaxe PHP valide.
+- Mapping Doctrine valide.
+- Schéma MySQL synchronisé.
+- Valeurs initiales du combat vérifiées.
+- Passage au round suivant vérifié.
+- Statut invalide refusé.
+- Round zéro refusé.
+- Combat contre soi-même refusé.
+- Gagnant extérieur au combat refusé.
+- Container Symfony valide.
+- Suite complète : 18 tests et 67 assertions validés.
+
+### Résultat
+
+StickVerse possède maintenant la fondation persistante d’un combat en ligne.
+
+Le combat peut identifier ses deux joueurs, son état actuel, son round et son éventuel gagnant.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
