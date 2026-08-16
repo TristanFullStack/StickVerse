@@ -1212,7 +1212,110 @@ Le moteur peut maintenant recevoir les plans secrets des deux joueurs, calculer 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J30 — Première interface de combat local — 16/08/2026
 
+### Objectif
+
+Connecter le moteur de combat PHP à une véritable page Symfony et permettre à deux joueurs locaux de saisir successivement leurs plans secrets.
+
+### Travail réalisé
+
+- Création de `CombatController`.
+- Création de la route protégée `/combat`.
+- Accès réservé aux utilisateurs connectés avec `ROLE_USER`.
+- Récupération de l’équipe de l’utilisateur avec `EquipeRepository`.
+- Transmission de l’équipe au template Twig.
+- Affichage des quatre Stickmans :
+  - équipe X : slots A et B ;
+  - équipe Y : slots C et D.
+- Création de `PlanCombatType`.
+- Ajout de quatre listes de choix :
+  - cible attaquée par X ;
+  - cible attaquée par Y ;
+  - cible défendue par X ;
+  - cible défendue par Y.
+- Transformation des données du formulaire en objet `PlanCombat`.
+- Stockage temporaire du plan du joueur 1 dans la session Symfony.
+- Masquage du plan du joueur 1 avant le passage au joueur 2.
+- Création du plan du joueur 2 après sa validation.
+- Création de deux objets `EtatEquipeCombat`.
+- Résolution du round avec `ResolutionRoundService`.
+- Stockage temporaire des résultats dans la session.
+- Redirection vers `/combat/resultat`.
+- Affichage des attaques, défenses, dégâts, overkill et PV restants dans Twig.
+
+### Architecture comprise
+
+La session Symfony conserve temporairement les informations entre deux requêtes HTTP.
+
+Le plan du joueur 1 suit ce trajet :
+
+Navigateur
+→ formulaire Twig
+→ requête POST
+→ CombatController
+→ session Symfony.
+
+Lorsque le joueur 2 valide son plan :
+
+Session du joueur 1 + formulaire du joueur 2
+→ deux objets PlanCombat
+→ deux objets EtatEquipeCombat
+→ ResolutionRoundService
+→ CombatService
+→ résultats du round
+→ session
+→ redirection
+→ Twig.
+
+### Pourquoi utiliser une redirection après le POST ?
+
+Après la résolution, le Controller stocke temporairement le résultat dans la session puis redirige vers une route GET.
+
+Cela évite qu’un rafraîchissement du navigateur renvoie le formulaire et relance accidentellement le même round.
+
+### Erreurs et incompréhensions rencontrées
+
+J’ai d’abord pensé que les notions de joueur 1 et joueur 2 signifiaient que nous commencions le multijoueur en ligne.
+
+J’ai compris qu’il s’agit actuellement d’un combat local sur le même navigateur :
+
+- le joueur 1 saisit son plan ;
+- l’écran est transmis au joueur 2 ;
+- le joueur 2 saisit son plan ;
+- Symfony résout ensuite le round.
+
+Le véritable multijoueur en ligne demandera plus tard de stocker les combats, les participants et les choix de chaque round en base de données.
+
+J’ai également oublié de fermer un bloc conditionnel Twig avec un deuxième `{% endif %}`. Twig exige que chaque `{% if %}` possède sa propre fermeture.
+
+### Limites actuelles
+
+- Les deux joueurs utilisent temporairement la même équipe.
+- Un seul round est joué à la fois.
+- Les PV ne sont pas encore conservés pour le round suivant.
+- Aucun combat n’est enregistré dans MySQL.
+- Il ne s’agit pas encore d’un combat en ligne.
+
+### Tests effectués
+
+- Syntaxe de `CombatController.php` valide.
+- Syntaxe de `PlanCombatType.php` valide.
+- Template Twig valide.
+- Container Symfony valide.
+- 12 tests PHPUnit validés.
+- 50 assertions validées.
+- Test manuel d’un focus contre une double défense.
+- Affichage correct des dégâts et des PV restants.
+
+### Résultat
+
+StickVerse possède maintenant une première boucle de combat locale complète :
+
+choix secret du joueur 1
+→ choix secret du joueur 2
+→ résolution simultanée
+→ affichage du résultat.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
