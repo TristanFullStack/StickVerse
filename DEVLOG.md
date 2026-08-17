@@ -1525,7 +1525,158 @@ Le trajet prévu devient :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J33 — Persistance des choix secrets par round
 
+### Objectif
+
+Préparer le stockage sécurisé dans MySQL des quatre décisions secrètes envoyées par chaque joueur pendant un round.
+
+Le combat en ligne complet n’est pas encore jouable. Cette journée construit sa couche de persistance afin que l’état d’une partie ne dépende plus de la session Symfony ou du navigateur.
+
+### Différence entre PlanCombat et PlanRoundCombat
+
+`App\Model\PlanCombat` reste un objet PHP temporaire utilisé par le moteur de combat.
+
+Il vérifie que les quatre cibles correspondent aux slots A, B, C ou D et permet de reconnaître :
+
+- un focus ;
+- un split ;
+- une double défense.
+
+`App\Entity\PlanRoundCombat` représente la copie persistante d’un plan envoyé pour un round précis.
+
+Elle conserve :
+
+- le combat concerné ;
+- le joueur ayant soumis le plan ;
+- le numéro du round ;
+- la cible d’attaque du groupe X ;
+- la cible d’attaque du groupe Y ;
+- la cible de défense du groupe X ;
+- la cible de défense du groupe Y ;
+- la date de soumission.
+
+### Entity PlanRoundCombat
+
+Création de l’Entity `PlanRoundCombat` et de son Repository.
+
+Son constructeur reçoit :
+
+- un `Combat` ;
+- un `User` ;
+- un `PlanCombat`.
+
+Le constructeur vérifie que le joueur participe réellement au combat, puis copie automatiquement :
+
+- le numéro actuel du round ;
+- les quatre choix validés par `PlanCombat` ;
+- la date de soumission.
+
+Le plan persistant ne possède aucun setter. Une fois soumis, ses choix, son joueur et son numéro de round ne peuvent donc plus être modifiés par le code métier.
+
+La méthode `toPlanCombat()` permet de reconstruire un objet `PlanCombat` compatible avec le moteur de résolution existant.
+
+### Relation avec Combat
+
+Ajout d’une collection `plans` dans l’Entity `Combat`.
+
+La relation `Combat -> plans` utilise :
+
+`cascade: ['persist']`
+
+Doctrine peut ainsi enregistrer les plans ajoutés au combat.
+
+La relation utilise également `orphanRemoval: true`.
+
+La clé étrangère vers `Combat` possède `ON DELETE CASCADE` afin que la suppression d’un combat supprime également ses plans.
+
+La méthode `estParticipant()` a été ajoutée dans `Combat`. Elle centralise la vérification de l’appartenance d’un joueur et pourra être réutilisée par le futur Voter du J34.
+
+### Protection contre les doubles soumissions
+
+Ajout d’une contrainte unique MySQL sur :
+
+`combat + joueur + numeroRound`
+
+Un joueur ne peut donc enregistrer qu’un seul plan pour un round donné.
+
+Cette protection se trouve directement dans la base de données. Elle reste efficace même en cas de double clic ou de deux requêtes reçues presque simultanément.
+
+### Migration Doctrine
+
+Création et exécution de la migration :
+
+`Version20260817195431.php`
+
+La migration crée la table `plan_round_combat` avec :
+
+- ses huit données métier ;
+- une clé étrangère vers `combat` ;
+- une clé étrangère vers `user` ;
+- les index de recherche ;
+- la contrainte unique ;
+- la suppression en cascade liée au combat.
+
+La méthode `down()` supprime les clés étrangères puis la table afin de permettre un retour en arrière propre.
+
+### Erreurs rencontrées
+
+La première version finale de `PlanRoundCombat` a été collée par erreur dans :
+
+`tests/Entity/CombatTest.php`
+
+La commande `git diff` a permis d’identifier précisément l’écrasement du test. Le fichier a été restauré depuis le dernier commit avec :
+
+`git restore -- tests/Entity/CombatTest.php`
+
+Les nouveaux tests ont ensuite échoué parce que le véritable fichier `src/Entity/PlanRoundCombat.php` contenait encore le squelette mutable généré par Symfony Maker.
+
+Les erreurs observées étaient cohérentes :
+
+- propriétés encore égales à `null` ;
+- méthode `toPlanCombat()` absente ;
+- setters encore présents ;
+- joueur extérieur non refusé.
+
+Après avoir placé l’Entity finale dans le bon fichier, les cinq tests ciblés ont réussi.
+
+### Tests et validations
+
+Les tests de `PlanRoundCombat` vérifient :
+
+- la copie des quatre décisions ;
+- l’association automatique avec le combat ;
+- l’acceptation du joueur 2 ;
+- le refus d’un joueur extérieur ;
+- la conservation du numéro du round soumis ;
+- la reconstruction d’un `PlanCombat` ;
+- l’absence de setters de modification.
+
+Résultats finaux :
+
+- 28 tests réussis ;
+- 122 assertions ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schéma MySQL synchronisé avec les Entities.
+
+### Compréhension retenue
+
+Le navigateur ne devra envoyer que les décisions du joueur.
+
+`PlanCombat` valide et représente temporairement ces décisions.
+
+`PlanRoundCombat` les fige dans MySQL pour un joueur et un round précis.
+
+Le trajet prévu devient :
+
+`Navigateur -> Controller -> PlanCombat -> PlanRoundCombat -> Doctrine -> MySQL`
+
+Pour la résolution future :
+
+`MySQL -> PlanRoundCombat -> toPlanCombat() -> ResolutionRoundService`
+
+Le serveur Symfony reste donc l’unique autorité chargée de valider les choix et de calculer le résultat officiel.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

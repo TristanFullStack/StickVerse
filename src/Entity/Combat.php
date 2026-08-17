@@ -6,8 +6,8 @@ use App\Repository\CombatRepository;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use InvalidArgumentException;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -76,6 +76,17 @@ class Combat
     )]
     private Collection $combattants;
 
+    /**
+     * @var Collection<int, PlanRoundCombat>
+     */
+    #[ORM\OneToMany(
+        targetEntity: PlanRoundCombat::class,
+        mappedBy: 'combat',
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
+    private Collection $plans;
+
     public function __construct(User $joueur1)
     {
         $maintenant = new DateTimeImmutable();
@@ -84,6 +95,7 @@ class Combat
         $this->dateCreation = $maintenant;
         $this->dateMiseAJour = $maintenant;
         $this->combattants = new ArrayCollection();
+        $this->plans = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -178,6 +190,12 @@ class Combat
         return $this->dateMiseAJour;
     }
 
+    public function estParticipant(User $joueur): bool
+    {
+        return $joueur === $this->joueur1
+            || $joueur === $this->joueur2;
+    }
+
     public function estEnAttente(): bool
     {
         return $this->statut === self::STATUT_EN_ATTENTE;
@@ -249,11 +267,40 @@ class Combat
     public function removeCombattant(CombattantCombat $combattant): static
     {
         if ($this->combattants->removeElement($combattant)) {
-            // set the owning side to null (unless already changed)
             if ($combattant->getCombat() === $this) {
                 $combattant->setCombat(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PlanRoundCombat>
+     */
+    public function getPlans(): Collection
+    {
+        return $this->plans;
+    }
+
+    public function addPlan(PlanRoundCombat $plan): static
+    {
+        if ($plan->getCombat() !== $this) {
+            throw new InvalidArgumentException(
+                'Le plan doit appartenir à ce combat.'
+            );
+        }
+
+        if (!$this->plans->contains($plan)) {
+            $this->plans->add($plan);
+        }
+
+        return $this;
+    }
+
+    public function removePlan(PlanRoundCombat $plan): static
+    {
+        $this->plans->removeElement($plan);
 
         return $this;
     }
