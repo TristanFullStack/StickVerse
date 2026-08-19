@@ -1680,7 +1680,159 @@ Le serveur Symfony reste donc l’unique autorité chargée de valider les choix
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J34 — Sécurisation des combats avec un Voter
 
+### Objectif
+
+Empêcher un utilisateur d’accéder à un combat en ligne auquel il ne participe pas.
+
+Le combat en ligne complet n’est pas encore jouable. Le Voter prépare la couche d’autorisation qui protégera les futures pages de consultation, de soumission des plans et de résultats.
+
+### Sécurité déjà existante
+
+L’application possédait déjà deux protections générales :
+
+- les routes d’administration sont réservées à `ROLE_ADMIN` dans `security.yaml` ;
+- le contrôleur local de combat est réservé à `ROLE_USER` avec `#[IsGranted('ROLE_USER')]`.
+
+Ces protections vérifient le rôle général de l’utilisateur, mais elles ne permettent pas de savoir si celui-ci participe à un combat précis.
+
+Un utilisateur connecté ne doit pas pouvoir consulter un combat simplement en modifiant son identifiant dans une URL.
+
+### Création de CombatVoter
+
+Création du fichier :
+
+`src/Security/Voter/CombatVoter.php`
+
+Symfony a automatiquement enregistré la classe comme service grâce au tag :
+
+`security.voter`
+
+Le Voter reconnaît deux permissions métier :
+
+- `COMBAT_CONSULTER` pour afficher un combat ;
+- `COMBAT_JOUER` pour envoyer une décision ou un plan.
+
+Pour J34, ces deux permissions sont accordées uniquement si l’utilisateur connecté correspond au joueur 1 ou au joueur 2 du combat.
+
+La méthode `Combat::estParticipant()` créée pendant J33 centralise cette vérification.
+
+### Fonctionnement du Voter
+
+La méthode `supports()` vérifie deux éléments :
+
+- la permission demandée est connue ;
+- la ressource reçue est bien une Entity `Combat`.
+
+Si la permission ou la ressource n’est pas prise en charge, le Voter s’abstient.
+
+La méthode `voteOnAttribute()` vérifie ensuite :
+
+- que le token contient une véritable Entity `User` ;
+- que la ressource est bien un `Combat` ;
+- que l’utilisateur participe au combat.
+
+Le Voter refuse volontairement l’accès dans tous les cas incertains.
+
+Les décisions possibles sont :
+
+- `ACCESS_GRANTED` : accès autorisé ;
+- `ACCESS_DENIED` : accès explicitement refusé ;
+- `ACCESS_ABSTAIN` : le Voter n’est pas concerné par cette demande.
+
+### Séparation entre autorisation et règles métier
+
+Le Voter vérifie qui possède le droit d’agir sur un combat.
+
+Il ne vérifie pas encore :
+
+- si le combat est en cours ;
+- si le round accepte encore des plans ;
+- si le joueur a déjà soumis son plan ;
+- si le délai du round est dépassé.
+
+Ces règles appartiendront aux services métier des prochaines journées.
+
+Cette séparation évite de mélanger la sécurité d’accès avec le fonctionnement interne du moteur de combat.
+
+### Conservation du round local J30
+
+Le Voter n’a pas été ajouté au `CombatController` actuel.
+
+Ce contrôleur utilise encore la session Symfony pour simuler localement les deux plans successifs et ne charge aucune Entity `Combat`.
+
+Le modifier maintenant casserait potentiellement la version locale fonctionnelle sans apporter de véritable combat réseau.
+
+Le Voter sera utilisé lorsqu’une future route recevra une Entity `Combat` persistée.
+
+Le trajet prévu sera :
+
+`Navigateur -> Route -> CombatController -> CombatVoter -> Service métier`
+
+Si l’utilisateur ne participe pas au combat, Symfony renverra une erreur HTTP 403 avant l’exécution de l’action protégée.
+
+### Tests du Voter
+
+Création du fichier :
+
+`tests/Security/Voter/CombatVoterTest.php`
+
+Les tests vérifient :
+
+- que le joueur 1 peut consulter le combat ;
+- que le joueur 2 peut jouer ;
+- qu’un utilisateur extérieur est refusé ;
+- qu’un utilisateur anonyme est refusé ;
+- qu’une permission inconnue produit une abstention ;
+- qu’une ressource différente de `Combat` produit une abstention.
+
+Résultats ciblés :
+
+- 6 tests réussis ;
+- 7 assertions.
+
+### Erreur rencontrée
+
+Le fichier `CombatVoterTest.php` a d’abord été créé avec une taille de zéro octet.
+
+La commande `code` ouvrait correctement le fichier dans VS Code, mais elle n’ajoutait aucun contenu automatiquement.
+
+La commande `php -l` indiquait malgré tout qu’aucune erreur de syntaxe n’était présente, car un fichier vide reste syntaxiquement valide.
+
+PHPUnit indiquait cependant :
+
+`Class CombatVoterTest cannot be found`
+
+La taille du fichier a permis d’identifier le problème :
+
+`(Get-Item .\tests\Security\Voter\CombatVoterTest.php).Length`
+
+Après avoir collé le code dans VS Code et enregistré le fichier avec `Ctrl + S`, les tests ont été correctement détectés.
+
+### Validations finales
+
+Résultats finaux du projet :
+
+- 34 tests réussis ;
+- 129 assertions ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schéma MySQL synchronisé.
+
+### Compréhension retenue
+
+`ROLE_USER` signifie qu’un utilisateur est connecté et possède un rôle général.
+
+Le Voter répond à une question plus précise :
+
+« Cet utilisateur possède-t-il le droit d’effectuer cette action sur ce combat particulier ? »
+
+La sécurité prévue devient :
+
+`Utilisateur connecté -> permission demandée -> CombatVoter -> Combat::estParticipant() -> autorisation ou refus 403`
+
+Cette protection restera côté serveur et ne pourra pas être contournée en modifiant le HTML, JavaScript ou l’URL.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
