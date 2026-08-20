@@ -1836,7 +1836,237 @@ Cette protection restera côté serveur et ne pourra pas être contournée en mo
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J35 — Résolution atomique d’un round en ligne
 
+### Objectif
+
+Empêcher qu’un même round soit calculé plusieurs fois lorsque deux requêtes arrivent presque simultanément.
+
+Cette protection est indispensable pour éviter :
+
+- des dégâts appliqués plusieurs fois ;
+- une double modification des PV ;
+- plusieurs changements de numéro de round ;
+- un état différent entre les deux joueurs ;
+- des résultats incohérents en cas de double clic ou de requêtes concurrentes.
+
+### Verrou pessimiste
+
+Ajout de la méthode suivante dans `CombatRepository` :
+
+`trouverAvecVerrouEcriture()`
+
+Elle charge le combat avec le verrou Doctrine :
+
+`LockMode::PESSIMISTIC_WRITE`
+
+Le verrou est appliqué sur la ligne du combat dans MySQL.
+
+Pendant qu’une requête résout le round, une autre requête souhaitant verrouiller le même combat doit attendre la fin de la première transaction.
+
+Une fois le verrou obtenu, la deuxième requête relit l’état mis à jour du combat.
+
+Elle constate alors que le numéro de round a déjà changé et ne peut pas recalculer les anciens plans.
+
+### Transaction Doctrine
+
+Création du service :
+
+`ResolutionRoundCombatEnLigneService`
+
+La résolution complète est exécutée dans :
+
+`EntityManagerInterface::wrapInTransaction()`
+
+La transaction contient :
+
+1. le verrouillage du combat ;
+2. la vérification de son statut ;
+3. la récupération des plans du round courant ;
+4. la récupération des huit snapshots ;
+5. la reconstruction des deux états d’équipe ;
+6. le calcul simultané du round ;
+7. la mise à jour des PV des snapshots ;
+8. le passage au round suivant ;
+9. le `flush()` automatique de Doctrine ;
+10. le commit de la transaction.
+
+Si une exception survient avant la fin, Doctrine annule la transaction.
+
+Les PV et le numéro de round ne peuvent donc pas être enregistrés partiellement.
+
+### Requêtes métier des repositories
+
+Ajout de méthodes spécifiques dans les repositories.
+
+`PlanRoundCombatRepository::trouverPourCombatEtRound()`
+
+Cette méthode récupère uniquement les plans appartenant au combat et au numéro de round demandés.
+
+`CombattantCombatRepository::trouverPourCombatEtJoueur()`
+
+Cette méthode récupère les quatre snapshots d’un participant, triés par slot.
+
+Ces requêtes évitent de disperser la logique Doctrine dans le service métier.
+
+### Reconstruction depuis les snapshots
+
+Création du service :
+
+`CreationEtatEquipeCombatDepuisSnapshotsService`
+
+Le moteur local utilisait encore une `Equipe` contenant les Entities `Stickman`.
+
+Le moteur en ligne doit utiliser les statistiques figées dans les `CombattantCombat`.
+
+Le service effectue donc l’adaptation suivante :
+
+`CombattantCombat -> Stickman temporaire -> Equipe temporaire -> EtatEquipeCombat`
+
+Les Stickmans temporaires :
+
+- utilisent les PV maximum des snapshots ;
+- utilisent l’attaque du snapshot ;
+- utilisent la défense du snapshot ;
+- ne sont jamais persistés dans MySQL ;
+- servent uniquement à conserver la compatibilité avec le moteur existant.
+
+Les PV actuels sont ensuite restaurés dans `EtatEquipeCombat`.
+
+Le service vérifie également :
+
+- que les quatre slots A, B, C et D existent ;
+- qu’un slot n’apparaît pas plusieurs fois ;
+- que tous les snapshots appartiennent au même combat ;
+- que tous les snapshots appartiennent au même joueur ;
+- que le joueur participe réellement au combat.
+
+### Résolution conditionnelle
+
+La méthode principale est :
+
+`resoudreSiPret()`
+
+Si un seul plan existe, elle retourne `null`.
+
+Cela signifie que le premier joueur a joué mais que son adversaire n’a pas encore soumis son plan.
+
+Aucun dégât n’est calculé et le numéro du round ne change pas.
+
+Lorsque les deux plans existent :
+
+- chaque plan est associé à son propriétaire ;
+- les choix secrets sont transformés en `PlanCombat` ;
+- le moteur résout les attaques et défenses simultanément ;
+- les nouveaux PV sont reportés dans les snapshots ;
+- le combat passe au round suivant.
+
+### Protection contre la double résolution
+
+Après la première résolution, le combat passe par exemple du round 1 au round 2.
+
+Une deuxième requête en attente obtient ensuite le verrou.
+
+Elle recherche alors les plans du round 2 et ne trouve pas les anciens plans du round 1.
+
+La méthode retourne `null` et aucun dégât supplémentaire n’est appliqué.
+
+Le numéro de round devient ainsi le marqueur persistant indiquant que le round précédent a déjà été traité.
+
+### Secret des plans
+
+Les plans restent enregistrés séparément dans MySQL.
+
+Le navigateur ne reçoit pas le plan adverse avant la résolution.
+
+Seul le serveur charge les deux plans dans la transaction lorsque les deux joueurs ont soumis leurs choix.
+
+Le serveur Symfony reste donc autoritaire sur :
+
+- les participants ;
+- les plans utilisés ;
+- les statistiques ;
+- les PV ;
+- les dégâts ;
+- le numéro du round.
+
+### Trajet des données
+
+Le trajet préparé pour la version en ligne devient :
+
+`Contrôleur futur`
+
+`-> ResolutionRoundCombatEnLigneService`
+
+`-> transaction Doctrine`
+
+`-> verrou du Combat`
+
+`-> PlanRoundCombatRepository`
+
+`-> CombattantCombatRepository`
+
+`-> CreationEtatEquipeCombatDepuisSnapshotsService`
+
+`-> ResolutionRoundService`
+
+`-> CombatService`
+
+`-> mise à jour des CombattantCombat`
+
+`-> passage au round suivant`
+
+`-> flush et commit MySQL`
+
+### Tests
+
+Création de tests pour vérifier :
+
+- la reconstruction d’un état depuis quatre snapshots ;
+- la copie des statistiques figées ;
+- la restauration des PV actuels ;
+- le refus d’un slot manquant ;
+- le refus d’un slot en double ;
+- le refus de mélanger deux joueurs ;
+- l’attente du deuxième plan ;
+- la résolution lorsque les deux plans existent ;
+- l’écriture des nouveaux PV ;
+- le passage au round suivant ;
+- l’impossibilité de résoudre deux fois le même round ;
+- le refus d’un combat qui n’est pas en cours.
+
+Une notice PHPUnit a été corrigée en remplaçant `createMock()` par `createStub()` lorsque le double de test servait uniquement à retourner des valeurs.
+
+Résultats finaux :
+
+- 41 tests réussis ;
+- 186 assertions ;
+- aucune notice PHPUnit ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schéma MySQL synchronisé.
+
+### Limites actuelles
+
+Le service atomique n’est pas encore relié à une interface réseau ou à un contrôleur en ligne.
+
+Le véritable combat entre deux navigateurs n’est donc pas encore jouable.
+
+La version locale J30 utilisant la session Symfony reste intacte et fonctionnelle.
+
+J36 devra vérifier spécifiquement la conservation des PV sur plusieurs rounds successifs.
+
+### Compréhension retenue
+
+Le verrou protège le combat contre plusieurs résolutions concurrentes.
+
+La transaction garantit que toutes les modifications sont enregistrées ensemble ou qu’aucune ne l’est.
+
+Les repositories lisent les données persistées.
+
+Les services transforment et appliquent les règles métier.
+
+Le moteur calcule les résultats sans faire confiance au navigateur.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

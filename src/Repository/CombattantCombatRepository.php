@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Combat;
 use App\Entity\CombattantCombat;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +18,21 @@ class CombattantCombatRepository extends ServiceEntityRepository
         parent::__construct($registry, CombattantCombat::class);
     }
 
-    //    /**
-    //     * @return CombattantCombat[] Returns an array of CombattantCombat objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?CombattantCombat
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return list<CombattantCombat>
+     */
+    public function trouverPourCombatEtJoueur(
+        Combat $combat,
+        User $joueur,
+    ): array {
+        return $this->findBy(
+            [
+                'combat' => $combat,
+                'joueur' => $joueur,
+            ],
+            [
+                'slot' => 'ASC',
+            ],
+        );
+    }
 }

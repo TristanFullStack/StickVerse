@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Combat;
 use App\Entity\PlanRoundCombat;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,20 @@ class PlanRoundCombatRepository extends ServiceEntityRepository
         parent::__construct($registry, PlanRoundCombat::class);
     }
 
-    //    /**
-    //     * @return PlanRoundCombat[] Returns an array of PlanRoundCombat objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?PlanRoundCombat
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return list<PlanRoundCombat>
+     */
+    public function trouverPourCombatEtRound(
+        Combat $combat,
+        int $numeroRound,
+    ): array {
+        return $this->createQueryBuilder('plan')
+            ->andWhere('plan.combat = :combat')
+            ->andWhere('plan.numeroRound = :numeroRound')
+            ->setParameter('combat', $combat)
+            ->setParameter('numeroRound', $numeroRound)
+            ->orderBy('plan.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
