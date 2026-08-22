@@ -1,0 +1,617 @@
+<?php
+
+namespace App\Tests\Controller;
+
+use App\Entity\Combat;
+use App\Entity\CombattantCombat;
+use App\Entity\Equipe;
+use App\Entity\Stickman;
+use App\Entity\User;
+use App\Repository\CombatRepository;
+use App\Repository\CombattantCombatRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
+
+final class SalonCombatEnLigneControllerTest extends WebTestCase
+{
+    private KernelBrowser $client;
+    private EntityManagerInterface $entityManager;
+    private CombatRepository $combatRepository;
+    private CombattantCombatRepository $combattantRepository;
+
+    protected function setUp(): void
+    {
+        $this->client = static::createClient();
+        $this->client->disableReboot();
+
+        $entityManager = static::getContainer()->get(
+            EntityManagerInterface::class
+        );
+
+        self::assertInstanceOf(
+            EntityManagerInterface::class,
+            $entityManager,
+        );
+
+        $combatRepository = $entityManager->getRepository(
+            Combat::class
+        );
+
+        $combattantRepository = $entityManager->getRepository(
+            CombattantCombat::class
+        );
+
+        self::assertInstanceOf(
+            CombatRepository::class,
+            $combatRepository,
+        );
+
+        self::assertInstanceOf(
+            CombattantCombatRepository::class,
+            $combattantRepository,
+        );
+
+        $this->entityManager = $entityManager;
+        $this->combatRepository = $combatRepository;
+        $this->combattantRepository =
+            $combattantRepository;
+
+        $connexion = $this->entityManager->getConnection();
+        $nomBase = $connexion->fetchOne('SELECT DATABASE()');
+
+        if (
+            !is_string($nomBase)
+            || !str_ends_with($nomBase, '_test')
+        ) {
+            throw new LogicException(
+                'Le test HTTP doit utiliser une base terminant par "_test".'
+            );
+        }
+
+        $connexion->beginTransaction();
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset($this->entityManager)) {
+            $connexion = $this->entityManager->getConnection();
+
+            if ($connexion->isTransactionActive()) {
+                $connexion->rollBack();
+            }
+
+            $this->entityManager->clear();
+        }
+
+        parent::tearDown();
+    }
+
+    public function testCreePuisRejointUnCombatDepuisLeSalon(): void
+    {
+        [
+            $joueur1,
+            $joueur2,
+            $equipeJoueur1,
+            $equipeJoueur2,
+        ] = $this->creerDonneesDuSalon();
+
+        $joueur1Id = $joueur1->getId();
+        $joueur2Id = $joueur2->getId();
+        $equipeJoueur1Id = $equipeJoueur1->getId();
+        $equipeJoueur2Id = $equipeJoueur2->getId();
+
+        self::assertNotNull($joueur1Id);
+        self::assertNotNull($joueur2Id);
+        self::assertNotNull($equipeJoueur1Id);
+        self::assertNotNull($equipeJoueur2Id);
+
+        /*
+         * Le joueur 1 consulte le salon.
+         */
+        $this->client->loginUser($joueur1);
+
+        $this->client->request(
+            'GET',
+            '/salon-combat-en-ligne',
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $salonJoueur1 = $this->lireReponseJson();
+
+        self::assertNull(
+            $salonJoueur1['combatActifId']
+        );
+
+        self::assertCount(
+            1,
+            $salonJoueur1['equipes'],
+        );
+
+        self::assertSame(
+            $equipeJoueur1Id,
+            $salonJoueur1['equipes'][0]['id'],
+        );
+
+        self::assertCount(
+            0,
+            $salonJoueur1['combatsDisponibles'],
+        );
+
+        self::assertIsArray(
+            $salonJoueur1['csrf']
+        );
+
+        self::assertIsString(
+            $salonJoueur1['csrf']['creer']
+        );
+
+        /*
+         * Le joueur 1 crée un combat avec son équipe.
+         */
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/creer',
+            [
+                'equipeId' => $equipeJoueur1Id,
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' =>
+                    $salonJoueur1['csrf']['creer'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(
+            Response::HTTP_CREATED
+        );
+
+        $creation = $this->lireReponseJson();
+
+        self::assertSame(
+            'combat_cree',
+            $creation['etat'],
+        );
+
+        self::assertSame(
+            Combat::STATUT_EN_ATTENTE,
+            $creation['statut'],
+        );
+
+        self::assertSame(
+            1,
+            $creation['numeroRound'],
+        );
+
+        self::assertIsInt(
+            $creation['combatId']
+        );
+
+        $combatId = $creation['combatId'];
+
+        $combatCree = $this->combatRepository->find(
+            $combatId
+        );
+
+        self::assertInstanceOf(
+            Combat::class,
+            $combatCree,
+        );
+
+        self::assertSame(
+            $joueur1Id,
+            $combatCree->getJoueur1()->getId(),
+        );
+
+        self::assertNull(
+            $combatCree->getJoueur2()
+        );
+
+        self::assertCount(
+            4,
+            $combatCree->getCombattants(),
+        );
+
+        /*
+         * Le joueur 2 consulte ensuite le salon.
+         */
+        $this->client->loginUser($joueur2);
+
+        $this->client->request(
+            'GET',
+            '/salon-combat-en-ligne',
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $salonJoueur2 = $this->lireReponseJson();
+
+        self::assertNull(
+            $salonJoueur2['combatActifId']
+        );
+
+        self::assertCount(
+            1,
+            $salonJoueur2['equipes'],
+        );
+
+        self::assertSame(
+            $equipeJoueur2Id,
+            $salonJoueur2['equipes'][0]['id'],
+        );
+
+        self::assertCount(
+            1,
+            $salonJoueur2['combatsDisponibles'],
+        );
+
+        self::assertSame(
+            $combatId,
+            $salonJoueur2
+                ['combatsDisponibles']
+                [0]
+                ['id'],
+        );
+
+        self::assertSame(
+            $joueur1Id,
+            $salonJoueur2
+                ['combatsDisponibles']
+                [0]
+                ['joueur1Id'],
+        );
+
+        self::assertSame(
+            Combat::STATUT_EN_ATTENTE,
+            $salonJoueur2
+                ['combatsDisponibles']
+                [0]
+                ['statut'],
+        );
+
+        self::assertIsArray(
+            $salonJoueur2['csrf']
+        );
+
+        self::assertIsString(
+            $salonJoueur2['csrf']['rejoindre']
+        );
+
+        /*
+         * Le joueur 2 rejoint le combat.
+         */
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/'
+            .$combatId
+            .'/rejoindre',
+            [
+                'equipeId' => $equipeJoueur2Id,
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' =>
+                    $salonJoueur2['csrf']['rejoindre'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(
+            Response::HTTP_OK
+        );
+
+        $jonction = $this->lireReponseJson();
+
+        self::assertSame(
+            'combat_rejoint',
+            $jonction['etat'],
+        );
+
+        self::assertSame(
+            $combatId,
+            $jonction['combatId'],
+        );
+
+        self::assertSame(
+            Combat::STATUT_EN_COURS,
+            $jonction['statut'],
+        );
+
+        self::assertSame(
+            1,
+            $jonction['numeroRound'],
+        );
+
+        /*
+         * On vide Doctrine afin de relire l’état final
+         * directement depuis MySQL.
+         */
+        $this->entityManager->clear();
+
+        $combatEnCours = $this->combatRepository->find(
+            $combatId
+        );
+
+        self::assertInstanceOf(
+            Combat::class,
+            $combatEnCours,
+        );
+
+        self::assertSame(
+            Combat::STATUT_EN_COURS,
+            $combatEnCours->getStatut(),
+        );
+
+        self::assertSame(
+            1,
+            $combatEnCours->getNumeroRound(),
+        );
+
+        self::assertSame(
+            $joueur1Id,
+            $combatEnCours->getJoueur1()->getId(),
+        );
+
+        self::assertSame(
+            $joueur2Id,
+            $combatEnCours->getJoueur2()?->getId(),
+        );
+
+        self::assertCount(
+            8,
+            $combatEnCours->getCombattants(),
+        );
+
+        $joueur1Final = $combatEnCours->getJoueur1();
+        $joueur2Final = $combatEnCours->getJoueur2();
+
+        self::assertInstanceOf(
+            User::class,
+            $joueur2Final,
+        );
+
+        self::assertSame(
+            ['A', 'B', 'C', 'D'],
+            $this->lireSlots(
+                $combatEnCours,
+                $joueur1Final,
+            ),
+        );
+
+        self::assertSame(
+            ['A', 'B', 'C', 'D'],
+            $this->lireSlots(
+                $combatEnCours,
+                $joueur2Final,
+            ),
+        );
+
+        /*
+         * Après la jonction, le combat n’est plus disponible
+         * dans le salon.
+         */
+        $combatsEncoreDisponibles =
+            $this->combatRepository
+                ->trouverDisponiblesPour(
+                    $joueur2Final
+                );
+
+        self::assertCount(
+            0,
+            $combatsEncoreDisponibles,
+        );
+
+        /*
+         * Le joueur 2 voit maintenant son combat actif.
+         */
+        $this->client->loginUser($joueur2Final);
+
+        $this->client->request(
+            'GET',
+            '/salon-combat-en-ligne',
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $salonApresJonction =
+            $this->lireReponseJson();
+
+        self::assertSame(
+            $combatId,
+            $salonApresJonction['combatActifId'],
+        );
+
+        self::assertCount(
+            0,
+            $salonApresJonction
+                ['combatsDisponibles'],
+        );
+    }
+
+    /**
+     * @return array{User, User, Equipe, Equipe}
+     */
+    private function creerDonneesDuSalon(): array
+    {
+        $suffixe = bin2hex(random_bytes(6));
+
+        $joueur1 = (new User())
+            ->setEmail(
+                'joueur1-salon-j39-'
+                .$suffixe
+                .'@example.com'
+            )
+            ->setPassword('mot-de-passe-test');
+
+        $joueur2 = (new User())
+            ->setEmail(
+                'joueur2-salon-j39-'
+                .$suffixe
+                .'@example.com'
+            )
+            ->setPassword('mot-de-passe-test');
+
+        $this->entityManager->persist($joueur1);
+        $this->entityManager->persist($joueur2);
+
+        $stickmenJoueur1 = [];
+        $stickmenJoueur2 = [];
+
+        foreach (['A', 'B', 'C', 'D'] as $slot) {
+            $stickmanJoueur1 = $this->creerStickman(
+                'J1-'.$slot,
+                $suffixe,
+            );
+
+            $stickmanJoueur2 = $this->creerStickman(
+                'J2-'.$slot,
+                $suffixe,
+            );
+
+            $stickmenJoueur1[$slot] =
+                $stickmanJoueur1;
+
+            $stickmenJoueur2[$slot] =
+                $stickmanJoueur2;
+
+            $this->entityManager->persist(
+                $stickmanJoueur1
+            );
+
+            $this->entityManager->persist(
+                $stickmanJoueur2
+            );
+        }
+
+        $this->entityManager->flush();
+
+        $equipeJoueur1 = $this->creerEquipe(
+            'Équipe salon joueur 1',
+            $joueur1,
+            $stickmenJoueur1,
+        );
+
+        $equipeJoueur2 = $this->creerEquipe(
+            'Équipe salon joueur 2',
+            $joueur2,
+            $stickmenJoueur2,
+        );
+
+        $this->entityManager->persist(
+            $equipeJoueur1
+        );
+
+        $this->entityManager->persist(
+            $equipeJoueur2
+        );
+
+        $this->entityManager->flush();
+
+        return [
+            $joueur1,
+            $joueur2,
+            $equipeJoueur1,
+            $equipeJoueur2,
+        ];
+    }
+
+    private function creerStickman(
+        string $nomCourt,
+        string $suffixe,
+    ): Stickman {
+        $slug = strtolower($nomCourt);
+
+        return (new Stickman())
+            ->setNom(
+                'Stickman salon '.$nomCourt
+            )
+            ->setSlug(
+                'stickman-salon-j39-'
+                .$slug
+                .'-'
+                .$suffixe
+            )
+            ->setDescription(
+                'Stickman utilisé par le test HTTP du salon.'
+            )
+            ->setImage(
+                'stickman-salon-j39-'
+                .$slug
+                .'.png'
+            )
+            ->setRarete(1)
+            ->setPv(10)
+            ->setAttaque(2)
+            ->setDefense(1)
+            ->setStatutActif(true);
+    }
+
+    /**
+     * @param array<string, Stickman> $stickmen
+     */
+    private function creerEquipe(
+        string $nom,
+        User $joueur,
+        array $stickmen,
+    ): Equipe {
+        return (new Equipe())
+            ->setNom($nom)
+            ->setUtilisateur($joueur)
+            ->setStickmanA($stickmen['A'])
+            ->setStickmanB($stickmen['B'])
+            ->setStickmanC($stickmen['C'])
+            ->setStickmanD($stickmen['D']);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function lireSlots(
+        Combat $combat,
+        User $joueur,
+    ): array {
+        $combattants = $this->combattantRepository
+            ->trouverPourCombatEtJoueur(
+                $combat,
+                $joueur,
+            );
+
+        $slots = array_map(
+            static fn (
+                CombattantCombat $combattant,
+            ): string => $combattant->getSlot(),
+            $combattants,
+        );
+
+        sort($slots);
+
+        return $slots;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function lireReponseJson(): array
+    {
+        $contenu = $this->client
+            ->getResponse()
+            ->getContent();
+
+        if (!is_string($contenu)) {
+            self::fail(
+                'La réponse HTTP ne contient pas de JSON.'
+            );
+        }
+
+        $donnees = json_decode(
+            $contenu,
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        self::assertIsArray($donnees);
+
+        return $donnees;
+    }
+}
