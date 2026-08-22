@@ -12,6 +12,7 @@ use App\Repository\CombattantCombatRepository;
 use App\Repository\PlanRoundCombatRepository;
 use App\Service\CombatService;
 use App\Service\CreationEtatEquipeCombatDepuisSnapshotsService;
+use App\Service\DeterminationFinCombatService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\ResolutionRoundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -298,6 +299,17 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
                 ->method('getDefenseSnapshot')
                 ->willReturn(0);
 
+            /*
+             * Les mocks PHPUnit retournent false par défaut
+             * pour une méthode booléenne.
+             *
+             * Cette valeur doit donc être configurée pour que
+             * le détecteur de fin voie correctement les survivants.
+             */
+            $combattant
+                ->method('estVivant')
+                ->willReturn($pvAttendu > 0);
+
             $combattant
                 ->expects(self::once())
                 ->method('setPvActuels')
@@ -344,6 +356,7 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
             new ResolutionRoundService(
                 new CombatService()
             ),
+            new DeterminationFinCombatService(),
         );
     }
 }

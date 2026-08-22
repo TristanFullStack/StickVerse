@@ -13,6 +13,7 @@ use App\Repository\CombattantCombatRepository;
 use App\Repository\PlanRoundCombatRepository;
 use App\Service\CombatService;
 use App\Service\CreationEtatEquipeCombatDepuisSnapshotsService;
+use App\Service\DeterminationFinCombatService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\ResolutionRoundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,11 +72,11 @@ final class PersistancePvMySqlTest extends KernelTestCase
         $this->combattantRepository = $combattantRepository;
 
         /*
-        * Le service est construit manuellement parce qu’il n’est
-        * pas encore utilisé par un contrôleur de production.
-        *
-        * Ses dépendances Doctrine sont cependant bien réelles.
-        */
+         * Le service est construit manuellement parce qu’il n’est
+         * pas encore utilisé par un contrôleur de production.
+         *
+         * Ses dépendances Doctrine sont cependant bien réelles.
+         */
         $this->resolutionService =
             new ResolutionRoundCombatEnLigneService(
                 $entityManager,
@@ -86,6 +87,7 @@ final class PersistancePvMySqlTest extends KernelTestCase
                 new ResolutionRoundService(
                     new CombatService()
                 ),
+                new DeterminationFinCombatService(),
             );
 
         $connexion = $this->entityManager->getConnection();
@@ -102,7 +104,6 @@ final class PersistancePvMySqlTest extends KernelTestCase
 
         $connexion->beginTransaction();
     }
-
 
     protected function tearDown(): void
     {

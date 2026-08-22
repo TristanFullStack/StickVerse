@@ -12,6 +12,7 @@ use App\Repository\CombattantCombatRepository;
 use App\Repository\PlanRoundCombatRepository;
 use App\Service\CombatService;
 use App\Service\CreationEtatEquipeCombatDepuisSnapshotsService;
+use App\Service\DeterminationFinCombatService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\ResolutionRoundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -144,6 +145,7 @@ final class PersistancePvEntreRoundsTest extends TestCase
             new ResolutionRoundService(
                 new CombatService()
             ),
+            new DeterminationFinCombatService(),
         );
 
         /*
@@ -286,6 +288,21 @@ final class PersistancePvEntreRoundsTest extends TestCase
             $combattant
                 ->method('getDefenseSnapshot')
                 ->willReturn(0);
+
+            /*
+             * Le détecteur doit consulter les PV ayant été
+             * mis à jour par setPvActuels().
+             */
+            $combattant
+                ->method('estVivant')
+                ->willReturnCallback(
+                    static function () use (
+                        &$pvActuels,
+                        $slot,
+                    ): bool {
+                        return $pvActuels[$slot] > 0;
+                    }
+                );
 
             $combattant
                 ->expects(self::exactly(2))

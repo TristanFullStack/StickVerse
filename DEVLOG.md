@@ -1,4 +1,4 @@
-# Défi StickVerse
+﻿# Défi StickVerse
 
 ## J1
 - Installation de PHP, Composer et Symfony CLI.
@@ -2263,6 +2263,170 @@ La version locale J30 reste intacte.
 J37 pourra maintenant traiter la détection de fin de partie : victoire, élimination simultanée et futurs cas d’abandon.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+@'
+
+## J37 — Gérer les fins de combat
+
+### Objectif
+
+Cette étape ajoute la détection automatique de la fin d’un combat en ligne ainsi que la possibilité pour un joueur d’abandonner.
+
+Le serveur peut désormais déterminer de manière autoritaire :
+
+- si le joueur 1 a gagné ;
+- si le joueur 2 a gagné ;
+- si les deux équipes sont éliminées simultanément ;
+- si le combat est bloqué dans une égalité mathématique ;
+- si un participant abandonne.
+
+### Détermination automatique de la fin
+
+Le nouveau service utilisé est :
+
+`DeterminationFinCombatService`
+
+Il analyse les snapshots des deux équipes après l’application des dégâts du round.
+
+Un joueur gagne lorsque son équipe possède encore au moins un combattant vivant et que l’équipe adverse n’en possède plus aucun.
+
+Le combat est déclaré nul lorsque :
+
+- les deux équipes sont éliminées simultanément ;
+- ou chaque équipe ne possède plus qu’un seul combattant vivant et qu’aucun des deux ne peut infliger de dégâts à l’autre.
+
+Dans le cas d’une égalité :
+
+- le statut du combat devient `termine` ;
+- le gagnant reste `null`.
+
+Dans le cas d’une victoire normale :
+
+- le statut du combat devient `termine` ;
+- le participant encore vivant devient le gagnant.
+
+### Intégration à la résolution atomique
+
+`ResolutionRoundCombatEnLigneService` utilise maintenant `DeterminationFinCombatService` après avoir reporté les nouveaux PV dans les snapshots.
+
+Le déroulement devient :
+
+`verrouillage du combat`
+
+`-> chargement des plans`
+
+`-> chargement des snapshots`
+
+`-> résolution simultanée du round`
+
+`-> mise à jour des PV`
+
+`-> détermination de la fin du combat`
+
+`-> passage éventuel au round suivant`
+
+Le numéro du round augmente uniquement lorsque le combat peut continuer.
+
+Lorsqu’une victoire ou une égalité termine le combat, le numéro du round reste celui du dernier round joué.
+
+### Abandon d’un combat
+
+Le nouveau service utilisé est :
+
+`AbandonCombatService`
+
+L’abandon est exécuté dans une transaction Doctrine et utilise le même verrou d’écriture que la résolution des rounds.
+
+Le service vérifie que :
+
+- le combat existe ;
+- le combat est encore en cours ;
+- les deux joueurs sont présents ;
+- l’utilisateur qui abandonne participe réellement au combat.
+
+Lorsque le joueur 1 abandonne, le joueur 2 devient gagnant.
+
+Lorsque le joueur 2 abandonne, le joueur 1 devient gagnant.
+
+Le statut du combat devient alors :
+
+`abandonne`
+
+Le numéro du round n’est pas modifié.
+
+### Protection contre les requêtes concurrentes
+
+Le verrou d’écriture empêche une résolution de round et un abandon de modifier simultanément le même combat.
+
+La transaction garantit que le statut, le gagnant, les PV et le numéro du round restent cohérents.
+
+Si une opération échoue, l’ensemble de ses modifications est annulé.
+
+### Tests unitaires
+
+Les tests vérifient notamment :
+
+- la victoire du joueur 1 ;
+- la victoire du joueur 2 ;
+- l’élimination simultanée des deux équipes ;
+- l’égalité mathématique entre les derniers combattants ;
+- la poursuite du combat lorsqu’une attaque peut encore infliger des dégâts ;
+- l’intégration de la détection de victoire à la résolution en ligne ;
+- l’absence de passage au round suivant lorsque le combat se termine ;
+- l’abandon du joueur 1 ;
+- l’abandon du joueur 2 ;
+- le refus d’un abandon effectué par un joueur extérieur ;
+- le refus d’abandonner un combat déjà terminé ;
+- le refus d’un combat introuvable.
+
+### Tests d’intégration MySQL
+
+Un test d’intégration vérifie réellement l’abandon avec Doctrine et MySQL.
+
+Après l’abandon :
+
+- l’EntityManager est vidé ;
+- le combat est relu depuis MySQL ;
+- le statut `abandonne` est retrouvé ;
+- le gagnant correspond à l’adversaire ;
+- le numéro du round est resté inchangé.
+
+La base de test est protégée par une vérification imposant que son nom se termine par `_test`.
+
+Toutes les données créées sont annulées à la fin du test grâce à une transaction de test.
+
+### Résultats finaux
+
+- 55 tests réussis ;
+- 305 assertions ;
+- aucune notice PHPUnit ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schéma de développement synchronisé ;
+- schéma de test synchronisé ;
+- aucune migration nécessaire.
+
+### Limites actuelles
+
+Les services de victoire et d’abandon ne sont pas encore reliés à un contrôleur réseau.
+
+Un joueur ne peut donc pas encore déclencher l’abandon depuis l’interface web.
+
+L’affichage du gagnant, de l’égalité ou de l’abandon devra également être ajouté à la future interface du combat en ligne.
+
+La version locale utilisant la session Symfony reste intacte.
+
+### Compréhension retenue
+
+Les PV persistés permettent au serveur de déterminer l’état réel des équipes.
+
+La fin du combat est décidée uniquement par le serveur après la résolution du round.
+
+Un combat terminé ne passe pas artificiellement au round suivant.
+
+L’abandon est une modification métier sensible qui doit être protégée par une transaction et un verrou d’écriture.
+
+Le gagnant peut être `null` uniquement lorsqu’un combat terminé se conclut par une égalité.
 
 
 

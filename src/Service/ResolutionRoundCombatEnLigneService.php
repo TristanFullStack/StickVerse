@@ -21,6 +21,7 @@ final class ResolutionRoundCombatEnLigneService
         private readonly CombattantCombatRepository $combattantRepository,
         private readonly CreationEtatEquipeCombatDepuisSnapshotsService $creationEtatEquipeService,
         private readonly ResolutionRoundService $resolutionRoundService,
+        private readonly DeterminationFinCombatService $determinationFinCombatService,
     ) {
     }
 
@@ -161,10 +162,30 @@ final class ResolutionRoundCombatEnLigneService
                 );
 
                 /*
-                 * Le changement de numéro est le marqueur persistant
-                 * indiquant que ce round a déjà été résolu.
+                 * Les nouveaux PV sont maintenant présents
+                 * dans les snapshots persistants.
+                 *
+                 * Le service peut donc déterminer si le combat
+                 * possède un gagnant ou se termine par un match nul.
                  */
-                $combat->passerAuRoundSuivant();
+                $combatTermine =
+                    $this->determinationFinCombatService
+                        ->terminerSiNecessaire(
+                            combat: $combat,
+                            combattantsJoueur1: $combattantsJoueur1,
+                            combattantsJoueur2: $combattantsJoueur2,
+                        );
+
+                /*
+                 * Un combat terminé conserve le numéro du dernier
+                 * round réellement joué.
+                 *
+                 * Si le combat continue, le changement de numéro
+                 * empêche la double résolution du round courant.
+                 */
+                if (!$combatTermine) {
+                    $combat->passerAuRoundSuivant();
+                }
 
                 return $resultats;
             }
