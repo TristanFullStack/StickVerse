@@ -2264,7 +2264,6 @@ J37 pourra maintenant traiter la détection de fin de partie : victoire, élimin
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@'
 
 ## J37 — Gérer les fins de combat
 
@@ -2432,6 +2431,163 @@ Le gagnant peut être `null` uniquement lorsqu’un combat terminé se conclut p
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+## J38 — Exposer le combat en ligne via HTTP
+
+### Objectif
+
+J38 relie les services métier du combat en ligne à des routes HTTP sécurisées, sans modifier le prototype local disponible sur `/combat`.
+
+Le navigateur peut maintenant :
+
+- consulter l’état d’un combat ;
+- soumettre un plan secret ;
+- attendre le plan adverse ;
+- déclencher la résolution lorsque les deux plans existent ;
+- abandonner un combat.
+
+### Routes HTTP
+
+Le nouveau `CombatEnLigneController` expose :
+
+- `GET /combat-en-ligne/{id}` ;
+- `POST /combat-en-ligne/{id}/plan` ;
+- `POST /combat-en-ligne/{id}/abandon`.
+
+La route GET retourne le statut, le numéro du round, le gagnant éventuel, l’état de préparation des joueurs et les jetons CSRF.
+
+Elle ne retourne jamais le contenu des plans.
+
+### Soumission transactionnelle
+
+Le nouveau `SoumissionPlanCombatService` :
+
+- verrouille le combat en écriture ;
+- vérifie que le combat existe et qu’il est en cours ;
+- vérifie la présence des deux joueurs ;
+- refuse les utilisateurs extérieurs ;
+- refuse une deuxième soumission pour le même round ;
+- enregistre le `PlanRoundCombat` dans MySQL.
+
+La contrainte unique MySQL complète la protection transactionnelle.
+
+### Résolution automatique
+
+Après chaque soumission, le contrôleur appelle `ResolutionRoundCombatEnLigneService`.
+
+Si un seul plan existe, la réponse indique :
+
+`en_attente_adversaire`
+
+Lorsque le deuxième plan est soumis :
+
+- les deux plans sont chargés côté serveur ;
+- le round est résolu ;
+- les PV sont enregistrés ;
+- le numéro du round évolue ;
+- les résultats sont retournés en JSON.
+
+### Sécurité
+
+Toutes les routes nécessitent `ROLE_USER`.
+
+Le `CombatVoter` vérifie ensuite que l’utilisateur participe réellement au combat.
+
+Les actions POST utilisent un jeton transmis dans l’en-tête :
+
+`X-CSRF-TOKEN`
+
+Un jeton invalide produit une réponse HTTP `403` sans modifier la base.
+
+Le contrôleur utilise également les codes HTTP `400`, `409` et `422` pour distinguer les erreurs JSON, métier et de validation.
+
+### Secret des plans
+
+Le navigateur peut savoir si l’adversaire est prêt, mais ne reçoit jamais :
+
+- ses cibles d’attaque ;
+- ses cibles de défense ;
+- son objet `PlanRoundCombat`.
+
+Le plan reste secret dans MySQL jusqu’à la résolution.
+
+### Trajet des données
+
+`navigateur`
+
+`-> requête HTTP JSON`
+
+`-> CombatEnLigneController`
+
+`-> authentification`
+
+`-> CombatVoter`
+
+`-> vérification CSRF`
+
+`-> SoumissionPlanCombatService`
+
+`-> transaction et verrou Doctrine`
+
+`-> PlanRoundCombat dans MySQL`
+
+`-> ResolutionRoundCombatEnLigneService`
+
+`-> mise à jour des PV et du round`
+
+`-> réponse JSON`
+
+### Tests HTTP
+
+Les tests vérifient :
+
+- la consultation par un participant ;
+- le refus d’un utilisateur extérieur ;
+- l’absence des plans dans les réponses ;
+- la génération et la validation des jetons CSRF ;
+- l’enregistrement réel du premier plan ;
+- l’attente du deuxième joueur ;
+- l’abandon depuis HTTP ;
+- la persistance du gagnant ;
+- la soumission des deux plans ;
+- la résolution automatique ;
+- le passage du round 1 au round 2 ;
+- la persistance des PV de 10 à 8 dans MySQL.
+
+Les tests utilisant plusieurs requêtes appellent `disableReboot()` afin de conserver la connexion Doctrine et la transaction de test.
+
+### Résultats finaux
+
+- 66 tests réussis ;
+- 449 assertions ;
+- aucune notice PHPUnit ;
+- conteneur Symfony valide ;
+- trois routes HTTP enregistrées ;
+- mapping Doctrine valide ;
+- schémas de développement et de test synchronisés ;
+- aucune migration nécessaire.
+
+### Limites actuelles
+
+Les routes retournent uniquement du JSON.
+
+Aucune interface Twig ou JavaScript ne les utilise encore.
+
+La création du combat en ligne et l’association initiale des joueurs ne sont pas encore exposées au navigateur.
+
+La version locale basée sur la session Symfony reste intacte.
+
+### Compréhension retenue
+
+Le contrôleur traduit HTTP sans contenir les règles métier.
+
+Le voter contrôle l’autorisation.
+
+Le CSRF protège les actions de la session.
+
+Le verrou protège la soumission concurrente.
+
+Le deuxième plan déclenche la résolution sans révéler le premier.
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
