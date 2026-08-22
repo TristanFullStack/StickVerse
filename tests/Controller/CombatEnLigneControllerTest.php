@@ -2,8 +2,10 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\CombattantCombat;
 use App\Entity\Combat;
 use App\Entity\PlanRoundCombat;
+use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\PlanRoundCombatRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -75,6 +77,7 @@ final class CombatEnLigneControllerTest extends WebTestCase
         [
             $combat,
             $joueur1,
+            $joueur2,
         ] = $this->creerCombat();
 
         $combatId = $combat->getId();
@@ -108,8 +111,118 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertNull($donnees['gagnantId']);
+        self::assertNull($donnees['dernierRound']);
         self::assertFalse($donnees['planSoumis']);
         self::assertFalse($donnees['adversairePret']);
+
+        self::assertSame(
+            $joueur1->getId(),
+            $donnees['moi']['id'],
+        );
+
+        self::assertSame(
+            $joueur1->getEmail(),
+            $donnees['moi']['email'],
+        );
+
+        self::assertCount(
+            4,
+            $donnees['moi']['combattants'],
+        );
+
+        self::assertSame(
+            ['A', 'B', 'C', 'D'],
+            array_column(
+                $donnees['moi']['combattants'],
+                'slot',
+            ),
+        );
+
+        self::assertSame(
+            'Stickman J1 A',
+            $donnees['moi']['combattants'][0]['nom'],
+        );
+
+        self::assertSame(
+            'stickman-j1-a.png',
+            $donnees['moi']['combattants'][0]['image'],
+        );
+
+        self::assertSame(
+            1,
+            $donnees['moi']['combattants'][0]['rarete'],
+        );
+
+        self::assertSame(
+            10,
+            $donnees['moi']['combattants'][0]['pvMaximum'],
+        );
+
+        self::assertSame(
+            10,
+            $donnees['moi']['combattants'][0]['pvActuels'],
+        );
+
+        self::assertSame(
+            2,
+            $donnees['moi']['combattants'][0]['attaque'],
+        );
+
+        self::assertSame(
+            1,
+            $donnees['moi']['combattants'][0]['defense'],
+        );
+
+        self::assertTrue(
+            $donnees['moi']['combattants'][0]['vivant'],
+        );
+
+        self::assertIsInt(
+            $donnees['moi']['combattants'][0]['stickmanIdOriginal'],
+        );
+
+        self::assertSame(
+            $joueur2->getId(),
+            $donnees['adversaire']['id'],
+        );
+
+        self::assertSame(
+            $joueur2->getEmail(),
+            $donnees['adversaire']['email'],
+        );
+
+        self::assertCount(
+            4,
+            $donnees['adversaire']['combattants'],
+        );
+
+        self::assertSame(
+            ['A', 'B', 'C', 'D'],
+            array_column(
+                $donnees['adversaire']['combattants'],
+                'slot',
+            ),
+        );
+
+        self::assertSame(
+            'Stickman J2 A',
+            $donnees['adversaire']['combattants'][0]['nom'],
+        );
+
+        self::assertSame(
+            12,
+            $donnees['adversaire']['combattants'][0]['pvMaximum'],
+        );
+
+        self::assertSame(
+            3,
+            $donnees['adversaire']['combattants'][0]['attaque'],
+        );
+
+        self::assertSame(
+            2,
+            $donnees['adversaire']['combattants'][0]['defense'],
+        );
 
         self::assertArrayHasKey('csrf', $donnees);
         self::assertIsArray($donnees['csrf']);
@@ -150,6 +263,31 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertArrayNotHasKey(
             'resultats',
             $donnees,
+        );
+
+        $contenuJson = json_encode(
+            $donnees,
+            JSON_THROW_ON_ERROR,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleAttaqueX',
+            $contenuJson,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleDefenseX',
+            $contenuJson,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleAttaqueY',
+            $contenuJson,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleDefenseY',
+            $contenuJson,
         );
     }
 
@@ -501,7 +639,63 @@ final class CombatEnLigneControllerTest extends WebTestCase
         $this->entityManager->persist($joueur1);
         $this->entityManager->persist($joueur2);
         $this->entityManager->persist($intrus);
+        $this->entityManager->flush();
+
+        $stickmenJoueur1 = [];
+        $stickmenJoueur2 = [];
+
+        foreach (['A', 'B', 'C', 'D'] as $slot) {
+            $stickmenJoueur1[$slot] = $this->creerStickman(
+                'J1',
+                $slot,
+                $suffixe,
+                10,
+                2,
+                1,
+            );
+
+            $stickmenJoueur2[$slot] = $this->creerStickman(
+                'J2',
+                $slot,
+                $suffixe,
+                12,
+                3,
+                2,
+            );
+
+            $this->entityManager->persist(
+                $stickmenJoueur1[$slot]
+            );
+
+            $this->entityManager->persist(
+                $stickmenJoueur2[$slot]
+            );
+        }
+
+        $this->entityManager->flush();
+
         $this->entityManager->persist($combat);
+
+        foreach (['A', 'B', 'C', 'D'] as $slot) {
+            $this->entityManager->persist(
+                new CombattantCombat(
+                    $combat,
+                    $joueur1,
+                    $slot,
+                    $stickmenJoueur1[$slot],
+                )
+            );
+
+            $this->entityManager->persist(
+                new CombattantCombat(
+                    $combat,
+                    $joueur2,
+                    $slot,
+                    $stickmenJoueur2[$slot],
+                )
+            );
+        }
+
         $this->entityManager->flush();
 
         return [
@@ -510,6 +704,47 @@ final class CombatEnLigneControllerTest extends WebTestCase
             $joueur2,
             $intrus,
         ];
+    }
+
+    private function creerStickman(
+        string $joueur,
+        string $slot,
+        string $suffixe,
+        int $pv,
+        int $attaque,
+        int $defense,
+    ): Stickman {
+        return (new Stickman())
+            ->setNom(
+                sprintf('Stickman %s %s', $joueur, $slot)
+            )
+            ->setSlug(
+                sprintf(
+                    'stickman-%s-%s-%s',
+                    strtolower($joueur),
+                    strtolower($slot),
+                    $suffixe,
+                )
+            )
+            ->setDescription(
+                sprintf(
+                    'Stickman de test %s %s.',
+                    $joueur,
+                    $slot,
+                )
+            )
+            ->setImage(
+                sprintf(
+                    'stickman-%s-%s.png',
+                    strtolower($joueur),
+                    strtolower($slot),
+                )
+            )
+            ->setRarete(1)
+            ->setPv($pv)
+            ->setAttaque($attaque)
+            ->setDefense($defense)
+            ->setStatutActif(true);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Repository\CombatRepository;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -58,6 +59,15 @@ class Combat
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $gagnant = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $dernierRoundResolu = null;
+
+    /**
+     * @var array<string, array<string, int>>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $derniersResultats = null;
 
     #[ORM\Column]
     private DateTimeImmutable $dateCreation;
@@ -175,6 +185,39 @@ class Combat
     public function setGagnant(?User $gagnant): static
     {
         $this->gagnant = $gagnant;
+        $this->actualiserDate();
+
+        return $this;
+    }
+
+    public function getDernierRoundResolu(): ?int
+    {
+        return $this->dernierRoundResolu;
+    }
+
+    /**
+     * @return array<string, array<string, int>>|null
+     */
+    public function getDerniersResultats(): ?array
+    {
+        return $this->derniersResultats;
+    }
+
+    /**
+     * @param array<string, array<string, int>> $resultats
+     */
+    public function enregistrerResultatsRound(
+        int $numeroRound,
+        array $resultats,
+    ): static {
+        if ($numeroRound < 1) {
+            throw new InvalidArgumentException(
+                'Le numéro du round résolu doit être supérieur à 0.'
+            );
+        }
+
+        $this->dernierRoundResolu = $numeroRound;
+        $this->derniersResultats = $resultats;
         $this->actualiserDate();
 
         return $this;

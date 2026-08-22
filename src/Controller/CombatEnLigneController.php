@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\CombattantCombat;
 use App\Entity\Combat;
 use App\Entity\PlanRoundCombat;
 use App\Entity\User;
 use App\Model\PlanCombat;
+use App\Repository\CombattantCombatRepository;
 use App\Repository\PlanRoundCombatRepository;
 use App\Security\Voter\CombatVoter;
 use App\Service\AbandonCombatService;
@@ -37,6 +39,7 @@ final class CombatEnLigneController extends AbstractController
     )]
     public function etat(
         Combat $combat,
+        CombattantCombatRepository $combattantRepository,
         PlanRoundCombatRepository $planRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
     ): JsonResponse {
@@ -50,6 +53,10 @@ final class CombatEnLigneController extends AbstractController
         if (!$utilisateur instanceof User) {
             throw $this->createAccessDeniedException();
         }
+
+        $adversaire = $combat->getJoueur1() === $utilisateur
+            ? $combat->getJoueur2()
+            : $combat->getJoueur1();
 
         $plans = $planRepository
             ->trouverPourCombatEtRound(
@@ -79,6 +86,27 @@ final class CombatEnLigneController extends AbstractController
             'statut' => $combat->getStatut(),
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),
+            'dernierRound' => $combat->getDernierRoundResolu() !== null
+                ? [
+                    'numero' => $combat->getDernierRoundResolu(),
+                    'positionMoi' => $combat->getJoueur1() === $utilisateur
+                        ? 'joueur1'
+                        : 'joueur2',
+                    'resultats' => $combat->getDerniersResultats(),
+                ]
+                : null,
+            'moi' => $this->serialiserParticipant(
+                $combat,
+                $utilisateur,
+                $combattantRepository,
+            ),
+            'adversaire' => $adversaire instanceof User
+                ? $this->serialiserParticipant(
+                    $combat,
+                    $adversaire,
+                    $combattantRepository,
+                )
+                : null,
             'planSoumis' => $planSoumis,
             'adversairePret' => $adversairePret,
             'csrf' => [
@@ -100,6 +128,53 @@ final class CombatEnLigneController extends AbstractController
                     ->getValue(),
             ],
         ]);
+    }
+
+    /**
+     * @return array{
+     *     id: int|null,
+     *     email: string|null,
+     *     combattants: list<array{
+     *         slot: string,
+     *         stickmanIdOriginal: int,
+     *         nom: string,
+     *         image: string,
+     *         rarete: int,
+     *         pvMaximum: int,
+     *         pvActuels: int,
+     *         attaque: int,
+     *         defense: int,
+     *         vivant: bool
+     *     }>
+     * }
+     */
+    private function serialiserParticipant(
+        Combat $combat,
+        User $joueur,
+        CombattantCombatRepository $combattantRepository,
+    ): array {
+        return [
+            'id' => $joueur->getId(),
+            'email' => $joueur->getEmail(),
+            'combattants' => array_map(
+                static fn (CombattantCombat $combattant): array => [
+                    'slot' => $combattant->getSlot(),
+                    'stickmanIdOriginal' => $combattant->getStickmanIdOriginal(),
+                    'nom' => $combattant->getNomSnapshot(),
+                    'image' => $combattant->getImageSnapshot(),
+                    'rarete' => $combattant->getRareteSnapshot(),
+                    'pvMaximum' => $combattant->getPvMaximum(),
+                    'pvActuels' => $combattant->getPvActuels(),
+                    'attaque' => $combattant->getAttaqueSnapshot(),
+                    'defense' => $combattant->getDefenseSnapshot(),
+                    'vivant' => $combattant->estVivant(),
+                ],
+                $combattantRepository->trouverPourCombatEtJoueur(
+                    $combat,
+                    $joueur,
+                ),
+            ),
+        ];
     }
 
     #[Route(

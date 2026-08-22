@@ -136,6 +136,58 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonJoueur1['equipes'][0]['id'],
         );
 
+        self::assertSame(
+            'Équipe salon joueur 1',
+            $salonJoueur1['equipes'][0]['nom'],
+        );
+
+        self::assertCount(
+            4,
+            $salonJoueur1['equipes'][0]['combattants'],
+        );
+
+        self::assertSame(
+            ['A', 'B', 'C', 'D'],
+            array_column(
+                $salonJoueur1['equipes'][0]['combattants'],
+                'slot',
+            ),
+        );
+
+        self::assertSame(
+            'Stickman salon J1-A',
+            $salonJoueur1['equipes'][0]['combattants'][0]['nom'],
+        );
+
+        self::assertSame(
+            'stickman-salon-j39-j1-a.png',
+            $salonJoueur1['equipes'][0]['combattants'][0]['image'],
+        );
+
+        self::assertSame(
+            1,
+            $salonJoueur1['equipes'][0]['combattants'][0]['rarete'],
+        );
+
+        self::assertSame(
+            10,
+            $salonJoueur1['equipes'][0]['combattants'][0]['pv'],
+        );
+
+        self::assertSame(
+            2,
+            $salonJoueur1['equipes'][0]['combattants'][0]['attaque'],
+        );
+
+        self::assertSame(
+            1,
+            $salonJoueur1['equipes'][0]['combattants'][0]['defense'],
+        );
+
+        self::assertIsInt(
+            $salonJoueur1['equipes'][0]['combattants'][0]['stickmanId'],
+        );
+
         self::assertCount(
             0,
             $salonJoueur1['combatsDisponibles'],
@@ -261,6 +313,14 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
                 ['combatsDisponibles']
                 [0]
                 ['joueur1Id'],
+        );
+
+        self::assertSame(
+            $joueur1->getEmail(),
+            $salonJoueur2
+                ['combatsDisponibles']
+                [0]
+                ['joueur1Email'],
         );
 
         self::assertSame(

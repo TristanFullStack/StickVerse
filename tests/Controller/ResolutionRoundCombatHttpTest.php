@@ -103,6 +103,10 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
             $etatJoueur1['adversairePret']
         );
 
+        self::assertNull(
+            $etatJoueur1['dernierRound']
+        );
+
         self::assertIsArray(
             $etatJoueur1['csrf']
         );
@@ -171,6 +175,10 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
 
         self::assertTrue(
             $etatJoueur2['adversairePret']
+        );
+
+        self::assertNull(
+            $etatJoueur2['dernierRound']
         );
 
         self::assertArrayNotHasKey(
@@ -288,6 +296,16 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
             $combatRecharge->getNumeroRound(),
         );
 
+        self::assertSame(
+            1,
+            $combatRecharge->getDernierRoundResolu(),
+        );
+
+        self::assertEquals(
+            $resolution['resultats'],
+            $combatRecharge->getDerniersResultats(),
+        );
+
         $joueur1Recharge = $combatRecharge->getJoueur1();
         $joueur2Recharge = $combatRecharge->getJoueur2();
 
@@ -330,6 +348,86 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
                 $combatRecharge,
                 $joueur2Recharge,
             ),
+        );
+
+        /*
+         * Le joueur 1, qui n’a pas déclenché la résolution,
+         * reçoit maintenant exactement le même résultat finalisé.
+         */
+        $this->client->loginUser($joueur1);
+
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatFinalJoueur1 = $this->lireReponseJson();
+
+        self::assertSame(
+            1,
+            $etatFinalJoueur1['dernierRound']['numero'],
+        );
+
+        self::assertSame(
+            'joueur1',
+            $etatFinalJoueur1['dernierRound']['positionMoi'],
+        );
+
+        self::assertEquals(
+            $resolution['resultats'],
+            $etatFinalJoueur1['dernierRound']['resultats'],
+        );
+
+        self::assertArrayNotHasKey(
+            'plans',
+            $etatFinalJoueur1,
+        );
+
+        $etatFinalJson = json_encode(
+            $etatFinalJoueur1,
+            JSON_THROW_ON_ERROR,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleAttaqueX',
+            $etatFinalJson,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleDefenseX',
+            $etatFinalJson,
+        );
+
+        /*
+         * Le second participant retrouve aussi ce résultat via GET,
+         * indépendamment de la réponse de son POST.
+         */
+        $this->client->loginUser($joueur2);
+
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatFinalJoueur2 = $this->lireReponseJson();
+
+        self::assertSame(
+            1,
+            $etatFinalJoueur2['dernierRound']['numero'],
+        );
+
+        self::assertSame(
+            'joueur2',
+            $etatFinalJoueur2['dernierRound']['positionMoi'],
+        );
+
+        self::assertEquals(
+            $etatFinalJoueur1['dernierRound']['resultats'],
+            $etatFinalJoueur2['dernierRound']['resultats'],
         );
     }
 

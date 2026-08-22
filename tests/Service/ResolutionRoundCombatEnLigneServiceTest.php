@@ -147,6 +147,14 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
             8,
             $premiereResolution['joueur2_A']['pvRestants'],
         );
+        self::assertSame(
+            1,
+            $combat->getDernierRoundResolu(),
+        );
+        self::assertSame(
+            $premiereResolution,
+            $combat->getDerniersResultats(),
+        );
         self::assertSame(2, $combat->getNumeroRound());
 
         /*
@@ -157,6 +165,14 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
 
         self::assertNull($deuxiemeResolution);
         self::assertSame(2, $combat->getNumeroRound());
+        self::assertSame(
+            1,
+            $combat->getDernierRoundResolu(),
+        );
+        self::assertSame(
+            $premiereResolution,
+            $combat->getDerniersResultats(),
+        );
     }
 
     public function testAttendLeDeuxiemePlan(): void

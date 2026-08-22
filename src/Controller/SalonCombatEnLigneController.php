@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Combat;
 use App\Entity\Equipe;
+use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombatRepository;
 use App\Repository\EquipeRepository;
@@ -62,12 +63,11 @@ final class SalonCombatEnLigneController extends AbstractController
         return $this->json([
             'combatActifId' => $combatActif?->getId(),
             'equipes' => array_map(
-                static fn (
+                fn (
                     Equipe $equipe,
-                ): array => [
-                    'id' => $equipe->getId(),
-                    'nom' => $equipe->getNom(),
-                ],
+                ): array => $this->serialiserEquipe(
+                    $equipe
+                ),
                 $equipes,
             ),
             'combatsDisponibles' => array_map(
@@ -78,6 +78,9 @@ final class SalonCombatEnLigneController extends AbstractController
                     'joueur1Id' => $combat
                         ->getJoueur1()
                         ->getId(),
+                    'joueur1Email' => $combat
+                        ->getJoueur1()
+                        ->getEmail(),
                     'statut' => $combat->getStatut(),
                     'numeroRound' => $combat
                         ->getNumeroRound(),
@@ -104,6 +107,58 @@ final class SalonCombatEnLigneController extends AbstractController
                     ->getValue(),
             ],
         ]);
+    }
+
+    /**
+     * @return array{
+     *     id: int|null,
+     *     nom: string|null,
+     *     combattants: list<array{
+     *         slot: string,
+     *         stickmanId: int|null,
+     *         nom: string|null,
+     *         image: string|null,
+     *         rarete: int|null,
+     *         pv: int|null,
+     *         attaque: int|null,
+     *         defense: int|null
+     *     }>
+     * }
+     */
+    private function serialiserEquipe(
+        Equipe $equipe,
+    ): array {
+        $combattants = [];
+
+        $stickmenParSlot = [
+            'A' => $equipe->getStickmanA(),
+            'B' => $equipe->getStickmanB(),
+            'C' => $equipe->getStickmanC(),
+            'D' => $equipe->getStickmanD(),
+        ];
+
+        foreach ($stickmenParSlot as $slot => $stickman) {
+            if (!$stickman instanceof Stickman) {
+                continue;
+            }
+
+            $combattants[] = [
+                'slot' => $slot,
+                'stickmanId' => $stickman->getId(),
+                'nom' => $stickman->getNom(),
+                'image' => $stickman->getImage(),
+                'rarete' => $stickman->getRarete(),
+                'pv' => $stickman->getPv(),
+                'attaque' => $stickman->getAttaque(),
+                'defense' => $stickman->getDefense(),
+            ];
+        }
+
+        return [
+            'id' => $equipe->getId(),
+            'nom' => $equipe->getNom(),
+            'combattants' => $combattants,
+        ];
     }
 
     #[Route(

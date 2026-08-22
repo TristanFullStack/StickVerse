@@ -161,6 +161,11 @@ final class ResolutionRoundCombatEnLigneService
                     $etatJoueur2,
                 );
 
+                $combat->enregistrerResultatsRound(
+                    $numeroRound,
+                    $resultats,
+                );
+
                 /*
                  * Les nouveaux PV sont maintenant présents
                  * dans les snapshots persistants.

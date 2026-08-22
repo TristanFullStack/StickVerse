@@ -2831,7 +2831,494 @@ Le verrou d’écriture protège la dernière place du combat contre les requêt
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J40 — Ajouter l’interface du combat en ligne
 
+### Objectif
+
+J40 rend le combat en ligne réellement utilisable depuis le navigateur.
+
+L’interface Twig et JavaScript consomme les routes JSON créées pendant J38 et J39 sans réécrire le moteur métier ni modifier l’ancien prototype local disponible sur `/combat`.
+
+Le joueur peut maintenant :
+
+- consulter ses équipes ;
+- sélectionner une équipe ;
+- créer un combat ;
+- rejoindre un combat disponible ;
+- attendre l’arrivée d’un adversaire ;
+- voir les deux équipes et leurs PV persistés ;
+- préparer les quatre cibles de son plan secret ;
+- envoyer son plan ;
+- attendre le plan adverse ;
+- détecter automatiquement la résolution du round ;
+- consulter les dégâts et les nouveaux PV ;
+- abandonner le combat ;
+- voir la victoire, la défaite, le match nul ou l’abandon.
+
+### Architecture choisie
+
+Une route HTML séparée a été ajoutée :
+
+- `GET /combats`.
+
+Cette route est gérée par `InterfaceCombatEnLigneController`.
+
+Elle affiche uniquement la structure Twig de l’interface. Les données métier ne sont pas injectées directement dans le HTML.
+
+Le contrôleur Stimulus `combat_en_ligne_controller.js` orchestre ensuite les appels vers les routes JSON existantes :
+
+- `GET /salon-combat-en-ligne` ;
+- `POST /salon-combat-en-ligne/creer` ;
+- `POST /salon-combat-en-ligne/{id}/rejoindre` ;
+- `GET /combat-en-ligne/{id}` ;
+- `POST /combat-en-ligne/{id}/plan` ;
+- `POST /combat-en-ligne/{id}/abandon`.
+
+Les contrôleurs HTTP restent minces.
+
+Les règles de création, de jonction, de soumission, de résolution et d’abandon restent dans les services métier existants.
+
+Le moteur local disponible sur `/combat` n’a pas été modifié.
+
+### Enrichissement des réponses du salon
+
+La réponse du salon contient maintenant les compositions complètes des équipes appartenant au joueur.
+
+Pour chaque combattant, elle expose les informations nécessaires à l’affichage :
+
+- slot ;
+- nom ;
+- image ;
+- rareté ;
+- PV ;
+- attaque ;
+- défense.
+
+Les combats disponibles indiquent également l’adresse email du créateur afin que l’interface puisse présenter clairement l’adversaire potentiel.
+
+Le serveur reste responsable de vérifier l’appartenance de l’équipe lors de la création ou de la jonction.
+
+### Enrichissement de l’état du combat
+
+La réponse de `GET /combat-en-ligne/{id}` fournit maintenant une représentation adaptée au participant connecté.
+
+Elle contient notamment :
+
+- `moi` ;
+- `adversaire` ;
+- leurs combattants issus des snapshots ;
+- les PV maximums et actuels ;
+- l’état vivant ou KO ;
+- le statut du combat ;
+- le numéro du round ;
+- le gagnant éventuel ;
+- l’état de préparation des plans ;
+- les jetons CSRF ;
+- le dernier round résolu.
+
+Le participant reçoit uniquement les informations nécessaires à son interface.
+
+Le contenu du plan adverse n’est jamais exposé.
+
+### Persistance du dernier round résolu
+
+Avant J40, seul le deuxième joueur qui envoyait son plan recevait immédiatement le résultat de la résolution dans la réponse de son POST.
+
+Le premier joueur, déjà en attente, ne pouvait pas retrouver ce résultat complet avec un GET ultérieur.
+
+Deux propriétés ont donc été ajoutées à `Combat` :
+
+- `dernierRoundResolu` ;
+- `derniersResultats`.
+
+`ResolutionRoundCombatEnLigneService` enregistre maintenant dans le combat :
+
+- le numéro du round résolu ;
+- les attaques totales ;
+- les défenses totales ;
+- les dégâts calculés ;
+- les dégâts réellement appliqués ;
+- l’overkill ;
+- les PV avant l’impact ;
+- les PV restants.
+
+La migration `Version20260822120000` ajoute les colonnes correspondantes dans MySQL.
+
+Les deux participants peuvent ainsi récupérer exactement le même résultat finalisé avec `GET /combat-en-ligne/{id}`, même après la réponse du deuxième POST.
+
+### Interface du salon
+
+Au chargement de `/combats`, le contrôleur Stimulus consulte le salon.
+
+Si le joueur ne possède aucun combat actif, l’interface affiche :
+
+- ses équipes disponibles ;
+- la composition de l’équipe sélectionnée ;
+- le bouton de création ;
+- la liste des combats disponibles ;
+- les boutons permettant de rejoindre un combat.
+
+L’absence d’équipe et l’absence de combat disponible sont gérées explicitement.
+
+Après une création ou une jonction réussie, le salon est rechargé et l’interface bascule automatiquement vers le combat actif.
+
+### Interface du combat actif
+
+L’interface présente :
+
+- l’identifiant du combat ;
+- son statut ;
+- le numéro du round ;
+- l’adresse email des deux participants ;
+- les quatre combattants de chaque équipe ;
+- leurs statistiques ;
+- leurs PV maximums et actuels ;
+- leur état vivant ou KO.
+
+Les cartes KO sont visuellement atténuées.
+
+Lorsqu’un combat attend encore un adversaire, l’interface affiche un état d’attente sans inventer de deuxième composition.
+
+### Plans secrets
+
+Pendant un combat en cours, le joueur choisit :
+
+- la cible d’attaque de l’équipe X ;
+- la cible de défense de l’équipe X ;
+- la cible d’attaque de l’équipe Y ;
+- la cible de défense de l’équipe Y.
+
+Les listes proposent uniquement des combattants encore vivants.
+
+Le plan est envoyé en JSON au serveur avec le jeton CSRF dans l’en-tête `X-CSRF-TOKEN`.
+
+Après l’envoi :
+
+- le formulaire est masqué ;
+- le joueur voit que son plan est enregistré ;
+- les choix adverses restent secrets ;
+- l’interface attend la résolution.
+
+Le navigateur ne calcule aucun dégât et ne décide jamais du résultat du round.
+
+### Polling HTTP
+
+Une première synchronisation temps réel simple a été choisie.
+
+Tant que le combat est au statut `en_attente` ou `en_cours`, le contrôleur Stimulus recharge l’état toutes les trois secondes.
+
+Ce polling permet de détecter :
+
+- l’arrivée du deuxième joueur ;
+- l’envoi du plan adverse ;
+- la résolution du round ;
+- la mise à jour des PV ;
+- le passage au round suivant ;
+- la fin du combat.
+
+Le polling s’arrête automatiquement lorsque le combat est terminé ou abandonné.
+
+Aucun WebSocket ou Mercure n’a été introduit pendant J40.
+
+### Affichage de la résolution
+
+Après la résolution, l’interface affiche un tableau contenant :
+
+- la cible touchée ;
+- l’attaque totale ;
+- la défense totale ;
+- les dégâts effectifs ;
+- les PV restants.
+
+Les clés `joueur1` et `joueur2` sont traduites selon le point de vue de l’utilisateur connecté :
+
+- `Ton équipe` ;
+- `Équipe adverse`.
+
+Cette traduction est uniquement visuelle. Les valeurs proviennent toutes du serveur.
+
+### Abandon
+
+Un bouton d’abandon est disponible uniquement lorsque le combat est réellement en cours et possède deux participants.
+
+Une confirmation est demandée avant l’envoi.
+
+Le navigateur transmet ensuite une requête POST avec le jeton CSRF prévu pour l’abandon.
+
+`AbandonCombatService` reste l’unique responsable de :
+
+- verrouiller le combat ;
+- vérifier son statut ;
+- vérifier le participant ;
+- définir l’adversaire comme gagnant ;
+- enregistrer le statut `abandonne`.
+
+Après l’action, l’interface recharge l’état final fourni par le serveur.
+
+### États de fin
+
+L’interface distingue maintenant :
+
+- victoire ;
+- défaite ;
+- match nul ;
+- victoire par abandon ;
+- défaite par abandon ;
+- combat abandonné sans gagnant, par sécurité défensive.
+
+Le rendu dépend uniquement de :
+
+- `statut` ;
+- `gagnantId` ;
+- l’identifiant du participant connecté.
+
+Le navigateur n’invente jamais le gagnant.
+
+### Prévention des doubles actions
+
+Pendant une création, une jonction, une soumission ou un abandon, les boutons sont désactivés.
+
+Cette protection réduit les doubles clics et les doubles soumissions côté interface.
+
+Les protections métier restent également présentes côté serveur :
+
+- transaction Doctrine ;
+- verrou d’écriture ;
+- contraintes de validation ;
+- refus des plans dupliqués ;
+- vérification des statuts.
+
+### Gestion des erreurs
+
+Le contrôleur JavaScript vérifie :
+
+- la présence d’une équipe sélectionnée ;
+- la validité des identifiants ;
+- la présence des quatre cibles ;
+- la présence du jeton CSRF ;
+- le type JSON de la réponse ;
+- le statut HTTP.
+
+Les messages d’erreur renvoyés par le serveur sont affichés à l’utilisateur.
+
+Une réponse non JSON ou une erreur inattendue produit un message générique sans exposer d’information sensible.
+
+### Sécurité
+
+La route HTML `/combats` nécessite `ROLE_USER`.
+
+Les routes de consultation et d’action conservent leurs protections existantes :
+
+- authentification Symfony ;
+- `CombatVoter` pour les participants ;
+- appartenance des équipes vérifiée côté serveur ;
+- jetons CSRF dans `X-CSRF-TOKEN` ;
+- validation du JSON ;
+- transactions Doctrine ;
+- verrous d’écriture ;
+- absence des plans adverses dans les réponses.
+
+Le JavaScript construit les éléments avec `textContent`.
+
+Il n’insère pas de données provenant du serveur avec `innerHTML`, ce qui limite les risques d’injection dans l’interface.
+
+Les PV, les statistiques, les dégâts, le numéro du round et le gagnant restent contrôlés par le serveur.
+
+### Habillage visuel
+
+Un fichier CSS dédié à `/combats` reprend l’univers graphique de la V24 :
+
+- fond bleu nuit ;
+- panneaux sombres ;
+- accents cyan et violet ;
+- boutons bleus ;
+- cartes claires pour les Stickmans ;
+- couleurs spécifiques pour la victoire et la défaite ;
+- mise en page responsive.
+
+Le style est chargé uniquement par le template du combat en ligne.
+
+L’ancien CSS global et les autres pages ne sont pas volontairement refactorisés.
+
+Une collision de priorité avec `app.css` a été détectée pendant le contrôle visuel.
+
+Les règles du fond utilisent maintenant `:has(#combat-en-ligne)` afin de garantir le thème sombre uniquement lorsque cette interface est présente.
+
+### Trajet des données
+
+`navigateur`
+
+`-> GET /combats`
+
+`-> InterfaceCombatEnLigneController`
+
+`-> template Twig`
+
+`-> contrôleur Stimulus`
+
+`-> GET du salon ou du combat`
+
+`-> contrôleur JSON`
+
+`-> authentification et autorisation`
+
+`-> service métier`
+
+`-> repository`
+
+`-> entités et snapshots`
+
+`-> Doctrine`
+
+`-> MySQL`
+
+`-> réponse JSON sécurisée`
+
+`-> mise à jour de l’interface`
+
+Pour un plan :
+
+`formulaire secret`
+
+`-> JavaScript`
+
+`-> POST JSON avec X-CSRF-TOKEN`
+
+`-> CombatEnLigneController`
+
+`-> CombatVoter`
+
+`-> SoumissionPlanCombatService`
+
+`-> transaction et verrou Doctrine`
+
+`-> PlanRoundCombat dans MySQL`
+
+`-> ResolutionRoundCombatEnLigneService si les deux plans existent`
+
+`-> mise à jour des PV et du dernier résultat`
+
+`-> réponse JSON`
+
+`-> polling GET`
+
+`-> affichage du résultat par les deux participants`
+
+### Fichiers créés
+
+- `assets/controllers/combat_en_ligne_controller.js` ;
+- `assets/styles/combat_en_ligne.css` ;
+- `migrations/Version20260822120000.php` ;
+- `src/Controller/InterfaceCombatEnLigneController.php` ;
+- `templates/combat_en_ligne/index.html.twig` ;
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`.
+
+### Fichiers modifiés
+
+- `src/Controller/CombatEnLigneController.php` ;
+- `src/Controller/SalonCombatEnLigneController.php` ;
+- `src/Entity/Combat.php` ;
+- `src/Service/ResolutionRoundCombatEnLigneService.php` ;
+- `tests/Controller/CombatEnLigneControllerTest.php` ;
+- `tests/Controller/ResolutionRoundCombatHttpTest.php` ;
+- `tests/Controller/SalonCombatEnLigneControllerTest.php` ;
+- `tests/Service/ResolutionRoundCombatEnLigneServiceTest.php`.
+
+### Tests ajoutés ou enrichis
+
+Les tests vérifient notamment :
+
+- la redirection d’un visiteur anonyme vers la connexion ;
+- l’accès du joueur connecté à `/combats` ;
+- la présence des URL JSON dans le HTML ;
+- la présence des cibles Stimulus ;
+- la présence du CSS dédié ;
+- les compositions complètes dans le salon ;
+- les deux participants et leurs snapshots dans l’état du combat ;
+- l’absence des plans secrets dans les réponses ;
+- l’état initial sans dernier résultat ;
+- l’enregistrement du dernier round dans `Combat` ;
+- la persistance JSON dans MySQL ;
+- la relecture du même résultat par les deux participants ;
+- la position relative `joueur1` ou `joueur2` ;
+- la résolution HTTP complète d’un round ;
+- la persistance des nouveaux PV.
+
+### Erreurs rencontrées et corrections
+
+MySQL normalise l’ordre des clés d’une colonne JSON.
+
+Une comparaison PHPUnit avec `assertSame()` échouait donc malgré des valeurs identiques.
+
+Le test utilise maintenant `assertEquals()` pour comparer le contenu JSON sémantiquement sans dépendre de l’ordre d’insertion des clés.
+
+Un test BrowserKit conservait également un proxy Doctrine paresseux entre deux requêtes HTTP.
+
+Lors de la deuxième connexion simulée, le proxy ne pouvait plus être réhydraté correctement.
+
+Le test utilise maintenant les objets utilisateurs complets pour les sessions de sécurité, tout en conservant les objets relus depuis MySQL pour les assertions de persistance.
+
+Node.js n’était pas installé dans l’environnement PowerShell.
+
+La présence du contrôleur JavaScript et du CSS a donc été vérifiée avec AssetMapper, tandis que le comportement HTTP et la structure Twig sont couverts par PHPUnit.
+
+Symfony CLI a rencontré un verrou sur son ancien fichier journal pendant le contrôle visuel.
+
+Le serveur PHP intégré a été utilisé temporairement sur `127.0.0.1:8000`, puis arrêté avant la validation finale.
+
+Les avertissements Git concernant la conversion future LF vers CRLF sont informatifs.
+
+`git diff --check` ne signale aucune erreur d’espacement.
+
+### Compréhension retenue
+
+Twig fournit une structure HTML initiale, mais ne doit pas recevoir les secrets ou prendre de décision métier.
+
+Stimulus orchestre les requêtes, le polling et le rendu dynamique.
+
+Les contrôleurs HTTP adaptent les entrées et les sorties sans remplacer les services.
+
+Le résultat d’un round doit être persisté pour que les deux participants puissent le retrouver indépendamment de l’ordre de leurs requêtes.
+
+Une colonne JSON MySQL conserve les données mais pas nécessairement l’ordre original de ses clés.
+
+Un proxy Doctrine ne doit pas être conservé sans précaution entre plusieurs requêtes BrowserKit.
+
+La désactivation visuelle d’un bouton complète les protections serveur, mais ne les remplace jamais.
+
+### Limites restantes
+
+Le combat utilise un polling HTTP de trois secondes.
+
+Mercure ou WebSocket pourra être étudié plus tard si un vrai temps réel devient nécessaire.
+
+Le JavaScript ne possède pas encore de tests unitaires dédiés, car Node.js n’est pas installé dans l’environnement actuel.
+
+La confirmation d’abandon utilise la boîte de dialogue native du navigateur.
+
+Une modale personnalisée inspirée de la V24 pourra être ajoutée ultérieurement.
+
+L’interface se concentre sur le combat actif et ne fournit pas encore d’historique détaillé ou de rapport complet des rounds.
+
+Des améliorations visuelles restent possibles, mais le parcours métier principal est fonctionnel.
+
+### Résultats finaux
+
+- 79 tests réussis ;
+- 689 assertions ;
+- aucune notice PHPUnit ;
+- syntaxe PHP valide pour tous les fichiers modifiés ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schéma de développement synchronisé ;
+- schéma de test synchronisé ;
+- migration J40 exécutée en développement et en test ;
+- sept routes HTTP du combat en ligne enregistrées ;
+- contrôleur Stimulus détecté par AssetMapper ;
+- CSS dédié détecté par AssetMapper ;
+- `git diff --check` valide ;
+- ancien parcours local `/combat` préservé.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

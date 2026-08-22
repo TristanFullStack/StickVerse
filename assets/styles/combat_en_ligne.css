@@ -1,0 +1,504 @@
+:root {
+    --combat-fond: #030914;
+    --combat-panneau: #081522;
+    --combat-panneau-clair: #0b1b2c;
+    --combat-ligne: #1d4665;
+    --combat-texte: #f6fbff;
+    --combat-texte-secondaire: #9fb6c9;
+    --combat-cyan: #28b9ff;
+    --combat-bleu: #1479ff;
+    --combat-violet: #b94dff;
+    --combat-rouge: #ff5c58;
+    --combat-vert: #67e833;
+    --combat-ombre: 0 22px 65px rgba(0, 0, 0, 0.42);
+}
+
+html:has(#combat-en-ligne) {
+    background: #020712;
+}
+
+body:has(#combat-en-ligne) {
+    margin: 0;
+    min-height: 100vh;
+    padding: 0;
+    color: var(--combat-texte);
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            rgba(27, 118, 197, 0.24),
+            transparent 38%
+        ),
+        linear-gradient(180deg, var(--combat-fond), #020711);
+}
+
+#combat-en-ligne {
+    min-height: 100vh;
+    padding-bottom: 36px;
+}
+
+#combat-en-ligne [hidden] {
+    display: none !important;
+}
+
+#combat-en-ligne > header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 76px;
+    padding: 12px clamp(20px, 4vw, 64px);
+    border-bottom: 1px solid #143956;
+    background: rgba(3, 10, 19, 0.94);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(14px);
+}
+
+#combat-en-ligne > header a {
+    color: var(--combat-texte);
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    text-decoration: none;
+}
+
+#combat-en-ligne > header a::before {
+    display: inline-grid;
+    width: 46px;
+    height: 46px;
+    margin-right: 12px;
+    place-items: center;
+    content: "⚔";
+    color: var(--combat-cyan);
+    border: 1px solid var(--combat-cyan);
+    border-radius: 50%;
+    font-size: 22px;
+    vertical-align: middle;
+}
+
+#combat-en-ligne > header p {
+    margin: 0;
+    padding: 10px 14px;
+    color: #dcecff;
+    border: 1px solid #294760;
+    border-radius: 9px;
+    background: #08121d;
+}
+
+#combat-en-ligne > section {
+    width: min(1540px, calc(100% - 40px));
+    margin: 0 auto;
+    padding-top: 40px;
+}
+
+#combat-en-ligne h1 {
+    max-width: none;
+    margin: 0;
+    text-align: left;
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+#combat-en-ligne h1 + p {
+    margin: 14px 0 28px;
+    color: var(--combat-texte-secondaire);
+    font-size: 18px;
+}
+
+#combat-en-ligne button,
+#combat-en-ligne select {
+    font: inherit;
+}
+
+#combat-en-ligne button {
+    min-height: 46px;
+    padding: 11px 20px;
+    color: #fff;
+    border: 1px solid #28a3ff;
+    border-radius: 7px;
+    background: linear-gradient(#1387ff, #0755ad);
+    box-shadow: 0 0 18px rgba(20, 126, 255, 0.2);
+    cursor: pointer;
+    font-weight: 800;
+    letter-spacing: 0.25px;
+    text-transform: uppercase;
+    transition: filter 150ms ease, transform 150ms ease;
+}
+
+#combat-en-ligne button:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+}
+
+#combat-en-ligne button:focus-visible,
+#combat-en-ligne select:focus-visible {
+    outline: 3px solid rgba(40, 185, 255, 0.38);
+    outline-offset: 2px;
+}
+
+#combat-en-ligne button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+#combat-en-ligne select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 42px 10px 13px;
+    color: var(--combat-texte);
+    border: 1px solid #315b7d;
+    border-radius: 7px;
+    background: #071522;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="chargement"],
+#combat-en-ligne [data-combat-en-ligne-target="erreur"] {
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    border: 1px solid var(--combat-ligne);
+    border-radius: 10px;
+    background: rgba(8, 21, 34, 0.9);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="chargement"] {
+    color: var(--combat-cyan);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="erreur"] {
+    color: #ffd6d5;
+    border-color: rgba(255, 92, 88, 0.7);
+    background: rgba(116, 23, 30, 0.45);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="combatActif"],
+#combat-en-ligne [data-combat-en-ligne-target="salon"] > section {
+    padding: clamp(18px, 2.5vw, 30px);
+    border: 1px solid var(--combat-ligne);
+    border-radius: 13px;
+    background: linear-gradient(
+        145deg,
+        rgba(9, 24, 39, 0.97),
+        rgba(4, 13, 24, 0.98)
+    );
+    box-shadow: var(--combat-ombre);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="combatActif"] > h2,
+#combat-en-ligne [data-combat-en-ligne-target="salon"] h2 {
+    margin: 0 0 14px;
+    color: var(--combat-cyan);
+    font-size: 26px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="combatActif"] > p {
+    color: var(--combat-texte-secondaire);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="etatRound"],
+#combat-en-ligne [data-combat-en-ligne-target="attenteAdversaire"] {
+    padding: 14px 18px;
+    border: 1px solid rgba(185, 77, 255, 0.55);
+    border-radius: 9px;
+    background: rgba(78, 31, 117, 0.18);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="finCombat"] {
+    margin: 20px 0;
+    padding: 24px;
+    text-align: center;
+    border: 1px solid var(--combat-violet);
+    border-radius: 12px;
+    background: radial-gradient(
+        circle at center,
+        rgba(185, 77, 255, 0.18),
+        rgba(8, 21, 34, 0.95) 70%
+    );
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="finCombatTitre"] {
+    margin: 0 0 8px;
+    color: var(--combat-violet);
+    font-size: clamp(32px, 5vw, 56px);
+}
+
+#combat-en-ligne [data-resultat="victoire"] {
+    border-color: var(--combat-vert);
+}
+
+#combat-en-ligne [data-resultat="victoire"] h3 {
+    color: var(--combat-vert);
+}
+
+#combat-en-ligne [data-resultat="defaite"] {
+    border-color: var(--combat-rouge);
+}
+
+#combat-en-ligne [data-resultat="defaite"] h3 {
+    color: var(--combat-rouge);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="participants"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin: 22px 0;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="participants"] > section {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid #236da0;
+    border-radius: 11px;
+    background: rgba(7, 20, 33, 0.82);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="participants"] > section:last-child {
+    border-color: rgba(185, 77, 255, 0.62);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="participants"] h3 {
+    margin: 0 0 15px;
+    overflow-wrap: anywhere;
+    color: #76cfff;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="participants"] > section:last-child h3 {
+    color: #d58cff;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="moiCombattants"],
+#combat-en-ligne [data-combat-en-ligne-target="adversaireCombattants"],
+#combat-en-ligne .grille-combattants {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+#combat-en-ligne .carte-combattant {
+    min-width: 0;
+    overflow: hidden;
+    color: #101827;
+    border: 1px solid #b7c7d8;
+    border-radius: 9px;
+    background: linear-gradient(145deg, #fff, #dbe4ec);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+#combat-en-ligne .carte-combattant-titre {
+    min-height: 46px;
+    margin: 0;
+    padding: 12px 10px 6px;
+    text-align: center;
+    font-size: 15px;
+}
+
+#combat-en-ligne .carte-combattant-image {
+    display: block;
+    width: 100%;
+    height: 155px;
+    padding: 8px;
+    object-fit: contain;
+}
+
+#combat-en-ligne .carte-combattant-statistiques {
+    margin: 0;
+    padding: 11px 8px;
+    color: #eaf5ff;
+    background: #0c1c2b;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+#combat-en-ligne .carte-combattant.est-ko {
+    filter: grayscale(1);
+    opacity: 0.42;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="resultatRound"],
+#combat-en-ligne [data-combat-en-ligne-target="planSection"] {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid var(--combat-ligne);
+    border-radius: 11px;
+    background: rgba(6, 18, 30, 0.92);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="resultatRound"] h3,
+#combat-en-ligne [data-combat-en-ligne-target="planSection"] h3 {
+    margin-top: 0;
+    color: var(--combat-violet);
+}
+
+#combat-en-ligne table {
+    width: 100%;
+    overflow: hidden;
+    border-collapse: collapse;
+    border: 1px solid #254863;
+    border-radius: 8px;
+}
+
+#combat-en-ligne th,
+#combat-en-ligne td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #1b3a52;
+    text-align: left;
+}
+
+#combat-en-ligne th {
+    color: #8fd8ff;
+    background: #0b2032;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="planForm"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+#combat-en-ligne fieldset {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid #2a5573;
+    border-radius: 9px;
+}
+
+#combat-en-ligne fieldset:last-of-type {
+    border-color: rgba(185, 77, 255, 0.65);
+}
+
+#combat-en-ligne legend {
+    padding: 0 8px;
+    color: #7bd3ff;
+    font-weight: 800;
+}
+
+#combat-en-ligne fieldset:last-of-type legend {
+    color: #d58cff;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="envoyerPlanButton"] {
+    grid-column: 1 / -1;
+    justify-self: center;
+    min-width: min(100%, 340px);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="abandonButton"] {
+    margin-left: 10px;
+    color: #ffd8d7;
+    border-color: var(--combat-rouge);
+    background: #251016;
+    box-shadow: none;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="salon"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] {
+    margin: 18px 0;
+}
+
+#combat-en-ligne .selection-equipe-titre {
+    color: var(--combat-violet);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="combatsDisponibles"] {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+#combat-en-ligne .combat-disponible {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #244a66;
+    border-radius: 9px;
+    background: #071522;
+}
+
+#combat-en-ligne .combat-disponible h3,
+#combat-en-ligne .combat-disponible p {
+    margin: 0;
+}
+
+@media (max-width: 1050px) {
+    #combat-en-ligne [data-combat-en-ligne-target="moiCombattants"],
+    #combat-en-ligne [data-combat-en-ligne-target="adversaireCombattants"],
+    #combat-en-ligne .grille-combattants {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="salon"] {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    #combat-en-ligne > header {
+        position: static;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    #combat-en-ligne > header p {
+        max-width: 52%;
+        overflow-wrap: anywhere;
+    }
+
+    #combat-en-ligne > section {
+        width: min(100% - 24px, 1540px);
+        padding-top: 28px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="participants"],
+    #combat-en-ligne [data-combat-en-ligne-target="planForm"] {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="envoyerPlanButton"] {
+        grid-column: auto;
+        width: 100%;
+    }
+
+    #combat-en-ligne .combat-disponible {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne table {
+        font-size: 13px;
+    }
+
+    #combat-en-ligne th,
+    #combat-en-ligne td {
+        padding: 8px 6px;
+    }
+}
+
+@media (max-width: 430px) {
+    #combat-en-ligne > header a::before {
+        display: none;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="moiCombattants"],
+    #combat-en-ligne [data-combat-en-ligne-target="adversaireCombattants"],
+    #combat-en-ligne .grille-combattants {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="abandonButton"] {
+        display: block;
+        width: 100%;
+        margin: 10px 0 0;
+    }
+}
