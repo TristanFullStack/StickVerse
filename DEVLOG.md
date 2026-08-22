@@ -2070,7 +2070,197 @@ Le moteur calcule les résultats sans faire confiance au navigateur.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J36 — Persistance des PV entre les rounds
 
+### Objectif
+
+J36 devait vérifier que les points de vie actuels des combattants sont conservés entre plusieurs rounds successifs.
+
+Les PV ne doivent jamais être réinitialisés depuis les statistiques originales du Stickman au début d’un nouveau round.
+
+Le trajet attendu est :
+
+`PV MySQL du round précédent`
+
+`-> reconstruction de l’état de combat`
+
+`-> résolution du nouveau round`
+
+`-> mise à jour des snapshots`
+
+`-> flush Doctrine`
+
+`-> nouveaux PV MySQL`
+
+### Test unitaire de plusieurs rounds
+
+Création du test :
+
+`tests/Service/PersistancePvEntreRoundsTest.php`
+
+Ce test utilise des doubles PHPUnit pour simuler des snapshots persistants.
+
+Il exécute deux résolutions successives avec le même combat :
+
+- départ à 10 PV ;
+- premier round : passage à 8 PV ;
+- deuxième round : reprise depuis 8 PV ;
+- fin du deuxième round : passage à 6 PV.
+
+Ce test vérifie la logique métier du service sans dépendre d’une base de données.
+
+### Base MySQL réservée aux tests
+
+La configuration Doctrine possède déjà un suffixe automatique pour l’environnement de test :
+
+`dbname_suffix: '_test%env(default::TEST_TOKEN)%'`
+
+Une configuration locale non versionnée a été ajoutée dans :
+
+`.env.test.local`
+
+Elle permet à Symfony d’utiliser le pilote MySQL pendant les tests sans exposer les identifiants dans Git.
+
+La base suivante a été créée :
+
+`stickverse_test`
+
+Les 9 migrations existantes y ont été exécutées.
+
+Le schéma de cette base est synchronisé avec les Entities Doctrine.
+
+Le fichier `.env.test.local` est ignoré par Git grâce à la règle :
+
+`/.env.*.local`
+
+### Test d’intégration MySQL
+
+Création du test :
+
+`tests/Integration/Service/PersistancePvMySqlTest.php`
+
+Contrairement au test unitaire, ce test utilise :
+
+- le véritable `EntityManager` Doctrine ;
+- les véritables repositories ;
+- la véritable base `stickverse_test` ;
+- les véritables Entities ;
+- le véritable service de résolution en ligne ;
+- de véritables transactions ;
+- de véritables écritures et lectures MySQL.
+
+Le test crée :
+
+- deux utilisateurs ;
+- quatre Stickmans ;
+- un combat en cours ;
+- huit snapshots de combattants ;
+- deux plans secrets pour le round 1.
+
+Le premier round est ensuite résolu.
+
+Les slots A et B passent de 10 à 8 PV.
+
+### Vérification après vidage de Doctrine
+
+Après le premier round, le test exécute :
+
+`EntityManager::clear()`
+
+Cette opération retire tous les objets actuellement suivis par Doctrine.
+
+Le combat et les combattants sont ensuite entièrement rechargés depuis MySQL.
+
+Cela prouve que les valeurs retrouvées ne viennent pas simplement de la mémoire PHP.
+
+Les valeurs relues sont :
+
+- joueur 1 : A = 8, B = 8, C = 10, D = 10 ;
+- joueur 2 : A = 8, B = 8, C = 10, D = 10 ;
+- numéro du round = 2.
+
+### Deuxième round
+
+Deux nouveaux plans sont enregistrés pour le round 2.
+
+La résolution repart des 8 PV réellement enregistrés dans MySQL.
+
+Après le deuxième round :
+
+- joueur 1 : A = 6, B = 6, C = 10, D = 10 ;
+- joueur 2 : A = 6, B = 6, C = 10, D = 10 ;
+- numéro du round = 3.
+
+Un second `EntityManager::clear()` confirme une nouvelle fois que les valeurs finales proviennent bien de MySQL.
+
+### Isolation et nettoyage du test
+
+Avant d’écrire des données, le test vérifie que le nom de la base se termine par :
+
+`_test`
+
+Cette protection empêche le test d’intégration de modifier accidentellement la base de développement.
+
+Toutes les écritures sont placées dans une transaction extérieure.
+
+À la fin du test, cette transaction est annulée avec un rollback.
+
+Les données temporaires du test ne restent donc pas dans `stickverse_test`.
+
+### Service retiré du conteneur compilé
+
+Lors du premier lancement, Symfony indiquait que :
+
+`ResolutionRoundCombatEnLigneService`
+
+avait été retiré ou intégré pendant la compilation du conteneur.
+
+Ce comportement est normal : le service n’est pas encore utilisé par un contrôleur de production.
+
+Il n’a pas été rendu public uniquement pour satisfaire le test.
+
+Le test le construit manuellement avec :
+
+- le véritable `EntityManager` ;
+- les véritables repositories ;
+- `CreationEtatEquipeCombatDepuisSnapshotsService` ;
+- `ResolutionRoundService` ;
+- `CombatService`.
+
+Le comportement testé reste donc celui de la véritable architecture en ligne.
+
+### Résultats finaux
+
+- 43 tests réussis ;
+- 246 assertions ;
+- aucune notice PHPUnit ;
+- test d’intégration MySQL réussi ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- base de développement synchronisée ;
+- base de test synchronisée.
+
+### Compréhension retenue
+
+Un test unitaire vérifie la logique d’une classe en isolant ses dépendances.
+
+Un test d’intégration vérifie que plusieurs composants réels fonctionnent correctement ensemble.
+
+`EntityManager::clear()` permet de distinguer une valeur encore présente en mémoire d’une valeur réellement persistée dans MySQL.
+
+Les `pvMaximum` restent figés dans les snapshots.
+
+Les `pvActuels` sont modifiés après chaque round puis enregistrés par Doctrine.
+
+J36 confirme donc que les PV peuvent évoluer durablement pendant un combat en ligne de plusieurs rounds.
+
+### Limite actuelle
+
+La persistance des PV est maintenant validée, mais le combat en ligne n’est toujours pas relié à deux navigateurs.
+
+La version locale J30 reste intacte.
+
+J37 pourra maintenant traiter la détection de fin de partie : victoire, élimination simultanée et futurs cas d’abandon.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
