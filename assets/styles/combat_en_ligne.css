@@ -310,6 +310,80 @@ body:has(#combat-en-ligne) {
     object-fit: contain;
 }
 
+#combat-en-ligne .carte-combattant-vie {
+    padding: 9px 10px 10px;
+    color: #102033;
+    background: #f5f8fb;
+}
+
+#combat-en-ligne .carte-combattant-vie-informations {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+#combat-en-ligne .carte-combattant-vie-etat {
+    color: #19703b;
+}
+
+#combat-en-ligne .carte-combattant-vie-barre {
+    height: 11px;
+    overflow: hidden;
+    border: 1px solid #93a6b8;
+    border-radius: 999px;
+    background: #c7d1db;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#combat-en-ligne .carte-combattant-vie-remplissage {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #24a957, var(--combat-vert));
+    box-shadow: 0 0 9px rgba(103, 232, 51, 0.52);
+    transition: width 650ms ease-out;
+}
+
+#combat-en-ligne .carte-combattant.est-blesse {
+    border-color: #e69b28;
+}
+
+#combat-en-ligne .carte-combattant.est-blesse .carte-combattant-vie-etat {
+    color: #a55c00;
+}
+
+#combat-en-ligne .carte-combattant.est-blesse .carte-combattant-vie-remplissage {
+    background: linear-gradient(90deg, #ffd24c, #f29a19);
+    box-shadow: 0 0 9px rgba(242, 154, 25, 0.48);
+}
+
+#combat-en-ligne .carte-combattant.est-critique {
+    border-color: var(--combat-rouge);
+    box-shadow: 0 0 18px rgba(255, 92, 88, 0.3);
+}
+
+#combat-en-ligne .carte-combattant.est-critique .carte-combattant-vie-etat {
+    color: #bd2420;
+}
+
+#combat-en-ligne .carte-combattant.est-critique .carte-combattant-vie-remplissage {
+    background: linear-gradient(90deg, #ff8a62, var(--combat-rouge));
+    box-shadow: 0 0 10px rgba(255, 92, 88, 0.58);
+}
+
+#combat-en-ligne .carte-combattant.est-ko .carte-combattant-vie-etat {
+    color: #6c7782;
+}
+
+#combat-en-ligne .carte-combattant.est-ko .carte-combattant-vie-remplissage {
+    background: #78838e;
+    box-shadow: none;
+}
+
 #combat-en-ligne .carte-combattant-statistiques {
     margin: 0;
     padding: 11px 8px;
@@ -323,6 +397,12 @@ body:has(#combat-en-ligne) {
 #combat-en-ligne .carte-combattant.est-ko {
     filter: grayscale(1);
     opacity: 0.42;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #combat-en-ligne .carte-combattant-vie-remplissage {
+        transition: none;
+    }
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="resultatRound"],

@@ -839,6 +839,17 @@ export default class extends Controller {
     }
 
     afficherParticipant(participant, nomTarget, listeTarget, libelle) {
+        const pourcentagesPrecedents = new Map(
+            Array.from(
+                listeTarget.querySelectorAll(
+                    '.carte-combattant[data-slot] .carte-combattant-vie-barre'
+                )
+            ).map((barre) => [
+                barre.closest('.carte-combattant')?.dataset.slot,
+                Number.parseFloat(barre.dataset.pourcentage),
+            ])
+        );
+
         listeTarget.replaceChildren();
 
         if (!participant) {
@@ -858,7 +869,12 @@ export default class extends Controller {
             : [];
 
         for (const combattant of combattants) {
-            listeTarget.append(this.creerCarteCombattant(combattant));
+            listeTarget.append(
+                this.creerCarteCombattant(
+                    combattant,
+                    pourcentagesPrecedents.get(combattant.slot),
+                )
+            );
         }
     }
 
@@ -999,15 +1015,27 @@ export default class extends Controller {
         this.equipeApercuTarget.append(liste);
     }
 
-    creerCarteCombattant(combattant) {
+    creerCarteCombattant(combattant, pourcentagePrecedent = null) {
         const carte = document.createElement('article');
         const titre = document.createElement('h4');
         const image = document.createElement('img');
+        const vie = document.createElement('div');
+        const vieInformations = document.createElement('div');
+        const vieValeur = document.createElement('span');
+        const vieEtat = document.createElement('span');
+        const vieBarre = document.createElement('div');
+        const vieRemplissage = document.createElement('span');
         const statistiques = document.createElement('p');
 
         carte.className = 'carte-combattant';
         titre.className = 'carte-combattant-titre';
         image.className = 'carte-combattant-image';
+        vie.className = 'carte-combattant-vie';
+        vieInformations.className = 'carte-combattant-vie-informations';
+        vieValeur.className = 'carte-combattant-vie-valeur';
+        vieEtat.className = 'carte-combattant-vie-etat';
+        vieBarre.className = 'carte-combattant-vie-barre';
+        vieRemplissage.className = 'carte-combattant-vie-remplissage';
         statistiques.className = 'carte-combattant-statistiques';
         titre.textContent = [
             combattant.slot ?? '?',
@@ -1020,10 +1048,6 @@ export default class extends Controller {
             ? 'false'
             : 'true';
 
-        if (combattant.vivant === false) {
-            carte.classList.add('est-ko');
-        }
-
         if (typeof combattant.image === 'string') {
             image.src = [
                 this.imagesBaseUrlValue,
@@ -1031,20 +1055,85 @@ export default class extends Controller {
             ].join('/');
         }
 
-        const pvActuels = combattant.pvActuels
-            ?? combattant.pv
-            ?? '—';
-        const pvMaximum = combattant.pvMaximum
-            ?? combattant.pv
-            ?? '—';
+        const pvMaximumBruts = Number(
+            combattant.pvMaximum ?? combattant.pv
+        );
+        const pvActuelsBruts = Number(
+            combattant.pvActuels ?? combattant.pv
+        );
+        const pvMaximum = Number.isFinite(pvMaximumBruts)
+            && pvMaximumBruts > 0
+            ? Math.round(pvMaximumBruts)
+            : 0;
+        const pvActuels = Number.isFinite(pvActuelsBruts)
+            ? Math.min(
+                pvMaximum,
+                Math.max(0, Math.round(pvActuelsBruts)),
+            )
+            : 0;
+        const pourcentageVie = pvMaximum > 0
+            ? Math.round((pvActuels / pvMaximum) * 100)
+            : 0;
+        const estKo = combattant.vivant === false || pvActuels === 0;
+        let etatVie = 'normal';
+        let libelleEtatVie = 'Stable';
+
+        if (estKo) {
+            etatVie = 'ko';
+            libelleEtatVie = 'K.O.';
+        } else if (pourcentageVie <= 25) {
+            etatVie = 'critique';
+            libelleEtatVie = 'Critique';
+        } else if (pourcentageVie <= 50) {
+            etatVie = 'blesse';
+            libelleEtatVie = 'Blessé';
+        }
+
+        carte.dataset.etatVie = etatVie;
+        carte.classList.add(`est-${etatVie}`);
+
+        if (estKo) {
+            carte.dataset.vivant = 'false';
+        }
+
+        vieValeur.textContent = `PV ${pvActuels} / ${pvMaximum}`;
+        vieEtat.textContent = libelleEtatVie;
+        vieBarre.dataset.pourcentage = String(pourcentageVie);
+        vieBarre.setAttribute('role', 'progressbar');
+        vieBarre.setAttribute(
+            'aria-label',
+            `Points de vie de ${combattant.nom ?? 'Stickman'}`,
+        );
+        vieBarre.setAttribute('aria-valuemin', '0');
+        vieBarre.setAttribute('aria-valuemax', String(pvMaximum));
+        vieBarre.setAttribute('aria-valuenow', String(pvActuels));
+        vieBarre.setAttribute(
+            'aria-valuetext',
+            `${pvActuels} points de vie sur ${pvMaximum} — ${libelleEtatVie}`,
+        );
+
+        const ancienPourcentage = Number.isFinite(pourcentagePrecedent)
+            ? Math.min(100, Math.max(0, pourcentagePrecedent))
+            : pourcentageVie;
+
+        vieRemplissage.style.width = `${ancienPourcentage}%`;
+
+        if (ancienPourcentage !== pourcentageVie) {
+            requestAnimationFrame(() => {
+                vieRemplissage.style.width = `${pourcentageVie}%`;
+            });
+        }
+
+        vieInformations.append(vieValeur, vieEtat);
+        vieBarre.append(vieRemplissage);
+        vie.append(vieInformations, vieBarre);
 
         statistiques.textContent = [
-            `PV ${pvActuels} / ${pvMaximum}`,
             `ATQ ${combattant.attaque ?? '—'}`,
             `DÉF ${combattant.defense ?? '—'}`,
         ].join(' · ');
 
-        carte.append(titre, image, statistiques);
+        carte.append(titre, image, vie, statistiques);
 
         return carte;
     }

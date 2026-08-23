@@ -3823,7 +3823,153 @@ La validation manuelle a confirmé que :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J44 — Ajouter les barres de vie dynamiques
 
+### Objectif
+
+J44 améliore la lecture de l’état du combat en ajoutant une barre de vie dynamique à chaque Stickman affiché dans l’interface du combat en ligne.
+
+Les joueurs peuvent maintenant comprendre immédiatement :
+
+- les points de vie actuels ;
+- les points de vie maximum ;
+- l’état général du Stickman ;
+- la gravité de ses blessures ;
+- son éventuelle élimination.
+
+### Réutilisation des données du serveur
+
+Le serveur exposait déjà pour chaque combattant :
+
+- `pvActuels` ;
+- `pvMaximum` ;
+- `vivant`.
+
+Aucune modification du moteur de combat, de Doctrine ou de la base de données n’a donc été nécessaire.
+
+Les barres de vie sont calculées exclusivement à partir des données validées et enregistrées par le serveur.
+
+L’interface ne réalise aucun calcul de dégâts.
+
+### Barre de vie proportionnelle
+
+Chaque carte de combattant affiche maintenant :
+
+- la valeur `PV actuels / PV maximum` ;
+- une barre dont la longueur correspond au pourcentage de vie restant ;
+- un libellé décrivant l’état du combattant.
+
+Les valeurs reçues sont sécurisées côté interface :
+
+- les PV ne peuvent pas être affichés sous zéro ;
+- les PV actuels ne peuvent pas dépasser les PV maximum ;
+- le pourcentage reste compris entre 0 et 100 %.
+
+### États visuels
+
+Quatre états sont disponibles :
+
+- `Stable` lorsque le combattant possède plus de 50 % de ses PV ;
+- `Blessé` lorsqu’il possède entre 26 et 50 % de ses PV ;
+- `Critique` lorsqu’il possède au maximum 25 % de ses PV ;
+- `K.O.` lorsqu’il ne possède plus aucun PV ou que le serveur le déclare éliminé.
+
+Chaque état possède un rendu distinct :
+
+- vert pour un état stable ;
+- orange pour un combattant blessé ;
+- rouge pour un état critique ;
+- gris pour un combattant K.O.
+
+Le libellé textuel permet de comprendre l’état sans dépendre uniquement de la couleur.
+
+### Animation des dégâts
+
+Lors de chaque actualisation, l’interface mémorise le pourcentage précédemment affiché pour chaque slot.
+
+Si les PV ont changé, la nouvelle carte commence avec l’ancienne longueur, puis anime la barre jusqu’à sa nouvelle valeur.
+
+Si les PV sont identiques, aucune animation inutile n’est déclenchée.
+
+Ce fonctionnement reste compatible avec l’actualisation automatique du combat.
+
+### État K.O.
+
+Lorsqu’un combattant atteint zéro PV :
+
+- sa barre devient vide ;
+- son état affiche `K.O.` ;
+- sa carte est désaturée ;
+- son opacité est réduite ;
+- il reste exclu des cibles disponibles pour les rounds suivants.
+
+L’état visuel complète donc la protection fonctionnelle déjà appliquée par le serveur et l’interface.
+
+### Accessibilité
+
+Chaque barre utilise le rôle ARIA `progressbar`.
+
+Elle fournit :
+
+- un nom accessible contenant le nom du Stickman ;
+- une valeur minimum de zéro ;
+- la valeur maximum des PV ;
+- la valeur actuelle ;
+- une description textuelle complète de l’état.
+
+Les utilisateurs de lecteurs d’écran peuvent ainsi connaître les points de vie sans dépendre du rendu graphique.
+
+La préférence système `prefers-reduced-motion` désactive les transitions pour les utilisateurs sensibles aux animations.
+
+### Tests enrichis
+
+Le test HTTP du contrôleur vérifie maintenant également que les données nécessaires aux barres sont exposées pour l’adversaire :
+
+- ses PV actuels ;
+- son état vivant.
+
+Ces vérifications complètent celles déjà présentes pour :
+
+- les PV maximum ;
+- les statistiques ;
+- les quatre slots ;
+- les deux participants.
+
+### Validation manuelle
+
+Un combat réel a permis de confirmer que :
+
+- chaque Stickman possède une barre de vie ;
+- la longueur correspond aux PV restants ;
+- la barre diminue après les dégâts ;
+- les couleurs évoluent correctement ;
+- les libellés `Stable`, `Blessé`, `Critique` et `K.O.` correspondent à l’état ;
+- un combattant éliminé apparaît correctement en K.O. ;
+- les barres ne se réaniment pas inutilement pendant l’actualisation automatique.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js` ;
+- `assets/styles/combat_en_ligne.css` ;
+- `tests/Controller/CombatEnLigneControllerTest.php`.
+
+### Résultats finaux
+
+- 95 tests réussis ;
+- 815 assertions ;
+- syntaxe JavaScript valide ;
+- syntaxe PHP valide ;
+- syntaxe Twig valide ;
+- conteneur Symfony valide ;
+- ressources JavaScript et CSS détectées par AssetMapper ;
+- barres proportionnelles aux PV restants ;
+- quatre états visuels fonctionnels ;
+- animations déclenchées uniquement lors d’un changement ;
+- préférence de réduction des animations respectée ;
+- informations accessibles aux lecteurs d’écran ;
+- aucune modification du moteur de combat ou de la base de données ;
+- aucune erreur détectée par `git diff --check` ;
+- aucun commit ni push effectué avant la validation complète.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

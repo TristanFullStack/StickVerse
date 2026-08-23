@@ -216,6 +216,15 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertSame(
+            12,
+            $donnees['adversaire']['combattants'][0]['pvActuels'],
+        );
+
+        self::assertTrue(
+            $donnees['adversaire']['combattants'][0]['vivant'],
+        );
+
+        self::assertSame(
             3,
             $donnees['adversaire']['combattants'][0]['attaque'],
         );
