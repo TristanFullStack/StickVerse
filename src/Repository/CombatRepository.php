@@ -71,4 +71,36 @@ class CombatRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<Combat>
+     */
+    public function trouverHistoriquePourJoueur(
+        User $joueur,
+        int $limite = 10,
+    ): array {
+        return $this->createQueryBuilder('combat')
+            ->addSelect('joueur1', 'joueur2', 'gagnant')
+            ->innerJoin('combat.joueur1', 'joueur1')
+            ->innerJoin('combat.joueur2', 'joueur2')
+            ->leftJoin('combat.gagnant', 'gagnant')
+            ->andWhere(
+                'combat.joueur1 = :joueur'
+                .' OR combat.joueur2 = :joueur'
+            )
+            ->andWhere('combat.statut IN (:statuts)')
+            ->setParameter('joueur', $joueur)
+            ->setParameter(
+                'statuts',
+                [
+                    Combat::STATUT_TERMINE,
+                    Combat::STATUT_ABANDONNE,
+                ],
+            )
+            ->orderBy('combat.dateMiseAJour', 'DESC')
+            ->addOrderBy('combat.id', 'DESC')
+            ->setMaxResults(max(1, $limite))
+            ->getQuery()
+            ->getResult();
+    }
 }

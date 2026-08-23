@@ -595,6 +595,73 @@ body:has(#combat-en-ligne) {
     margin: 0;
 }
 
+#combat-en-ligne .historique-combats-section {
+    grid-column: 1 / -1;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="historiqueCombats"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+#combat-en-ligne .historique-combat {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #244a66;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #081a2a, #06111d);
+}
+
+#combat-en-ligne .historique-combat-entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#combat-en-ligne .historique-combat h3,
+#combat-en-ligne .historique-combat p {
+    margin: 0;
+}
+
+#combat-en-ligne .historique-combat p {
+    margin-top: 9px;
+    overflow-wrap: anywhere;
+    color: var(--combat-texte-secondaire);
+}
+
+#combat-en-ligne .historique-combat-resultat {
+    padding: 6px 9px;
+    color: #d9ecff;
+    border: 1px solid #52718a;
+    border-radius: 999px;
+    background: #102334;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+#combat-en-ligne .historique-combat[data-resultat="victoire"] .historique-combat-resultat,
+#combat-en-ligne .historique-combat[data-resultat="victoire_abandon"] .historique-combat-resultat {
+    color: #caffb7;
+    border-color: #46ad3c;
+    background: rgba(44, 125, 39, 0.2);
+}
+
+#combat-en-ligne .historique-combat[data-resultat="defaite"] .historique-combat-resultat,
+#combat-en-ligne .historique-combat[data-resultat="abandon"] .historique-combat-resultat {
+    color: #ffd2d0;
+    border-color: var(--combat-rouge);
+    background: rgba(138, 32, 37, 0.2);
+}
+
+#combat-en-ligne .historique-combat[data-resultat="egalite"] .historique-combat-resultat {
+    color: #ffe99f;
+    border-color: #d8b72b;
+    background: rgba(135, 105, 13, 0.2);
+}
+
 @media (max-width: 1050px) {
     #combat-en-ligne [data-combat-en-ligne-target="moiCombattants"],
     #combat-en-ligne [data-combat-en-ligne-target="adversaireCombattants"],
@@ -603,6 +670,10 @@ body:has(#combat-en-ligne) {
     }
 
     #combat-en-ligne [data-combat-en-ligne-target="salon"] {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="historiqueCombats"] {
         grid-template-columns: 1fr;
     }
 }

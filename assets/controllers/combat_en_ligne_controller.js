@@ -39,6 +39,8 @@ export default class extends Controller {
         'creerButton',
         'aucunCombat',
         'combatsDisponibles',
+        'aucunHistoriqueCombat',
+        'historiqueCombats',
     ];
 
     static values = {
@@ -312,6 +314,7 @@ export default class extends Controller {
         this.salonTarget.hidden = false;
         this.afficherEquipes();
         this.afficherCombatsDisponibles();
+        this.afficherHistoriqueCombats();
     }
 
     async chargerCombat(combatId) {
@@ -1170,6 +1173,87 @@ export default class extends Controller {
             ligne.append(titre, details, bouton);
             this.combatsDisponiblesTarget.append(ligne);
         }
+    }
+
+    afficherHistoriqueCombats() {
+        const historique = Array.isArray(this.salon?.historiqueCombats)
+            ? this.salon.historiqueCombats
+            : [];
+
+        this.historiqueCombatsTarget.replaceChildren();
+        this.aucunHistoriqueCombatTarget.hidden = historique.length > 0;
+
+        const libellesResultat = {
+            victoire: 'Victoire',
+            defaite: 'Défaite',
+            egalite: 'Égalité',
+            victoire_abandon: 'Victoire par abandon',
+            abandon: 'Abandon',
+        };
+
+        for (const combat of historique) {
+            const combatId = this.entierPositif(combat.id);
+
+            if (combatId === null) {
+                continue;
+            }
+
+            const carte = document.createElement('article');
+            const entete = document.createElement('div');
+            const titre = document.createElement('h3');
+            const resultat = document.createElement('strong');
+            const adversaire = document.createElement('p');
+            const informations = document.createElement('p');
+            const nombreRounds = Number.isInteger(combat.nombreRounds)
+                && combat.nombreRounds >= 0
+                ? combat.nombreRounds
+                : 0;
+            const resultatCode = Object.hasOwn(
+                libellesResultat,
+                combat.resultat,
+            )
+                ? combat.resultat
+                : 'egalite';
+
+            carte.className = 'historique-combat';
+            carte.dataset.resultat = resultatCode;
+            entete.className = 'historique-combat-entete';
+            resultat.className = 'historique-combat-resultat';
+            titre.textContent = `Combat #${combatId}`;
+            resultat.textContent = libellesResultat[resultatCode];
+            adversaire.textContent = [
+                'Adversaire :',
+                combat.adversaireEmail ?? 'inconnu',
+            ].join(' ');
+            informations.textContent = [
+                `${nombreRounds} round${nombreRounds > 1 ? 's' : ''} joué${nombreRounds > 1 ? 's' : ''}`,
+                this.formaterDateCombat(combat.dateFin),
+            ].join(' · ');
+
+            entete.append(titre, resultat);
+            carte.append(entete, adversaire, informations);
+            this.historiqueCombatsTarget.append(carte);
+        }
+    }
+
+    formaterDateCombat(dateFin) {
+        if (typeof dateFin !== 'string') {
+            return 'Date inconnue';
+        }
+
+        const date = new Date(dateFin);
+
+        if (Number.isNaN(date.getTime())) {
+            return 'Date inconnue';
+        }
+
+        return new Intl.DateTimeFormat(
+            'fr-FR',
+            {
+                dateStyle: 'short',
+                timeStyle: 'short',
+            },
+        ).format(date);
     }
 
     equipeSelectionneeId() {

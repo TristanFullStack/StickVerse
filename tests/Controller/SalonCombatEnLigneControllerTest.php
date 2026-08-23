@@ -193,6 +193,11 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonJoueur1['combatsDisponibles'],
         );
 
+        self::assertSame(
+            [],
+            $salonJoueur1['historiqueCombats'],
+        );
+
         self::assertIsArray(
             $salonJoueur1['csrf']
         );
@@ -486,6 +491,103 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonApresJonction
                 ['combatsDisponibles'],
         );
+    }
+
+    public function testExposeUniquementHistoriqueJoueDuJoueur(): void
+    {
+        $suffixe = bin2hex(random_bytes(6));
+        $joueur = (new User())
+            ->setEmail('historique-'.$suffixe.'@example.com')
+            ->setPassword('mot-de-passe-test');
+        $adversaire = (new User())
+            ->setEmail('adversaire-'.$suffixe.'@example.com')
+            ->setPassword('mot-de-passe-test');
+        $exterieur = (new User())
+            ->setEmail('exterieur-'.$suffixe.'@example.com')
+            ->setPassword('mot-de-passe-test');
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->persist($adversaire);
+        $this->entityManager->persist($exterieur);
+
+        $victoire = (new Combat($joueur))
+            ->setJoueur2($adversaire)
+            ->setStatut(Combat::STATUT_TERMINE)
+            ->setGagnant($joueur)
+            ->enregistrerResultatsRound(
+                3,
+                ['joueur2_A' => ['degatsEffectifs' => 4]],
+            );
+
+        $abandon = (new Combat($adversaire))
+            ->setJoueur2($joueur)
+            ->setStatut(Combat::STATUT_ABANDONNE)
+            ->setGagnant($adversaire)
+            ->enregistrerResultatsRound(
+                1,
+                ['joueur1_A' => ['degatsEffectifs' => 2]],
+            );
+
+        $annule = (new Combat($joueur))
+            ->setStatut(Combat::STATUT_ANNULE);
+
+        $combatExterieur = (new Combat($adversaire))
+            ->setJoueur2($exterieur)
+            ->setStatut(Combat::STATUT_TERMINE)
+            ->setGagnant($exterieur)
+            ->enregistrerResultatsRound(
+                2,
+                ['joueur1_A' => ['degatsEffectifs' => 3]],
+            );
+
+        $this->entityManager->persist($victoire);
+        $this->entityManager->persist($abandon);
+        $this->entityManager->persist($annule);
+        $this->entityManager->persist($combatExterieur);
+        $this->entityManager->flush();
+
+        $victoireId = $victoire->getId();
+        $abandonId = $abandon->getId();
+
+        self::assertNotNull($victoireId);
+        self::assertNotNull($abandonId);
+
+        $this->client->loginUser($joueur);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+
+        self::assertResponseIsSuccessful();
+
+        $salon = $this->lireReponseJson();
+        $historique = $salon['historiqueCombats'];
+
+        self::assertIsArray($historique);
+        self::assertCount(2, $historique);
+
+        self::assertSame($abandonId, $historique[0]['id']);
+        self::assertSame(
+            $adversaire->getEmail(),
+            $historique[0]['adversaireEmail'],
+        );
+        self::assertSame(
+            Combat::STATUT_ABANDONNE,
+            $historique[0]['statut'],
+        );
+        self::assertSame('abandon', $historique[0]['resultat']);
+        self::assertSame(1, $historique[0]['nombreRounds']);
+        self::assertIsString($historique[0]['dateFin']);
+
+        self::assertSame($victoireId, $historique[1]['id']);
+        self::assertSame(
+            $adversaire->getEmail(),
+            $historique[1]['adversaireEmail'],
+        );
+        self::assertSame(
+            Combat::STATUT_TERMINE,
+            $historique[1]['statut'],
+        );
+        self::assertSame('victoire', $historique[1]['resultat']);
+        self::assertSame(3, $historique[1]['nombreRounds']);
+        self::assertIsString($historique[1]['dateFin']);
     }
 
     /**

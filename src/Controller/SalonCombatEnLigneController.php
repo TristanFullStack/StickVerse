@@ -81,6 +81,9 @@ final class SalonCombatEnLigneController extends AbstractController
             ],
         );
 
+        $historiqueCombats = $combatRepository
+            ->trouverHistoriquePourJoueur($utilisateur);
+
         return $this->json([
             'combatActifId' => $combatActif?->getId(),
             'equipes' => array_map(
@@ -110,6 +113,14 @@ final class SalonCombatEnLigneController extends AbstractController
                         ->format(DATE_ATOM),
                 ],
                 $combatsDisponibles,
+            ),
+            'historiqueCombats' => array_map(
+                fn (Combat $combat): array =>
+                    $this->serialiserCombatHistorique(
+                        $combat,
+                        $utilisateur,
+                    ),
+                $historiqueCombats,
             ),
             'csrf' => [
                 'creer' => $csrfTokenManager
@@ -386,6 +397,50 @@ final class SalonCombatEnLigneController extends AbstractController
         }
 
         return $equipeId;
+    }
+
+    /**
+     * @return array{
+     *     id: int|null,
+     *     adversaireEmail: string|null,
+     *     statut: string,
+     *     resultat: string,
+     *     nombreRounds: int,
+     *     dateFin: string
+     * }
+     */
+    private function serialiserCombatHistorique(
+        Combat $combat,
+        User $utilisateur,
+    ): array {
+        $utilisateurId = $utilisateur->getId();
+        $estJoueur1 = $combat->getJoueur1()->getId()
+            === $utilisateurId;
+        $adversaire = $estJoueur1
+            ? $combat->getJoueur2()
+            : $combat->getJoueur1();
+        $gagnantId = $combat->getGagnant()?->getId();
+
+        if ($combat->getStatut() === Combat::STATUT_ABANDONNE) {
+            $resultat = $gagnantId === $utilisateurId
+                ? 'victoire_abandon'
+                : 'abandon';
+        } elseif ($gagnantId === null) {
+            $resultat = 'egalite';
+        } else {
+            $resultat = $gagnantId === $utilisateurId
+                ? 'victoire'
+                : 'defaite';
+        }
+
+        return [
+            'id' => $combat->getId(),
+            'adversaireEmail' => $adversaire?->getEmail(),
+            'statut' => $combat->getStatut(),
+            'resultat' => $resultat,
+            'nombreRounds' => $combat->getDernierRoundResolu() ?? 0,
+            'dateFin' => $combat->getDateMiseAJour()->format(DATE_ATOM),
+        ];
     }
 
     private function csrfEstValide(

@@ -114,6 +114,16 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="combatsDisponibles"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="aucunHistoriqueCombat"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="historiqueCombats"]'
+        );
+        self::assertSelectorTextContains(
+            '#historique-combats-titre',
+            'Mes derniers combats',
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="combatActif"]'
         );
         self::assertSelectorExists(

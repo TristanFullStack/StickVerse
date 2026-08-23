@@ -3973,7 +3973,161 @@ Un combat réel a permis de confirmer que :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J45 — Ajouter l’historique des combats du joueur
 
+### Objectif
+
+J45 permet au joueur de retrouver directement depuis le salon ses derniers combats terminés ou abandonnés.
+
+Jusqu’à présent, les combats étaient conservés en base de données, mais ils n’étaient plus accessibles visuellement après le retour à la page des combats.
+
+### Résultat obtenu
+
+Une nouvelle section **« Mes derniers combats »** est maintenant affichée dans le salon.
+
+Chaque combat présente :
+
+- son identifiant ;
+- l’adresse email de l’adversaire ;
+- le résultat vu depuis le compte actuellement connecté ;
+- le nombre de rounds résolus ;
+- la date et l’heure de fin du combat.
+
+Les combats sont classés du plus récent au plus ancien.
+
+### Résultats possibles
+
+Le résultat affiché dépend du joueur connecté :
+
+- **Victoire** lorsque le joueur a remporté normalement le combat ;
+- **Défaite** lorsque l’adversaire a remporté normalement le combat ;
+- **Victoire par abandon** lorsque l’adversaire a abandonné ;
+- **Abandon** lorsque le joueur connecté a abandonné ;
+- **Match nul** lorsqu’aucun gagnant n’a été enregistré.
+
+Cette interprétation est effectuée côté serveur afin de conserver une source de vérité unique.
+
+### Sélection de l’historique
+
+Le repository des combats fournit maintenant une recherche dédiée à l’historique d’un joueur.
+
+Cette recherche :
+
+- sélectionne uniquement les combats auxquels le joueur participe ;
+- accepte le joueur aussi bien comme joueur 1 que comme joueur 2 ;
+- conserve uniquement les combats terminés ou abandonnés ;
+- exclut les combats annulés pendant l’attente d’un adversaire ;
+- trie les résultats par date de mise à jour décroissante ;
+- utilise l’identifiant comme second critère de tri ;
+- limite l’historique aux dix combats les plus récents.
+
+Les relations avec les deux joueurs et le gagnant sont chargées dans la même requête.
+
+### Contrat JSON du salon
+
+L’état du salon expose maintenant une propriété `historiqueCombats`.
+
+Chaque entrée contient :
+
+- `id` ;
+- `adversaireEmail` ;
+- `statut` ;
+- `resultat` ;
+- `nombreRounds` ;
+- `dateFin`.
+
+La date est transmise au format ISO 8601 pour permettre un affichage fiable côté navigateur.
+
+### Interface utilisateur
+
+La nouvelle section est intégrée sous les zones de création et de recherche d’un combat.
+
+Les combats sont présentés sous forme de cartes responsives :
+
+- deux colonnes lorsque l’espace disponible le permet ;
+- une seule colonne sur les écrans plus étroits ;
+- badge vert pour les victoires ;
+- badge rouge pour les défaites et abandons ;
+- badge jaune pour les matchs nuls ;
+- informations lisibles même avec une adresse email longue.
+
+Un message spécifique est affiché lorsque le joueur ne possède encore aucun historique.
+
+### Mise à jour automatique
+
+L’historique utilise le même état JSON que le reste du salon.
+
+Il est donc actualisé avec l’interface sans introduire une seconde logique de récupération ni dupliquer les règles métier dans JavaScript.
+
+Les éléments HTML sont construits avec les API du DOM et `textContent`, afin de ne pas injecter directement les données reçues dans du HTML interprété.
+
+### Validation avec deux comptes
+
+La fonctionnalité a été vérifiée manuellement depuis les deux côtés des mêmes combats.
+
+Pour le compte gagnant :
+
+- le combat gagné normalement apparaît comme **Victoire** ;
+- le combat remporté après l’abandon adverse apparaît comme **Victoire par abandon**.
+
+Pour le compte perdant :
+
+- le même combat apparaît comme **Défaite** ;
+- son propre abandon apparaît comme **Abandon**.
+
+L’adversaire est correctement inversé selon le compte connecté.
+
+Les combats sont affichés du plus récent au plus ancien et les combats annulés sans adversaire ne sont pas présents dans l’historique.
+
+### Tests ajoutés et adaptés
+
+Les tests contrôlent notamment :
+
+- l’absence d’historique pour un nouveau joueur ;
+- la présence des combats terminés pertinents ;
+- l’exclusion des combats d’autres joueurs ;
+- l’exclusion des combats annulés ;
+- l’ordre chronologique décroissant ;
+- l’adresse de l’adversaire ;
+- le statut du combat ;
+- le résultat vu depuis le joueur connecté ;
+- le nombre de rounds résolus ;
+- la présence de la date de fin ;
+- la présence des nouvelles zones dans le template.
+
+### Validation technique
+
+Les vérifications suivantes sont réussies :
+
+- syntaxe JavaScript valide ;
+- syntaxe PHP valide ;
+- syntaxe Twig valide ;
+- conteneur Symfony valide ;
+- assets JavaScript et CSS reconnus par AssetMapper ;
+- absence d’erreur détectée par `git diff --check` ;
+- suite PHPUnit complète réussie.
+
+Résultat final :
+
+- **96 tests réussis** ;
+- **841 assertions réussies** ;
+- aucune régression détectée.
+
+### Fichiers modifiés
+
+- `src/Repository/CombatRepository.php`
+- `src/Controller/SalonCombatEnLigneController.php`
+- `templates/combat_en_ligne/index.html.twig`
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `tests/Controller/SalonCombatEnLigneControllerTest.php`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+
+### Conclusion
+
+J45 rend les combats passés accessibles depuis le salon et présente leur résultat correctement selon le joueur connecté.
+
+Cette base permettra ensuite d’ajouter une page de rapport détaillé pour consulter le déroulement complet d’un ancien combat.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
