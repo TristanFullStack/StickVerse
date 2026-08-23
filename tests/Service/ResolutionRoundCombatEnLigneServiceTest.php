@@ -5,6 +5,7 @@ namespace App\Tests\Service;
 use App\Entity\Combat;
 use App\Entity\CombattantCombat;
 use App\Entity\PlanRoundCombat;
+use App\Entity\ResultatRoundCombat;
 use App\Entity\User;
 use App\Model\PlanCombat;
 use App\Repository\CombatRepository;
@@ -155,6 +156,28 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
             $premiereResolution,
             $combat->getDerniersResultats(),
         );
+        self::assertCount(1, $combat->getResultatsRounds());
+
+        $resultatHistorique = $combat
+            ->getResultatsRounds()
+            ->first();
+
+        self::assertInstanceOf(
+            ResultatRoundCombat::class,
+            $resultatHistorique,
+        );
+        self::assertSame(
+            $combat,
+            $resultatHistorique->getCombat(),
+        );
+        self::assertSame(
+            1,
+            $resultatHistorique->getNumeroRound(),
+        );
+        self::assertSame(
+            $premiereResolution,
+            $resultatHistorique->getResultats(),
+        );
         self::assertSame(2, $combat->getNumeroRound());
 
         /*
@@ -173,6 +196,7 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
             $premiereResolution,
             $combat->getDerniersResultats(),
         );
+        self::assertCount(1, $combat->getResultatsRounds());
     }
 
     public function testAttendLeDeuxiemePlan(): void
@@ -227,6 +251,7 @@ final class ResolutionRoundCombatEnLigneServiceTest extends TestCase
 
         self::assertNull($resultat);
         self::assertSame(1, $combat->getNumeroRound());
+        self::assertCount(0, $combat->getResultatsRounds());
     }
 
     public function testRefuseUnCombatQuiNestPasEnCours(): void

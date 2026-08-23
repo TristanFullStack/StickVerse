@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\CombattantCombat;
 use App\Entity\Combat;
 use App\Entity\PlanRoundCombat;
+use App\Entity\ResultatRoundCombat;
 use App\Entity\User;
 use App\Model\PlanCombat;
 use App\Repository\CombattantCombatRepository;
 use App\Repository\PlanRoundCombatRepository;
+use App\Repository\ResultatRoundCombatRepository;
 use App\Security\Voter\CombatVoter;
 use App\Service\AbandonCombatService;
 use App\Service\AnnulationCombatEnLigneService;
@@ -43,6 +45,7 @@ final class CombatEnLigneController extends AbstractController
         Combat $combat,
         CombattantCombatRepository $combattantRepository,
         PlanRoundCombatRepository $planRepository,
+        ResultatRoundCombatRepository $resultatRoundRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
         ExpirationCombatEnAttenteService $expirationService,
     ): JsonResponse {
@@ -103,6 +106,16 @@ final class CombatEnLigneController extends AbstractController
                     'resultats' => $combat->getDerniersResultats(),
                 ]
                 : null,
+            'historiqueRounds' => array_map(
+                static fn (
+                    ResultatRoundCombat $resultatRound
+                ): array => [
+                    'numero' => $resultatRound->getNumeroRound(),
+                    'resultats' => $resultatRound->getResultats(),
+                ],
+                $resultatRoundRepository
+                    ->trouverPourCombat($combat),
+            ),
             'moi' => $this->serialiserParticipant(
                 $combat,
                 $utilisateur,

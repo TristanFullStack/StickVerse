@@ -101,6 +101,17 @@ class Combat
     )]
     private Collection $plans;
 
+    /**
+     * @var Collection<int, ResultatRoundCombat>
+     */
+    #[ORM\OneToMany(
+        targetEntity: ResultatRoundCombat::class,
+        mappedBy: 'combat',
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
+    private Collection $resultatsRounds;
+
     public function __construct(User $joueur1)
     {
         $maintenant = new DateTimeImmutable();
@@ -110,6 +121,7 @@ class Combat
         $this->dateMiseAJour = $maintenant;
         $this->combattants = new ArrayCollection();
         $this->plans = new ArrayCollection();
+        $this->resultatsRounds = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -368,6 +380,38 @@ class Combat
     public function removePlan(PlanRoundCombat $plan): static
     {
         $this->plans->removeElement($plan);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ResultatRoundCombat>
+     */
+    public function getResultatsRounds(): Collection
+    {
+        return $this->resultatsRounds;
+    }
+
+    public function addResultatRound(
+        ResultatRoundCombat $resultatRound,
+    ): static {
+        if ($resultatRound->getCombat() !== $this) {
+            throw new InvalidArgumentException(
+                'Le résultat doit appartenir à ce combat.'
+            );
+        }
+
+        if (!$this->resultatsRounds->contains($resultatRound)) {
+            $this->resultatsRounds->add($resultatRound);
+        }
+
+        return $this;
+    }
+
+    public function removeResultatRound(
+        ResultatRoundCombat $resultatRound,
+    ): static {
+        $this->resultatsRounds->removeElement($resultatRound);
 
         return $this;
     }

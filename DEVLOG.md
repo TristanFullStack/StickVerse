@@ -3503,7 +3503,202 @@ Le parcours a été contrôlé avec deux comptes :
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J42 — Persister l’historique des rounds
 
+### Objectif
+
+J42 permet de conserver durablement le résultat de chaque round d’un combat en ligne.
+
+Avant cette évolution, l’entité `Combat` conservait uniquement le dernier round résolu. Chaque nouvelle résolution remplaçait donc les résultats précédents.
+
+L’historique persistant constitue une base nécessaire pour :
+
+- afficher le déroulement complet d’un combat ;
+- construire les futurs rapports détaillés ;
+- retrouver l’évolution des points de vie ;
+- préparer les futures animations et barres de vie interactives ;
+- diagnostiquer plus facilement une résolution incorrecte.
+
+### Nouvelle entité ResultatRoundCombat
+
+L’entité `ResultatRoundCombat` représente le résultat définitif d’un round résolu.
+
+Elle conserve :
+
+- le combat concerné ;
+- le numéro du round ;
+- les résultats détaillés au format JSON ;
+- la date et l’heure de résolution.
+
+Chaque résultat est associé à son combat par une relation Doctrine `ManyToOne`.
+
+L’entité `Combat` possède maintenant la relation inverse `OneToMany` nommée `resultatsRounds`.
+
+La suppression d’un combat supprime également son historique grâce à la suppression en cascade.
+
+### Unicité des rounds
+
+Une contrainte unique protège le couple :
+
+- combat ;
+- numéro du round.
+
+Un même combat ne peut donc pas enregistrer deux résultats différents pour le même numéro de round.
+
+Cette contrainte complète les protections déjà présentes dans le service de résolution :
+
+- transaction Doctrine ;
+- verrou pessimiste d’écriture ;
+- contrôle du statut ;
+- contrôle des deux plans ;
+- résolution unique du round.
+
+### Persistance transactionnelle
+
+`ResolutionRoundCombatEnLigneService` crée maintenant un `ResultatRoundCombat` pendant la transaction qui résout le round.
+
+L’enregistrement du résultat fait donc partie de la même opération atomique que :
+
+- le calcul des dégâts ;
+- la mise à jour des points de vie ;
+- le passage au round suivant ;
+- la détermination éventuelle du gagnant ;
+- la suppression des plans devenus inutiles.
+
+Si la transaction échoue, aucune partie du round n’est enregistrée partiellement.
+
+La relation Doctrine utilise la persistance en cascade depuis `Combat`.
+
+### Repository dédié
+
+`ResultatRoundCombatRepository` fournit la méthode :
+
+- `trouverPourCombat()`.
+
+Cette méthode retourne tous les résultats d’un combat dans l’ordre croissant des rounds.
+
+L’ordre est donc défini côté serveur et ne dépend pas de l’interface utilisateur.
+
+### Migration Doctrine
+
+La migration `Version20260823120000` crée la table :
+
+- `resultat_round_combat`.
+
+Elle ajoute :
+
+- la clé primaire ;
+- la relation vers `combat` ;
+- le numéro du round ;
+- les résultats JSON ;
+- la date de résolution ;
+- la contrainte unique combat/round ;
+- la clé étrangère avec suppression en cascade ;
+- l’index Doctrine attendu sur la relation.
+
+La migration a été appliquée dans les environnements de développement et de test.
+
+Les deux schémas sont synchronisés avec le mapping Doctrine.
+
+### Exposition HTTP sécurisée
+
+La route d’état du combat expose maintenant le champ :
+
+- `historiqueRounds`.
+
+Ce champ contient uniquement les rounds déjà résolus, avec :
+
+- leur numéro ;
+- leurs résultats définitifs.
+
+Les résultats sont retournés dans l’ordre chronologique.
+
+Les plans secrets ne sont jamais ajoutés à cet historique.
+
+Les cibles d’attaque et de défense du round courant restent donc invisibles jusqu’à la résolution par le serveur.
+
+Le champ historique est vide lorsqu’aucun round n’a encore été résolu.
+
+### Compatibilité avec le dernier round
+
+Les propriétés existantes de `Combat` sont conservées :
+
+- `dernierRoundResolu` ;
+- `derniersResultats`.
+
+Elles continuent d’alimenter l’interface actuelle sans rupture.
+
+Le nouvel historique complète ces données sans modifier immédiatement l’affichage du combat.
+
+Les futures améliorations visuelles pourront ainsi être développées progressivement, sans brûler les étapes.
+
+### Tests ajoutés ou enrichis
+
+Les tests vérifient notamment :
+
+- la création d’un résultat de round valide ;
+- le refus d’un numéro de round inférieur à 1 ;
+- le refus d’un résultat vide ;
+- l’association automatique entre le résultat et son combat ;
+- la création d’un historique pendant la transaction de résolution ;
+- l’absence d’historique lorsqu’un seul plan est soumis ;
+- l’absence de doublon lors d’une deuxième tentative de résolution ;
+- la persistance de deux rounds consécutifs dans MySQL ;
+- la conservation du résultat du premier round après le second ;
+- l’ordre croissant des résultats retournés par le repository ;
+- la relecture complète après vidage de l’EntityManager ;
+- l’exposition HTTP des deux rounds résolus ;
+- l’absence des cibles secrètes dans la réponse HTTP.
+
+### Erreurs rencontrées et corrections
+
+Après la première migration, Doctrine signalait que le schéma n’était pas synchronisé.
+
+La seule différence concernait le nom de l’index créé sur la relation vers `Combat`.
+
+La migration utilise maintenant directement le nom d’index attendu par Doctrine :
+
+- `IDX_86ECD08AFC7EEDB8`.
+
+Les index déjà créés dans les bases de développement et de test ont été renommés avec `dbal:run-sql`.
+
+Les deux schémas sont maintenant totalement synchronisés.
+
+Pendant l’extension du test HTTP à deux rounds, le navigateur de test conservait un ancien objet `User` en session après un vidage de l’EntityManager.
+
+Cela provoquait une collision d’identité Doctrine.
+
+Le test conserve maintenant les mêmes identités de session pendant les deux rounds, puis effectue une nouvelle relecture MySQL après leur résolution.
+
+### Fichiers créés
+
+- `migrations/Version20260823120000.php` ;
+- `src/Entity/ResultatRoundCombat.php` ;
+- `src/Repository/ResultatRoundCombatRepository.php` ;
+- `tests/Entity/ResultatRoundCombatTest.php`.
+
+### Fichiers modifiés
+
+- `src/Controller/CombatEnLigneController.php` ;
+- `src/Entity/Combat.php` ;
+- `src/Service/ResolutionRoundCombatEnLigneService.php` ;
+- `tests/Controller/CombatEnLigneControllerTest.php` ;
+- `tests/Controller/ResolutionRoundCombatHttpTest.php` ;
+- `tests/Service/ResolutionRoundCombatEnLigneServiceTest.php`.
+
+### Résultats finaux
+
+- 95 tests réussis ;
+- 809 assertions ;
+- syntaxe PHP valide ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schémas de développement et de test synchronisés ;
+- 11 migrations exécutées et disponibles ;
+- aucune migration restante ;
+- historique de deux rounds relu depuis MySQL ;
+- aucun plan secret exposé par l’API ;
+- aucun commit ni push effectué avant la validation complète.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Combat;
 use App\Entity\CombattantCombat;
 use App\Entity\PlanRoundCombat;
+use App\Entity\ResultatRoundCombat;
 use App\Model\EtatEquipeCombat;
 use App\Repository\CombatRepository;
 use App\Repository\CombattantCombatRepository;
@@ -162,6 +163,12 @@ final class ResolutionRoundCombatEnLigneService
                 );
 
                 $combat->enregistrerResultatsRound(
+                    $numeroRound,
+                    $resultats,
+                );
+
+                new ResultatRoundCombat(
+                    $combat,
                     $numeroRound,
                     $resultats,
                 );

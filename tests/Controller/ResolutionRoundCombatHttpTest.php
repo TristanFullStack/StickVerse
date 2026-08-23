@@ -4,9 +4,11 @@ namespace App\Tests\Controller;
 
 use App\Entity\Combat;
 use App\Entity\CombattantCombat;
+use App\Entity\ResultatRoundCombat;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombattantCombatRepository;
+use App\Repository\ResultatRoundCombatRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -64,7 +66,7 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testDeuxParticipantsResolventUnRoundViaHttp(): void
+    public function testDeuxParticipantsResolventPlusieursRoundsViaHttp(): void
     {
         [
             $combat,
@@ -428,6 +430,202 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         self::assertEquals(
             $etatFinalJoueur1['dernierRound']['resultats'],
             $etatFinalJoueur2['dernierRound']['resultats'],
+        );
+
+        /*
+         * Les deux participants soumettent ensuite leur plan du round 2.
+         * Les mêmes identités de session sont conservées afin que le
+         * navigateur de test ne sérialise pas deux objets User différents
+         * pour un même identifiant après le clear() précédent.
+         */
+        $this->client->loginUser($joueur1);
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/plan',
+            [
+                'cibleAttaqueX' => 'A',
+                'cibleAttaqueY' => 'B',
+                'cibleDefenseX' => 'C',
+                'cibleDefenseY' => 'D',
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' =>
+                    $etatFinalJoueur1['csrf']['plan'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(
+            Response::HTTP_CREATED
+        );
+
+        $attenteRound2 = $this->lireReponseJson();
+
+        self::assertSame(
+            'en_attente_adversaire',
+            $attenteRound2['etat'],
+        );
+
+        self::assertSame(
+            2,
+            $attenteRound2['numeroRound'],
+        );
+
+        $this->client->loginUser($joueur2);
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/plan',
+            [
+                'cibleAttaqueX' => 'A',
+                'cibleAttaqueY' => 'B',
+                'cibleDefenseX' => 'C',
+                'cibleDefenseY' => 'D',
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' =>
+                    $etatFinalJoueur2['csrf']['plan'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(
+            Response::HTTP_OK
+        );
+
+        $resolutionRound2 = $this->lireReponseJson();
+
+        self::assertSame(
+            'round_resolu',
+            $resolutionRound2['etat'],
+        );
+
+        self::assertSame(
+            3,
+            $resolutionRound2['numeroRound'],
+        );
+
+        self::assertSame(
+            6,
+            $resolutionRound2['resultats']['joueur1_A']['pvRestants'],
+        );
+
+        self::assertSame(
+            6,
+            $resolutionRound2['resultats']['joueur2_A']['pvRestants'],
+        );
+
+        /*
+         * L’état HTTP expose les deux résultats déjà résolus dans l’ordre,
+         * sans jamais inclure les choix secrets des plans.
+         */
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatApresDeuxRounds = $this->lireReponseJson();
+
+        self::assertCount(
+            2,
+            $etatApresDeuxRounds['historiqueRounds'],
+        );
+
+        self::assertSame(
+            [1, 2],
+            array_column(
+                $etatApresDeuxRounds['historiqueRounds'],
+                'numero',
+            ),
+        );
+
+        self::assertEquals(
+            $resolution['resultats'],
+            $etatApresDeuxRounds['historiqueRounds'][0]['resultats'],
+        );
+
+        self::assertEquals(
+            $resolutionRound2['resultats'],
+            $etatApresDeuxRounds['historiqueRounds'][1]['resultats'],
+        );
+
+        $etatApresDeuxRoundsJson = json_encode(
+            $etatApresDeuxRounds,
+            JSON_THROW_ON_ERROR,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleAttaqueX',
+            $etatApresDeuxRoundsJson,
+        );
+
+        self::assertStringNotContainsString(
+            'cibleDefenseX',
+            $etatApresDeuxRoundsJson,
+        );
+
+        /*
+         * Nouvelle relecture MySQL : les deux résultats doivent exister,
+         * rester ordonnés et conserver leurs valeurs propres.
+         */
+        $this->entityManager->clear();
+
+        $combatDeuxRounds = $this->entityManager->find(
+            Combat::class,
+            $combatId,
+        );
+
+        self::assertInstanceOf(
+            Combat::class,
+            $combatDeuxRounds,
+        );
+
+        $resultatRoundRepository =
+            $this->entityManager->getRepository(
+                ResultatRoundCombat::class
+            );
+
+        self::assertInstanceOf(
+            ResultatRoundCombatRepository::class,
+            $resultatRoundRepository,
+        );
+
+        $historique = $resultatRoundRepository
+            ->trouverPourCombat($combatDeuxRounds);
+
+        self::assertCount(2, $historique);
+
+        self::assertSame(
+            [1, 2],
+            array_map(
+                static fn (
+                    ResultatRoundCombat $resultat
+                ): int => $resultat->getNumeroRound(),
+                $historique,
+            ),
+        );
+
+        self::assertEquals(
+            $resolution['resultats'],
+            $historique[0]->getResultats(),
+        );
+
+        self::assertEquals(
+            $resolutionRound2['resultats'],
+            $historique[1]->getResultats(),
+        );
+
+        self::assertSame(
+            8,
+            $historique[0]
+                ->getResultats()['joueur1_A']['pvRestants'],
+        );
+
+        self::assertSame(
+            6,
+            $historique[1]
+                ->getResultats()['joueur1_A']['pvRestants'],
         );
     }
 
