@@ -3702,7 +3702,124 @@ Le test conserve maintenant les mêmes identités de session pendant les deux ro
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J43 — Afficher l’historique des rounds dans le combat
 
+### Objectif
+
+J43 rend l’historique persistant créé pendant J42 directement consultable depuis l’interface du combat en ligne.
+
+Le joueur peut maintenant revoir les résultats des rounds précédents sans quitter le combat en cours.
+
+### Affichage des rounds précédents
+
+Une nouvelle section `Rounds précédents` est affichée lorsqu’au moins deux rounds ont été résolus.
+
+Le dernier round résolu reste présenté dans le tableau principal existant.
+
+Les rounds plus anciens sont affichés dans des panneaux repliables afin de conserver une interface compacte.
+
+Chaque panneau indique :
+
+- le numéro du round ;
+- les dégâts infligés par le joueur connecté ;
+- les dégâts reçus par le joueur connecté.
+
+### Détail d’un round
+
+Chaque round précédent peut être ouvert pour consulter son résultat complet.
+
+Le tableau présente :
+
+- la cible concernée ;
+- l’attaque totale ;
+- la défense totale ;
+- les dégâts effectifs ;
+- les points de vie restants.
+
+Les informations sont interprétées depuis le point de vue du joueur connecté, quelle que soit sa position dans le combat.
+
+### Compatibilité avec l’actualisation automatique
+
+L’interface du combat continue d’interroger régulièrement le serveur afin de détecter :
+
+- le plan de l’adversaire ;
+- la résolution d’un round ;
+- le passage au round suivant ;
+- la fin du combat.
+
+La première version de l’historique reconstruisait les panneaux pendant chaque actualisation automatique.
+
+Un round ouvert se refermait donc après quelques secondes.
+
+Le contrôleur Stimulus mémorise maintenant les numéros des panneaux ouverts avant la mise à jour, puis restaure leur état après le nouvel affichage.
+
+L’ouverture et la fermeture d’un round persistent ainsi pendant les actualisations automatiques.
+
+### Construction sécurisée de l’interface
+
+Les éléments de l’historique sont construits avec les API du navigateur :
+
+- `createElement()` ;
+- `textContent` ;
+- `replaceChildren()`.
+
+Aucune donnée provenant du serveur n’est injectée avec `innerHTML`.
+
+Les résultats affichés proviennent exclusivement de `historiqueRounds`, qui contient uniquement les rounds définitivement résolus.
+
+Les plans secrets du round courant ne sont jamais exposés dans l’historique.
+
+### Accessibilité et affichage responsive
+
+Les rounds précédents utilisent les éléments HTML natifs `details` et `summary`.
+
+Ils peuvent donc être manipulés au clavier et conservent une structure sémantique claire.
+
+Un indicateur visuel accompagne leur ouverture.
+
+Sur les écrans étroits :
+
+- le résumé s’adapte à la largeur disponible ;
+- le tableau reste lisible grâce au défilement horizontal ;
+- la disposition des informations est réorganisée.
+
+### Tests et validation manuelle
+
+Les tests de l’interface vérifient la présence :
+
+- de la section dédiée à l’historique ;
+- de la cible Stimulus contenant la liste ;
+- du titre accessible `Rounds précédents`.
+
+La validation manuelle a confirmé que :
+
+- les anciens rounds sont correctement affichés ;
+- un round peut être ouvert et refermé ;
+- son état reste identique après plusieurs actualisations automatiques ;
+- le dernier round reste séparé des rounds précédents ;
+- les dégâts sont présentés du point de vue du joueur connecté.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js` ;
+- `assets/styles/combat_en_ligne.css` ;
+- `templates/combat_en_ligne/index.html.twig` ;
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`.
+
+### Résultats finaux
+
+- 95 tests réussis ;
+- 813 assertions ;
+- syntaxe JavaScript valide ;
+- syntaxe Twig valide ;
+- conteneur Symfony valide ;
+- ressources JavaScript et CSS détectées par AssetMapper ;
+- historique des rounds affiché dans l’ordre chronologique ;
+- état ouvert ou fermé conservé pendant l’actualisation automatique ;
+- affichage responsive et accessible ;
+- aucun plan secret exposé ;
+- aucune erreur détectée par `git diff --check` ;
+- aucun commit ni push effectué avant la validation complète.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -326,6 +326,7 @@ body:has(#combat-en-ligne) {
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="resultatRound"],
+#combat-en-ligne [data-combat-en-ligne-target="historiqueRounds"],
 #combat-en-ligne [data-combat-en-ligne-target="planSection"] {
     margin: 20px 0;
     padding: 20px;
@@ -335,9 +336,83 @@ body:has(#combat-en-ligne) {
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="resultatRound"] h3,
+#combat-en-ligne [data-combat-en-ligne-target="historiqueRounds"] h3,
 #combat-en-ligne [data-combat-en-ligne-target="planSection"] h3 {
     margin-top: 0;
     color: var(--combat-violet);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="historiqueRoundsListe"] {
+    display: grid;
+    gap: 10px;
+}
+
+#combat-en-ligne .historique-round {
+    overflow: hidden;
+    border: 1px solid #254863;
+    border-radius: 9px;
+    background: #071522;
+}
+
+#combat-en-ligne .historique-round > summary {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 11px 14px;
+    color: #eaf5ff;
+    background: #0b2032;
+    cursor: pointer;
+    list-style: none;
+}
+
+#combat-en-ligne .historique-round > summary::-webkit-details-marker {
+    display: none;
+}
+
+#combat-en-ligne .historique-round > summary::before {
+    content: "›";
+    color: var(--combat-cyan);
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1;
+    transition: transform 150ms ease;
+}
+
+#combat-en-ligne .historique-round[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+#combat-en-ligne .historique-round > summary:focus-visible {
+    outline: 2px solid var(--combat-cyan);
+    outline-offset: -3px;
+}
+
+#combat-en-ligne .historique-round-titre {
+    color: var(--combat-violet);
+    font-weight: 900;
+}
+
+#combat-en-ligne .historique-round-statistiques {
+    justify-self: end;
+    color: var(--combat-texte-secondaire);
+    font-size: 14px;
+}
+
+#combat-en-ligne .historique-round-tableau {
+    overflow-x: auto;
+    padding: 12px 14px 14px;
+}
+
+#combat-en-ligne .historique-round-legende {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 #combat-en-ligne table {
@@ -481,6 +556,19 @@ body:has(#combat-en-ligne) {
 
     #combat-en-ligne .combat-disponible {
         grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne .historique-round > summary {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    #combat-en-ligne .historique-round-statistiques {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    #combat-en-ligne .historique-round-tableau table {
+        min-width: 620px;
     }
 
     #combat-en-ligne table {

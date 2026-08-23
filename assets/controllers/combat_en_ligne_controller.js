@@ -17,6 +17,8 @@ export default class extends Controller {
         'resultatRound',
         'resultatRoundNumero',
         'resultatRoundLignes',
+        'historiqueRounds',
+        'historiqueRoundsListe',
         'attenteAdversaire',
         'participants',
         'moiNom',
@@ -412,6 +414,7 @@ export default class extends Controller {
         this.afficherEtatRound();
         this.afficherFinCombat();
         this.afficherDernierRound();
+        this.afficherHistoriqueRounds();
         this.afficherFormulairePlan();
         this.afficherBoutonAbandon();
         this.afficherBoutonAnnulation();
@@ -507,35 +510,10 @@ export default class extends Controller {
         }
 
         const positionMoi = dernierRound.positionMoi;
-        const lignes = Object.entries(resultats)
-            .map(([cible, resultat]) => {
-                const correspondance = cible.match(
-                    /^(joueur1|joueur2)_([A-D])$/
-                );
-
-                if (
-                    correspondance === null
-                    || resultat === null
-                    || typeof resultat !== 'object'
-                    || Array.isArray(resultat)
-                ) {
-                    return null;
-                }
-
-                return {
-                    proprietaire: correspondance[1],
-                    slot: correspondance[2],
-                    resultat,
-                };
-            })
-            .filter((ligne) => ligne !== null)
-            .sort((ligneA, ligneB) => {
-                const ordreA = ligneA.proprietaire === positionMoi ? 0 : 1;
-                const ordreB = ligneB.proprietaire === positionMoi ? 0 : 1;
-
-                return ordreA - ordreB
-                    || ligneA.slot.localeCompare(ligneB.slot);
-            });
+        const lignes = this.lignesResultatRound(
+            resultats,
+            positionMoi,
+        );
 
         if (lignes.length === 0) {
             this.resultatRoundTarget.hidden = true;
@@ -569,6 +547,204 @@ export default class extends Controller {
         }
 
         this.resultatRoundTarget.hidden = false;
+    }
+
+    afficherHistoriqueRounds() {
+        const historique = Array.isArray(this.combat?.historiqueRounds)
+            ? this.combat.historiqueRounds
+            : [];
+        const dernierNumero = this.entierPositif(
+            this.combat?.dernierRound?.numero
+        );
+        const positionMoi = this.combat?.dernierRound?.positionMoi;
+        const roundsOuverts = new Set(
+            Array.from(
+                this.historiqueRoundsListeTarget.querySelectorAll(
+                    '.historique-round[open]'
+                )
+            ).map((panneau) => panneau.dataset.numeroRound)
+        );
+
+        this.historiqueRoundsListeTarget.replaceChildren();
+
+        const roundsPrecedents = historique
+            .map((round) => {
+                const numero = this.entierPositif(round?.numero);
+                const lignes = this.lignesResultatRound(
+                    round?.resultats,
+                    positionMoi,
+                );
+
+                if (
+                    numero === null
+                    || numero === dernierNumero
+                    || lignes.length === 0
+                ) {
+                    return null;
+                }
+
+                return { numero, lignes };
+            })
+            .filter((round) => round !== null)
+            .sort((roundA, roundB) => roundA.numero - roundB.numero);
+
+        if (roundsPrecedents.length === 0) {
+            this.historiqueRoundsTarget.hidden = true;
+
+            return;
+        }
+
+        for (const round of roundsPrecedents) {
+            const panneau = document.createElement('details');
+            const resume = document.createElement('summary');
+            const titre = document.createElement('span');
+            const statistiques = document.createElement('span');
+            const degats = this.resumerDegatsRound(
+                round.lignes,
+                positionMoi,
+            );
+
+            panneau.className = 'historique-round';
+            panneau.dataset.numeroRound = String(round.numero);
+            panneau.open = roundsOuverts.has(String(round.numero));
+            titre.className = 'historique-round-titre';
+            titre.textContent = `Round ${round.numero}`;
+            statistiques.className = 'historique-round-statistiques';
+            statistiques.textContent = [
+                `${degats.infliges} dégâts infligés`,
+                `${degats.recus} dégâts reçus`,
+            ].join(' · ');
+
+            resume.append(titre, statistiques);
+            panneau.append(
+                resume,
+                this.creerTableauHistoriqueRound(
+                    round.numero,
+                    round.lignes,
+                    positionMoi,
+                ),
+            );
+            this.historiqueRoundsListeTarget.append(panneau);
+        }
+
+        this.historiqueRoundsTarget.hidden = false;
+    }
+
+    lignesResultatRound(resultats, positionMoi) {
+        if (
+            resultats === null
+            || typeof resultats !== 'object'
+            || Array.isArray(resultats)
+        ) {
+            return [];
+        }
+
+        return Object.entries(resultats)
+            .map(([cible, resultat]) => {
+                const correspondance = cible.match(
+                    /^(joueur1|joueur2)_([A-D])$/
+                );
+
+                if (
+                    correspondance === null
+                    || resultat === null
+                    || typeof resultat !== 'object'
+                    || Array.isArray(resultat)
+                ) {
+                    return null;
+                }
+
+                return {
+                    proprietaire: correspondance[1],
+                    slot: correspondance[2],
+                    resultat,
+                };
+            })
+            .filter((ligne) => ligne !== null)
+            .sort((ligneA, ligneB) => {
+                const ordreA = ligneA.proprietaire === positionMoi ? 0 : 1;
+                const ordreB = ligneB.proprietaire === positionMoi ? 0 : 1;
+
+                return ordreA - ordreB
+                    || ligneA.slot.localeCompare(ligneB.slot);
+            });
+    }
+
+    resumerDegatsRound(lignes, positionMoi) {
+        const resume = {
+            infliges: 0,
+            recus: 0,
+        };
+
+        for (const ligne of lignes) {
+            const degats = Number(ligne.resultat.degatsEffectifs);
+
+            if (!Number.isFinite(degats)) {
+                continue;
+            }
+
+            if (ligne.proprietaire === positionMoi) {
+                resume.recus += degats;
+            } else {
+                resume.infliges += degats;
+            }
+        }
+
+        return resume;
+    }
+
+    creerTableauHistoriqueRound(numero, lignes, positionMoi) {
+        const conteneur = document.createElement('div');
+        const tableau = document.createElement('table');
+        const legende = document.createElement('caption');
+        const entete = document.createElement('thead');
+        const ligneEntete = document.createElement('tr');
+        const corps = document.createElement('tbody');
+
+        conteneur.className = 'historique-round-tableau';
+        legende.className = 'historique-round-legende';
+        legende.textContent = `Détails du round ${numero}`;
+
+        for (const libelle of [
+            'Cible',
+            'Attaque',
+            'Défense',
+            'Dégâts',
+            'PV restants',
+        ]) {
+            const cellule = document.createElement('th');
+            cellule.scope = 'col';
+            cellule.textContent = libelle;
+            ligneEntete.append(cellule);
+        }
+
+        entete.append(ligneEntete);
+
+        for (const ligne of lignes) {
+            const element = document.createElement('tr');
+            const cible = ligne.proprietaire === positionMoi
+                ? `Ton équipe — ${ligne.slot}`
+                : `Équipe adverse — ${ligne.slot}`;
+
+            for (const valeur of [
+                cible,
+                ligne.resultat.attaque,
+                ligne.resultat.defense,
+                ligne.resultat.degatsEffectifs,
+                ligne.resultat.pvRestants,
+            ]) {
+                const cellule = document.createElement('td');
+                cellule.textContent = valeur ?? '—';
+                element.append(cellule);
+            }
+
+            corps.append(element);
+        }
+
+        tableau.append(legende, entete, corps);
+        conteneur.append(tableau);
+
+        return conteneur;
     }
 
     afficherFormulairePlan() {

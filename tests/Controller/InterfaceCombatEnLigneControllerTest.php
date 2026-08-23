@@ -150,6 +150,16 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="resultatRoundLignes"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="historiqueRounds"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="historiqueRoundsListe"]'
+        );
+        self::assertSelectorTextContains(
+            '#historique-rounds-titre',
+            'Rounds précédents',
+        );
+        self::assertSelectorExists(
             '#combat-en-ligne[data-combat-en-ligne-plan-url-modele-value="/combat-en-ligne/__combat_id__/plan"]'
         );
         self::assertSelectorExists(
