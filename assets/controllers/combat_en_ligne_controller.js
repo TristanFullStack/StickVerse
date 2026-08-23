@@ -51,6 +51,7 @@ export default class extends Controller {
         planUrlModele: String,
         abandonUrlModele: String,
         annulerUrlModele: String,
+        rapportUrlModele: String,
         imagesBaseUrl: String,
     };
 
@@ -1204,6 +1205,7 @@ export default class extends Controller {
             const resultat = document.createElement('strong');
             const adversaire = document.createElement('p');
             const informations = document.createElement('p');
+            const rapport = document.createElement('a');
             const nombreRounds = Number.isInteger(combat.nombreRounds)
                 && combat.nombreRounds >= 0
                 ? combat.nombreRounds
@@ -1229,9 +1231,15 @@ export default class extends Controller {
                 `${nombreRounds} round${nombreRounds > 1 ? 's' : ''} joué${nombreRounds > 1 ? 's' : ''}`,
                 this.formaterDateCombat(combat.dateFin),
             ].join(' · ');
+            rapport.className = 'historique-combat-rapport';
+            rapport.href = this.remplacerCombatId(
+                this.rapportUrlModeleValue,
+                combatId,
+            );
+            rapport.textContent = 'Voir le rapport';
 
             entete.append(titre, resultat);
-            carte.append(entete, adversaire, informations);
+            carte.append(entete, adversaire, informations, rapport);
             this.historiqueCombatsTarget.append(carte);
         }
     }

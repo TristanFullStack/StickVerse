@@ -2,6 +2,8 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\Combat;
+use App\Entity\ResultatRoundCombat;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
@@ -16,6 +18,7 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
+        $this->client->disableReboot();
 
         $entityManager = static::getContainer()->get(
             EntityManagerInterface::class
@@ -179,6 +182,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne[data-combat-en-ligne-annuler-url-modele-value="/combat-en-ligne/__combat_id__/annuler"]'
         );
         self::assertSelectorExists(
+            '#combat-en-ligne[data-combat-en-ligne-rapport-url-modele-value="/combats/__combat_id__/rapport"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="planSection"]'
         );
         self::assertSelectorExists(
@@ -206,5 +212,87 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne header p',
             $joueur->getEmail(),
         );
+    }
+
+    public function testAfficheLeRapportSeulementAuxParticipants(): void
+    {
+        $suffixe = bin2hex(random_bytes(6));
+        $joueur = (new User())
+            ->setEmail('rapport-'.$suffixe.'@example.com')
+            ->setPassword('mot-de-passe-test');
+        $adversaire = (new User())
+            ->setEmail('adversaire-rapport-'.$suffixe.'@example.com')
+            ->setPassword('mot-de-passe-test');
+        $exterieur = (new User())
+            ->setEmail('exterieur-rapport-'.$suffixe.'@example.com')
+            ->setPassword('mot-de-passe-test');
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->persist($adversaire);
+        $this->entityManager->persist($exterieur);
+
+        $combat = (new Combat($joueur))
+            ->setJoueur2($adversaire)
+            ->setStatut(Combat::STATUT_TERMINE)
+            ->setGagnant($joueur)
+            ->enregistrerResultatsRound(
+                1,
+                [
+                    'joueur2_A' => [
+                        'attaque' => 4,
+                        'defense' => 1,
+                        'degatsEffectifs' => 3,
+                        'pvRestants' => 1,
+                    ],
+                ],
+            );
+
+        new ResultatRoundCombat(
+            $combat,
+            1,
+            $combat->getDerniersResultats() ?? [],
+        );
+
+        $this->entityManager->persist($combat);
+        $this->entityManager->flush();
+
+        $combatId = $combat->getId();
+        self::assertNotNull($combatId);
+
+        $this->client->loginUser($joueur);
+        $this->client->request(
+            'GET',
+            '/combats/'.$combatId.'/rapport',
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Combat #'.$combatId);
+        self::assertSelectorTextContains(
+            '.rapport-resultat',
+            'Victoire',
+        );
+        self::assertSelectorTextContains(
+            '#rapport-combat > header',
+            $adversaire->getEmail(),
+        );
+        self::assertSelectorTextContains(
+            '#rapport-rounds-titre',
+            'Déroulement du combat',
+        );
+        self::assertSelectorTextContains(
+            '.rapport-round h3',
+            'Round 1',
+        );
+        self::assertSelectorExists(
+            'a[href="/combats"]',
+        );
+
+        $this->client->loginUser($exterieur);
+        $this->client->request(
+            'GET',
+            '/combats/'.$combatId.'/rapport',
+        );
+
+        self::assertResponseStatusCodeSame(403);
     }
 }

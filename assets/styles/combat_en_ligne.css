@@ -13,11 +13,13 @@
     --combat-ombre: 0 22px 65px rgba(0, 0, 0, 0.42);
 }
 
-html:has(#combat-en-ligne) {
+html:has(#combat-en-ligne),
+html:has(#rapport-combat) {
     background: #020712;
 }
 
-body:has(#combat-en-ligne) {
+body:has(#combat-en-ligne),
+body:has(#rapport-combat) {
     margin: 0;
     min-height: 100vh;
     padding: 0;
@@ -660,6 +662,103 @@ body:has(#combat-en-ligne) {
     color: #ffe99f;
     border-color: #d8b72b;
     background: rgba(135, 105, 13, 0.2);
+}
+
+#combat-en-ligne .historique-combat-rapport {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 14px;
+    padding: 8px 12px;
+    color: #fff;
+    border: 1px solid var(--combat-bleu);
+    border-radius: 7px;
+    background: rgba(20, 121, 255, 0.16);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+#rapport-combat {
+    width: min(100% - 40px, 1300px);
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+#rapport-combat a {
+    color: var(--combat-cyan);
+}
+
+#rapport-combat > header,
+#rapport-combat section {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid var(--combat-ligne);
+    border-radius: 12px;
+    background: var(--combat-panneau);
+}
+
+#rapport-combat .rapport-resultat {
+    color: var(--combat-violet);
+    font-size: clamp(28px, 5vw, 52px);
+}
+
+#rapport-combat .rapport-resultat[data-resultat="victoire"] {
+    color: var(--combat-vert);
+}
+
+#rapport-combat .rapport-resultat[data-resultat="defaite"] {
+    color: var(--combat-rouge);
+}
+
+#rapport-combat .rapport-equipes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+#rapport-combat .rapport-combattants {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#rapport-combat .rapport-combattant {
+    min-width: 0;
+    padding: 10px;
+    color: #07101c;
+    border-radius: 8px;
+    background: #f4f7fb;
+}
+
+#rapport-combat .rapport-combattant img {
+    width: 100%;
+    height: 130px;
+    object-fit: contain;
+}
+
+#rapport-combat .rapport-round {
+    overflow-x: auto;
+}
+
+#rapport-combat table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#rapport-combat th,
+#rapport-combat td {
+    padding: 10px;
+    border-bottom: 1px solid var(--combat-ligne);
+    text-align: left;
+}
+
+@media (max-width: 850px) {
+    #rapport-combat .rapport-equipes {
+        grid-template-columns: 1fr;
+    }
+
+    #rapport-combat .rapport-combattants {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 1050px) {

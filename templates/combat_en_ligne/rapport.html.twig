@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rapport du combat #{{ combat.id }} - StickVerse{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/combat_en_ligne.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main id="rapport-combat">
+        <a href="{{ path('app_combats_en_ligne') }}">← Retour aux combats</a>
+
+        <header>
+            <p>Rapport définitif</p>
+            <h1>Combat #{{ combat.id }}</h1>
+            <h2 class="rapport-resultat" data-resultat="{{ resultatCode }}">
+                {{ resultatLibelle }}
+            </h2>
+            <p>
+                {{ moi.email }} contre {{ adversaire.email }} ·
+                {{ rounds|length }} round{{ rounds|length > 1 ? 's' : '' }} joué{{ rounds|length > 1 ? 's' : '' }} ·
+                {{ combat.dateMiseAJour|date('d/m/Y H:i') }}
+            </p>
+        </header>
+
+        <div class="rapport-equipes">
+            {% for equipe in [
+                {
+                    titre: 'Ton équipe',
+                    email: moi.email,
+                    combattants: combattantsMoi
+                },
+                {
+                    titre: 'Équipe adverse',
+                    email: adversaire.email,
+                    combattants: combattantsAdversaire
+                }
+            ] %}
+                <section>
+                    <h2>{{ equipe.titre }}</h2>
+                    <p>{{ equipe.email }}</p>
+                    <div class="rapport-combattants">
+                        {% for combattant in equipe.combattants %}
+                            <article class="rapport-combattant">
+                                <strong>{{ combattant.slot }} — {{ combattant.nomSnapshot }}</strong>
+                                <img
+                                    src="{{ asset('images/stickmen/' ~ combattant.imageSnapshot) }}"
+                                    alt="{{ combattant.nomSnapshot }}"
+                                >
+                                <p>PV {{ combattant.pvActuels }} / {{ combattant.pvMaximum }}</p>
+                                <p>ATQ {{ combattant.attaqueSnapshot }} · DÉF {{ combattant.defenseSnapshot }}</p>
+                            </article>
+                        {% else %}
+                            <p>Aucun combattant enregistré.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+
+        <section aria-labelledby="rapport-rounds-titre">
+            <h2 id="rapport-rounds-titre">Déroulement du combat</h2>
+
+            {% for round in rounds %}
+                <article class="rapport-round">
+                    <h3>Round {{ round.numeroRound }}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cible</th>
+                                <th>Attaque</th>
+                                <th>Défense</th>
+                                <th>Dégâts</th>
+                                <th>PV restants</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cible, resultat in round.resultats %}
+                                <tr>
+                                    <td>{{ cible|replace({'_': ' — '}) }}</td>
+                                    <td>{{ resultat.attaque|default(0) }}</td>
+                                    <td>{{ resultat.defense|default(0) }}</td>
+                                    <td>{{ resultat.degatsEffectifs|default(0) }}</td>
+                                    <td>{{ resultat.pvRestants|default(0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </article>
+            {% else %}
+                <p>Aucun round résolu : le combat s’est terminé par abandon.</p>
+            {% endfor %}
+        </section>
+    </main>
+{% endblock %}

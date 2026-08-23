@@ -4131,7 +4131,72 @@ Cette base permettra ensuite d’ajouter une page de rapport détaillé pour con
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J46 — Consulter le rapport détaillé d’un combat
 
+### Objectif
+
+J46 permet d’ouvrir le rapport définitif d’un ancien combat depuis l’historique du joueur.
+
+### Fonctionnalités ajoutées
+
+Chaque carte de la section **« Mes derniers combats »** possède maintenant un bouton **« Voir le rapport »**.
+
+La page du rapport affiche :
+
+- le numéro du combat ;
+- le résultat vu depuis le joueur connecté ;
+- l’adversaire ;
+- la date de fin ;
+- le nombre de rounds joués ;
+- les deux équipes avec leurs statistiques et PV finaux ;
+- le détail de chaque round ;
+- les attaques, défenses, dégâts et PV restants ;
+- un lien de retour vers les combats.
+
+Les combats terminés par abandon sans round résolu affichent un message spécifique.
+
+### Sécurité
+
+La route `GET /combats/{id}/rapport` utilise le `CombatVoter`.
+
+Seuls les participants du combat peuvent consulter le rapport. Un utilisateur extérieur reçoit une réponse HTTP 403.
+
+Le rapport n’est disponible que pour un combat terminé ou abandonné.
+
+### Architecture
+
+Le rapport réutilise :
+
+- les snapshots persistants des combattants ;
+- l’historique des rounds créé pendant J42 ;
+- les règles d’autorisation existantes ;
+- la feuille de style des combats en ligne.
+
+Aucune migration et aucune nouvelle règle métier n’ont été nécessaires.
+
+### Validation
+
+Les vérifications PHP, JavaScript, Twig, Symfony, AssetMapper et PHPUnit sont réussies.
+
+Résultat final :
+
+- **97 tests réussis** ;
+- **857 assertions réussies** ;
+- rapport vérifié manuellement depuis un ancien combat ;
+- aucune régression détectée.
+
+### Fichiers modifiés
+
+- `src/Controller/InterfaceCombatEnLigneController.php`
+- `templates/combat_en_ligne/index.html.twig`
+- `templates/combat_en_ligne/rapport.html.twig`
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+
+### Conclusion
+
+Le joueur peut maintenant retrouver un combat terminé dans son historique et consulter son déroulement complet dans une page protégée en lecture seule.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
