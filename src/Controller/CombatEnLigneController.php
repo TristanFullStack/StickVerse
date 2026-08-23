@@ -11,6 +11,8 @@ use App\Repository\CombattantCombatRepository;
 use App\Repository\PlanRoundCombatRepository;
 use App\Security\Voter\CombatVoter;
 use App\Service\AbandonCombatService;
+use App\Service\AnnulationCombatEnLigneService;
+use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
 use InvalidArgumentException;
@@ -42,6 +44,7 @@ final class CombatEnLigneController extends AbstractController
         CombattantCombatRepository $combattantRepository,
         PlanRoundCombatRepository $planRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
+        ExpirationCombatEnAttenteService $expirationService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -53,6 +56,10 @@ final class CombatEnLigneController extends AbstractController
         if (!$utilisateur instanceof User) {
             throw $this->createAccessDeniedException();
         }
+
+        $combatId = $combat->getId();
+        $expirationAutomatique = $combatId !== null
+            && $expirationService->expirerSiNecessaire($combatId);
 
         $adversaire = $combat->getJoueur1() === $utilisateur
             ? $combat->getJoueur2()
@@ -84,6 +91,7 @@ final class CombatEnLigneController extends AbstractController
         return $this->json([
             'combatId' => $combat->getId(),
             'statut' => $combat->getStatut(),
+            'expirationAutomatique' => $expirationAutomatique,
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),
             'dernierRound' => $combat->getDernierRoundResolu() !== null
@@ -122,6 +130,14 @@ final class CombatEnLigneController extends AbstractController
                     ->getToken(
                         $this->creerIdentifiantCsrf(
                             'abandon',
+                            $combat,
+                        )
+                    )
+                    ->getValue(),
+                'annuler' => $csrfTokenManager
+                    ->getToken(
+                        $this->creerIdentifiantCsrf(
+                            'annuler',
                             $combat,
                         )
                     )
@@ -362,6 +378,78 @@ final class CombatEnLigneController extends AbstractController
             'gagnantId' => $combatAbandonne
                 ->getGagnant()
                 ?->getId(),
+        ]);
+    }
+
+    #[Route(
+        '/{id}/annuler',
+        name: 'annuler',
+        methods: ['POST']
+    )]
+    public function annuler(
+        Combat $combat,
+        Request $request,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        AnnulationCombatEnLigneService $annulationService,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted(
+            CombatVoter::JOUER,
+            $combat,
+        );
+
+        $utilisateur = $this->getUser();
+
+        if (!$utilisateur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (
+            !$this->csrfEstValide(
+                'annuler',
+                $combat,
+                $request,
+                $csrfTokenManager,
+            )
+        ) {
+            return $this->json(
+                [
+                    'erreur' => 'Le jeton CSRF d’annulation est invalide.',
+                ],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
+
+        $combatId = $combat->getId();
+
+        if ($combatId === null) {
+            return $this->json(
+                [
+                    'erreur' => 'Le combat demandé est introuvable.',
+                ],
+                Response::HTTP_NOT_FOUND,
+            );
+        }
+
+        try {
+            $combatAnnule = $annulationService->annuler(
+                $combatId,
+                $utilisateur,
+            );
+        } catch (LogicException $exception) {
+            return $this->json(
+                [
+                    'erreur' => $exception->getMessage(),
+                ],
+                Response::HTTP_CONFLICT,
+            );
+        }
+
+        return $this->json([
+            'etat' => 'combat_annule',
+            'combatId' => $combatId,
+            'statut' => $combatAnnule->getStatut(),
+            'numeroRound' => $combatAnnule->getNumeroRound(),
+            'gagnantId' => null,
         ]);
     }
 

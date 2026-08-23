@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use Symfony\Component\Clock\MockClock;
 
 final class RejoindreCombatEnLigneServiceTest extends TestCase
 {
@@ -348,6 +349,63 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
             $joueur,
             $equipe,
         );
+    }
+
+    public function testAnnuleEtRefuseUnCombatExpire(): void
+    {
+        $joueur1 = $this->creerJoueurEnregistre(
+            1,
+            'joueur1@stickverse.test',
+        );
+        $joueur2 = $this->creerJoueurEnregistre(
+            2,
+            'joueur2@stickverse.test',
+        );
+        $equipeJoueur2 = $this->creerEquipeEnregistree(
+            12,
+            $joueur2,
+            200,
+        );
+        $combat = new Combat($joueur1);
+        $horloge = new MockClock($combat->getDateCreation());
+        $horloge->modify('+5 minutes');
+
+        $combatRepository = $this->createMock(
+            CombatRepository::class
+        );
+        $combatRepository
+            ->method('trouverAvecVerrouEcriture')
+            ->willReturn($combat);
+        $combatRepository
+            ->expects(self::never())
+            ->method('trouverActifPourJoueur');
+
+        $service = new RejoindreCombatEnLigneService(
+            $this->creerEntityManagerTransactionnel(),
+            $combatRepository,
+            new CreationCombattantsCombatService(),
+            $horloge,
+        );
+
+        try {
+            $service->rejoindre(
+                42,
+                $joueur2,
+                $equipeJoueur2,
+            );
+            self::fail(
+                'Le combat expiré ne doit pas pouvoir être rejoint.'
+            );
+        } catch (LogicException $exception) {
+            self::assertSame(
+                'Ce combat a expiré après 5 minutes sans adversaire.',
+                $exception->getMessage(),
+            );
+        }
+
+        self::assertTrue($combat->estAnnule());
+        self::assertNull($combat->getJoueur2());
+        self::assertNull($combat->getGagnant());
     }
 
     private function creerEntityManagerTransactionnel(

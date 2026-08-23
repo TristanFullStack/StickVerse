@@ -4,6 +4,7 @@ export default class extends Controller {
     static targets = [
         'chargement',
         'erreur',
+        'information',
         'salon',
         'combatActif',
         'combatActifId',
@@ -30,6 +31,7 @@ export default class extends Controller {
         'cibleDefenseY',
         'envoyerPlanButton',
         'abandonButton',
+        'annulerButton',
         'equipeSelect',
         'equipeApercu',
         'creerButton',
@@ -44,6 +46,7 @@ export default class extends Controller {
         combatUrlModele: String,
         planUrlModele: String,
         abandonUrlModele: String,
+        annulerUrlModele: String,
         imagesBaseUrl: String,
     };
 
@@ -144,6 +147,43 @@ export default class extends Controller {
             );
 
             await this.chargerCombat(combatId);
+        });
+    }
+
+    async annulerCombat() {
+        const combatId = this.combatActifIdCourant;
+
+        if (combatId === null) {
+            this.afficherErreur('Aucun combat en attente n’est disponible.');
+
+            return;
+        }
+
+        const confirmation = window.confirm([
+            'Annuler ce combat en attente ?',
+            'Il disparaîtra du salon et tu pourras en créer ou rejoindre un autre.',
+        ].join('\n'));
+
+        if (!confirmation) {
+            return;
+        }
+
+        await this.executerAction(async () => {
+            await this.envoyerJson(
+                this.remplacerCombatId(
+                    this.annulerUrlModeleValue,
+                    combatId,
+                ),
+                {},
+                this.combat?.csrf?.annuler,
+            );
+
+            this.combatActifIdCourant = null;
+            this.combat = null;
+            await this.chargerSalon();
+            this.afficherInformation(
+                'Le combat en attente a bien été annulé.'
+            );
         });
     }
 
@@ -306,6 +346,18 @@ export default class extends Controller {
                 );
             }
 
+            if (donnees.expirationAutomatique === true) {
+                this.combatActifIdCourant = null;
+                this.combat = null;
+                await this.chargerSalon();
+                this.afficherInformation([
+                    'Le combat a été annulé automatiquement',
+                    'après 5 minutes sans adversaire.',
+                ].join(' '));
+
+                return;
+            }
+
             this.combat = donnees;
             this.afficherCombat();
             this.programmerActualisation();
@@ -330,6 +382,7 @@ export default class extends Controller {
             en_cours: 'En cours',
             termine: 'Terminé',
             abandonne: 'Abandonné',
+            annule: 'Annulé',
         };
 
         this.combatStatutTarget.textContent = statuts[this.combat.statut]
@@ -361,6 +414,7 @@ export default class extends Controller {
         this.afficherDernierRound();
         this.afficherFormulairePlan();
         this.afficherBoutonAbandon();
+        this.afficherBoutonAnnulation();
     }
 
     afficherBoutonAbandon() {
@@ -370,9 +424,17 @@ export default class extends Controller {
         );
     }
 
+    afficherBoutonAnnulation() {
+        this.annulerButtonTarget.hidden = !(
+            this.combat.statut === 'en_attente'
+            && this.combat.adversaire === null
+        );
+    }
+
     afficherFinCombat() {
         const estTermine = this.combat.statut === 'termine'
-            || this.combat.statut === 'abandonne';
+            || this.combat.statut === 'abandonne'
+            || this.combat.statut === 'annule';
 
         if (!estTermine) {
             this.finCombatTarget.hidden = true;
@@ -388,7 +450,11 @@ export default class extends Controller {
         let message;
         let resultat;
 
-        if (this.combat.statut === 'abandonne') {
+        if (this.combat.statut === 'annule') {
+            titre = 'Combat annulé';
+            message = 'Ce combat en attente a été annulé.';
+            resultat = 'annulation';
+        } else if (this.combat.statut === 'abandonne') {
             if (victoire) {
                 titre = 'Victoire par abandon';
                 message = 'Ton adversaire a abandonné le combat.';
@@ -621,6 +687,13 @@ export default class extends Controller {
     }
 
     afficherEtatRound() {
+        if (this.combat.statut === 'annule') {
+            this.etatRoundTarget.textContent =
+                'Le combat en attente a été annulé.';
+
+            return;
+        }
+
         if (this.combat.statut === 'en_attente') {
             this.etatRoundTarget.textContent = [
                 'Ton équipe est enregistrée.',
@@ -633,6 +706,7 @@ export default class extends Controller {
         if (
             this.combat.statut === 'termine'
             || this.combat.statut === 'abandonne'
+            || this.combat.statut === 'annule'
         ) {
             this.etatRoundTarget.textContent =
                 'Le résultat final a été enregistré par le serveur.';
@@ -854,6 +928,7 @@ export default class extends Controller {
 
     async executerAction(action) {
         this.masquerErreur();
+        this.masquerInformation();
         this.basculerBoutons(true);
 
         try {
@@ -915,6 +990,7 @@ export default class extends Controller {
     }
 
     afficherErreur(message) {
+        this.masquerInformation();
         this.erreurTarget.textContent = message;
         this.erreurTarget.hidden = false;
     }
@@ -922,5 +998,16 @@ export default class extends Controller {
     masquerErreur() {
         this.erreurTarget.textContent = '';
         this.erreurTarget.hidden = true;
+    }
+
+    afficherInformation(message) {
+        this.masquerErreur();
+        this.informationTarget.textContent = message;
+        this.informationTarget.hidden = false;
+    }
+
+    masquerInformation() {
+        this.informationTarget.textContent = '';
+        this.informationTarget.hidden = true;
     }
 }

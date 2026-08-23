@@ -37,6 +37,10 @@
             'app_combat_en_ligne_abandon',
             {id: '__combat_id__'}
         ) }}"
+        data-combat-en-ligne-annuler-url-modele-value="{{ path(
+            'app_combat_en_ligne_annuler',
+            {id: '__combat_id__'}
+        ) }}"
         data-combat-en-ligne-images-base-url-value="{{ asset(
             'images/stickmen'
         ) }}"
@@ -68,6 +72,12 @@
             <p
                 data-combat-en-ligne-target="erreur"
                 role="alert"
+                hidden
+            ></p>
+
+            <p
+                data-combat-en-ligne-target="information"
+                role="status"
                 hidden
             ></p>
 
@@ -260,6 +270,15 @@
                     hidden
                 >
                     Abandonner le combat
+                </button>
+
+                <button
+                    type="button"
+                    data-combat-en-ligne-target="annulerButton"
+                    data-action="combat-en-ligne#annulerCombat"
+                    hidden
+                >
+                    Annuler ce combat
                 </button>
             </section>
 

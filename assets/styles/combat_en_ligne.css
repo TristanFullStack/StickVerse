@@ -155,7 +155,8 @@ body:has(#combat-en-ligne) {
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="chargement"],
-#combat-en-ligne [data-combat-en-ligne-target="erreur"] {
+#combat-en-ligne [data-combat-en-ligne-target="erreur"],
+#combat-en-ligne [data-combat-en-ligne-target="information"] {
     margin: 0 0 20px;
     padding: 14px 18px;
     border: 1px solid var(--combat-ligne);
@@ -171,6 +172,12 @@ body:has(#combat-en-ligne) {
     color: #ffd6d5;
     border-color: rgba(255, 92, 88, 0.7);
     background: rgba(116, 23, 30, 0.45);
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="information"] {
+    color: #c9ffe3;
+    border-color: rgba(65, 211, 142, 0.7);
+    background: rgba(18, 91, 61, 0.42);
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="combatActif"],
@@ -388,7 +395,8 @@ body:has(#combat-en-ligne) {
     min-width: min(100%, 340px);
 }
 
-#combat-en-ligne [data-combat-en-ligne-target="abandonButton"] {
+#combat-en-ligne [data-combat-en-ligne-target="abandonButton"],
+#combat-en-ligne [data-combat-en-ligne-target="annulerButton"] {
     margin-left: 10px;
     color: #ffd8d7;
     border-color: var(--combat-rouge);
@@ -496,7 +504,8 @@ body:has(#combat-en-ligne) {
         grid-template-columns: 1fr;
     }
 
-    #combat-en-ligne [data-combat-en-ligne-target="abandonButton"] {
+    #combat-en-ligne [data-combat-en-ligne-target="abandonButton"],
+    #combat-en-ligne [data-combat-en-ligne-target="annulerButton"] {
         display: block;
         width: 100%;
         margin: 10px 0 0;

@@ -90,6 +90,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne[data-controller="combat-en-ligne"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="information"][role="status"]'
+        );
+        self::assertSelectorExists(
             'link[rel="stylesheet"][data-combat-en-ligne-style]'
         );
         self::assertSelectorExists(
@@ -153,6 +156,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne[data-combat-en-ligne-abandon-url-modele-value="/combat-en-ligne/__combat_id__/abandon"]'
         );
         self::assertSelectorExists(
+            '#combat-en-ligne[data-combat-en-ligne-annuler-url-modele-value="/combat-en-ligne/__combat_id__/annuler"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="planSection"]'
         );
         self::assertSelectorExists(
@@ -172,6 +178,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="abandonButton"][data-action="combat-en-ligne#abandonnerCombat"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="annulerButton"][data-action="combat-en-ligne#annulerCombat"]'
         );
         self::assertSelectorTextContains(
             '#combat-en-ligne header p',

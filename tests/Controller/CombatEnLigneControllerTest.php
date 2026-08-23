@@ -607,6 +607,186 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
     }
 
+    public function testAnnuleUnCombatEnAttenteAvecUnJetonValide(): void
+    {
+        [
+            $combat,
+            $joueur,
+        ] = $this->creerCombatEnAttente();
+
+        $combatId = $combat->getId();
+
+        self::assertNotNull($combatId);
+
+        $this->client->loginUser($joueur);
+
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatInitial = $this->lireReponseJson();
+
+        self::assertIsArray($etatInitial['csrf']);
+        self::assertIsString(
+            $etatInitial['csrf']['annuler']
+        );
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/annuler',
+            [],
+            [
+                'HTTP_X_CSRF_TOKEN' => $etatInitial['csrf']['annuler'],
+            ],
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $reponse = $this->lireReponseJson();
+
+        self::assertSame('combat_annule', $reponse['etat']);
+        self::assertSame(
+            Combat::STATUT_ANNULE,
+            $reponse['statut'],
+        );
+        self::assertSame(1, $reponse['numeroRound']);
+        self::assertNull($reponse['gagnantId']);
+
+        $this->entityManager->clear();
+
+        $combatRecharge = $this->entityManager->find(
+            Combat::class,
+            $combatId,
+        );
+
+        self::assertInstanceOf(Combat::class, $combatRecharge);
+        self::assertTrue($combatRecharge->estAnnule());
+        self::assertNull($combatRecharge->getJoueur2());
+        self::assertNull($combatRecharge->getGagnant());
+    }
+
+    public function testRefuseAnnulationDunCombatEnCours(): void
+    {
+        [
+            $combat,
+            $joueur1,
+        ] = $this->creerCombat();
+
+        $combatId = $combat->getId();
+
+        self::assertNotNull($combatId);
+
+        $this->client->loginUser($joueur1);
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatInitial = $this->lireReponseJson();
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/annuler',
+            [],
+            [
+                'HTTP_X_CSRF_TOKEN' => $etatInitial['csrf']['annuler'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+
+        $reponse = $this->lireReponseJson();
+
+        self::assertSame(
+            'Seul un combat en attente peut être annulé.',
+            $reponse['erreur'],
+        );
+    }
+
+    public function testExpireAutomatiquementUnCombatApresCinqMinutes(): void
+    {
+        [
+            $combat,
+            $joueur,
+        ] = $this->creerCombatEnAttente();
+
+        $combatId = $combat->getId();
+        $joueurId = $joueur->getId();
+
+        self::assertNotNull($combatId);
+        self::assertNotNull($joueurId);
+
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE combat '
+            .'SET date_creation = DATE_SUB(date_creation, INTERVAL 6 MINUTE) '
+            .'WHERE id = ?',
+            [$combatId],
+        );
+
+        $this->entityManager->clear();
+
+        $joueurRecharge = $this->entityManager->find(
+            User::class,
+            $joueurId,
+        );
+
+        self::assertInstanceOf(User::class, $joueurRecharge);
+
+        $this->client->loginUser($joueurRecharge);
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $reponse = $this->lireReponseJson();
+
+        self::assertTrue($reponse['expirationAutomatique']);
+        self::assertSame(
+            Combat::STATUT_ANNULE,
+            $reponse['statut'],
+        );
+        self::assertNull($reponse['gagnantId']);
+
+        $this->entityManager->clear();
+
+        $combatRecharge = $this->entityManager->find(
+            Combat::class,
+            $combatId,
+        );
+
+        self::assertInstanceOf(Combat::class, $combatRecharge);
+        self::assertTrue($combatRecharge->estAnnule());
+    }
+
+    /**
+     * @return array{Combat, User}
+     */
+    private function creerCombatEnAttente(): array
+    {
+        $suffixe = bin2hex(random_bytes(6));
+
+        $joueur = (new User())
+            ->setEmail(
+                'joueur-attente-j41-'.$suffixe.'@example.com'
+            )
+            ->setPassword('mot-de-passe-test');
+
+        $combat = new Combat($joueur);
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->persist($combat);
+        $this->entityManager->flush();
+
+        return [$combat, $joueur];
+    }
+
     /**
      * @return array{Combat, User, User, User}
      */

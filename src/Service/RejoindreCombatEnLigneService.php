@@ -8,6 +8,8 @@ use App\Entity\User;
 use App\Repository\CombatRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
+use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\ClockInterface;
 
 final class RejoindreCombatEnLigneService
 {
@@ -15,6 +17,7 @@ final class RejoindreCombatEnLigneService
         private readonly EntityManagerInterface $entityManager,
         private readonly CombatRepository $combatRepository,
         private readonly CreationCombattantsCombatService $creationCombattantsService,
+        private readonly ?ClockInterface $clock = null,
     ) {
     }
 
@@ -23,11 +26,14 @@ final class RejoindreCombatEnLigneService
         User $joueur,
         Equipe $equipe,
     ): Combat {
-        return $this->entityManager->wrapInTransaction(
+        $combatExpire = false;
+
+        $combat = $this->entityManager->wrapInTransaction(
             function () use (
                 $combatId,
                 $joueur,
                 $equipe,
+                &$combatExpire,
             ): Combat {
                 if ($joueur->getId() === null) {
                     throw new LogicException(
@@ -48,6 +54,18 @@ final class RejoindreCombatEnLigneService
                     throw new LogicException(
                         'Le combat demandé est introuvable.'
                     );
+                }
+
+                if (
+                    $combat->estAttenteExpiree(
+                        ($this->clock ?? Clock::get())->now()
+                    )
+                ) {
+                    $combat->setGagnant(null);
+                    $combat->setStatut(Combat::STATUT_ANNULE);
+                    $combatExpire = true;
+
+                    return $combat;
                 }
 
                 if (
@@ -95,6 +113,14 @@ final class RejoindreCombatEnLigneService
                 return $combat;
             }
         );
+
+        if ($combatExpire) {
+            throw new LogicException(
+                'Ce combat a expiré après 5 minutes sans adversaire.'
+            );
+        }
+
+        return $combat;
     }
 
     private function utilisateursIdentiques(

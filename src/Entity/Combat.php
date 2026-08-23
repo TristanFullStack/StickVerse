@@ -15,16 +15,20 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity(repositoryClass: CombatRepository::class)]
 class Combat
 {
+    public const DUREE_MAX_ATTENTE_SECONDES = 300;
+
     public const STATUT_EN_ATTENTE = 'en_attente';
     public const STATUT_EN_COURS = 'en_cours';
     public const STATUT_TERMINE = 'termine';
     public const STATUT_ABANDONNE = 'abandonne';
+    public const STATUT_ANNULE = 'annule';
 
     private const STATUTS_VALIDES = [
         self::STATUT_EN_ATTENTE,
         self::STATUT_EN_COURS,
         self::STATUT_TERMINE,
         self::STATUT_ABANDONNE,
+        self::STATUT_ANNULE,
     ];
 
     #[ORM\Id]
@@ -252,6 +256,26 @@ class Combat
     public function estTermine(): bool
     {
         return $this->statut === self::STATUT_TERMINE;
+    }
+
+    public function estAnnule(): bool
+    {
+        return $this->statut === self::STATUT_ANNULE;
+    }
+
+    public function getDateExpirationAttente(): DateTimeImmutable
+    {
+        return $this->dateCreation->modify(
+            '+'.self::DUREE_MAX_ATTENTE_SECONDES.' seconds'
+        );
+    }
+
+    public function estAttenteExpiree(
+        DateTimeImmutable $maintenant,
+    ): bool {
+        return $this->estEnAttente()
+            && $this->joueur2 === null
+            && $maintenant >= $this->getDateExpirationAttente();
     }
 
     #[Assert\Callback]

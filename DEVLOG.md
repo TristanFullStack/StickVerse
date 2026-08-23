@@ -3322,7 +3322,184 @@ Des améliorations visuelles restent possibles, mais le parcours métier princip
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J41 — Sécuriser l’attente des combats en ligne
 
+### Objectif
+
+J41 empêche un joueur de rester définitivement bloqué dans un combat en attente lorsqu’aucun adversaire ne le rejoint.
+
+Deux mécanismes complémentaires ont été ajoutés :
+
+- l’annulation manuelle par le créateur ;
+- l’annulation automatique après cinq minutes sans adversaire.
+
+### Annulation manuelle
+
+Une nouvelle route sécurisée permet au créateur d’annuler son combat :
+
+- `POST /combat-en-ligne/{id}/annuler`.
+
+L’annulation est autorisée uniquement lorsque :
+
+- le combat existe ;
+- le joueur connecté est son créateur ;
+- le combat possède le statut `en_attente` ;
+- aucun deuxième joueur ne l’a encore rejoint.
+
+La requête utilise un jeton CSRF dédié nommé `annuler`.
+
+`AnnulationCombatEnLigneService` centralise les règles métier. Il utilise une transaction Doctrine et un verrou d’écriture afin d’éviter qu’une annulation et une jonction puissent modifier simultanément le même combat.
+
+Après l’annulation :
+
+- le statut devient `annule` ;
+- aucun gagnant n’est enregistré ;
+- le combat n’est plus considéré comme actif ;
+- le joueur peut créer ou rejoindre un autre combat.
+
+### Annulation automatique
+
+Un combat en attente sans adversaire expire après 300 secondes, soit cinq minutes.
+
+La date limite est calculée depuis `dateCreation` par l’entité `Combat`.
+
+`ExpirationCombatEnAttenteService` vérifie cette limite sous transaction et verrou d’écriture.
+
+L’expiration est déclenchée côté serveur lors :
+
+- de la consultation de l’état du combat ;
+- du chargement du salon ;
+- d’une tentative pour rejoindre le combat.
+
+Le polling HTTP exécuté toutes les trois secondes déclenche donc naturellement l’expiration lorsque le créateur reste sur l’écran d’attente.
+
+Il ne s’agit pas encore d’une tâche planifiée indépendante : un accès HTTP au salon, au combat ou à sa route de jonction déclenche la vérification.
+
+### Protection de la jonction
+
+`RejoindreCombatEnLigneService` vérifie maintenant la date d’expiration pendant sa transaction.
+
+Si un joueur tente de rejoindre un combat expiré :
+
+- le combat est enregistré avec le statut `annule` ;
+- la jonction est refusée ;
+- aucun joueur 2 n’est associé ;
+- un message métier explique que le délai de cinq minutes est dépassé.
+
+L’annulation est enregistrée avant le déclenchement de l’exception afin de ne pas être annulée par un rollback de transaction.
+
+### Évolution de l’entité Combat
+
+Un nouveau statut a été ajouté :
+
+- `Combat::STATUT_ANNULE`.
+
+L’entité fournit également :
+
+- `DUREE_MAX_ATTENTE_SECONDES` ;
+- `getDateExpirationAttente()` ;
+- `estAttenteExpiree()` ;
+- `estAnnule()`.
+
+Aucune migration supplémentaire n’est nécessaire, car le statut est déjà stocké dans une colonne texte compatible avec la nouvelle valeur.
+
+### Interface utilisateur
+
+Lorsque le combat attend encore un adversaire, son créateur dispose maintenant du bouton :
+
+- `Annuler ce combat`.
+
+Après une annulation réussie, l’interface recharge automatiquement le salon et affiche un message d’information.
+
+Lorsqu’une expiration automatique est détectée :
+
+- le combat actif est retiré de l’interface ;
+- le salon est rechargé ;
+- un message indique que le combat a été annulé après cinq minutes sans adversaire.
+
+Le bouton d’abandon reste réservé aux combats réellement commencés avec deux participants.
+
+### Sécurité
+
+Les protections suivantes sont conservées :
+
+- authentification avec `ROLE_USER` ;
+- autorisation par `CombatVoter` ;
+- jeton CSRF ;
+- transaction Doctrine ;
+- verrou pessimiste d’écriture ;
+- vérification du créateur ;
+- vérification du statut ;
+- vérification de l’absence d’adversaire.
+
+Le navigateur ne décide jamais seul si un combat peut être annulé ou s’il a expiré.
+
+### Fichiers créés
+
+- `src/Service/AnnulationCombatEnLigneService.php` ;
+- `src/Service/ExpirationCombatEnAttenteService.php` ;
+- `tests/Service/AnnulationCombatEnLigneServiceTest.php` ;
+- `tests/Service/ExpirationCombatEnAttenteServiceTest.php`.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js` ;
+- `assets/styles/combat_en_ligne.css` ;
+- `src/Controller/CombatEnLigneController.php` ;
+- `src/Controller/SalonCombatEnLigneController.php` ;
+- `src/Entity/Combat.php` ;
+- `src/Service/RejoindreCombatEnLigneService.php` ;
+- `templates/combat_en_ligne/index.html.twig` ;
+- `tests/Controller/CombatEnLigneControllerTest.php` ;
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php` ;
+- `tests/Service/RejoindreCombatEnLigneServiceTest.php`.
+
+### Tests ajoutés ou enrichis
+
+Les tests vérifient notamment :
+
+- l’annulation d’un combat en attente par son créateur ;
+- le refus d’annuler un combat déjà commencé ;
+- le refus d’annuler par un autre utilisateur ;
+- le refus d’annuler un combat possédant déjà un adversaire ;
+- l’expiration exactement après cinq minutes ;
+- l’absence d’expiration avant cinq minutes ;
+- l’absence d’expiration d’un combat commencé ;
+- le refus de rejoindre un combat expiré ;
+- la persistance du statut `annule` ;
+- l’absence de gagnant après une annulation ;
+- la présence du bouton et des cibles Stimulus ;
+- le retour automatique vers le salon.
+
+### Erreur rencontrée et correction
+
+Le premier test HTTP d’expiration utilisait `CURRENT_TIMESTAMP` côté MySQL alors que le service utilisait l’horloge PHP/Symfony.
+
+Selon la configuration des fuseaux horaires, les deux valeurs pouvaient être décalées et rendre le test instable.
+
+Le test retire maintenant six minutes à la date de création déjà enregistrée en base. Il ne dépend donc plus du fuseau horaire du serveur MySQL.
+
+### Validation manuelle
+
+Le parcours a été contrôlé avec deux comptes :
+
+- les anciens combats en attente sont annulés ;
+- le joueur n’est plus bloqué sur l’écran d’attente ;
+- l’annulation manuelle fonctionne ;
+- un second compte peut rejoindre le combat du premier joueur ;
+- les joueurs peuvent ensuite poursuivre le combat normalement.
+
+### Résultats finaux
+
+- 92 tests réussis ;
+- 763 assertions ;
+- 29 templates Twig valides ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- schéma de base de données synchronisé ;
+- syntaxe PHP valide ;
+- tests manuels réussis ;
+- aucun commit ni push effectué avant la validation complète.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

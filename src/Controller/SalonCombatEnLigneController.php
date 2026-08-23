@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Repository\CombatRepository;
 use App\Repository\EquipeRepository;
 use App\Service\CreationCombatEnLigneService;
+use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\RejoindreCombatEnLigneService;
 use InvalidArgumentException;
 use JsonException;
@@ -38,6 +39,7 @@ final class SalonCombatEnLigneController extends AbstractController
         CombatRepository $combatRepository,
         EquipeRepository $equipeRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
+        ExpirationCombatEnAttenteService $expirationService,
     ): JsonResponse {
         $utilisateur = $this->getUser();
 
@@ -48,8 +50,27 @@ final class SalonCombatEnLigneController extends AbstractController
         $combatActif = $combatRepository
             ->trouverActifPourJoueur($utilisateur);
 
-        $combatsDisponibles = $combatRepository
-            ->trouverDisponiblesPour($utilisateur);
+        if (
+            $combatActif instanceof Combat
+            && $combatActif->getId() !== null
+            && $expirationService->expirerSiNecessaire(
+                $combatActif->getId()
+            )
+        ) {
+            $combatActif = null;
+        }
+
+        $combatsDisponibles = array_values(
+            array_filter(
+                $combatRepository
+                    ->trouverDisponiblesPour($utilisateur),
+                static fn (Combat $combat): bool =>
+                    $combat->getId() === null
+                    || !$expirationService->expirerSiNecessaire(
+                        $combat->getId()
+                    ),
+            )
+        );
 
         $equipes = $equipeRepository->findBy(
             [
