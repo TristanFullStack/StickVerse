@@ -212,6 +212,97 @@ JSON,
         }
     }
 
+    public function testVerifieUneInstallationVideCorrespondantAuCatalogue(): void
+    {
+        $fichier = tempnam(sys_get_temp_dir(), 'stickverse-catalogue-');
+        self::assertNotFalse($fichier);
+        file_put_contents(
+            $fichier,
+            '{"version":1,"stickmans":[],"caisses":[]}',
+        );
+
+        $stickmanRepository = $this->createStub(StickmanRepository::class);
+        $stickmanRepository->method('findBy')->willReturn([]);
+
+        $caisseRepository = $this->createStub(CaisseRepository::class);
+        $caisseRepository->method('findBy')->willReturn([]);
+
+        try {
+            $totaux = (new CatalogueJeuService(
+                $stickmanRepository,
+                $caisseRepository,
+                $this->createStub(CaisseStickmanRepository::class),
+                $this->createStub(EntityManagerInterface::class),
+            ))->verifierInstallationDepuisFichier(
+                $fichier,
+                sys_get_temp_dir(),
+            );
+        } finally {
+            unlink($fichier);
+        }
+
+        self::assertSame(
+            ['stickmans' => 0, 'caisses' => 0, 'associations' => 0, 'images' => 0],
+            $totaux,
+        );
+    }
+
+    public function testRefuseUneInstallationDontUneImageEstAbsente(): void
+    {
+        $fichier = tempnam(sys_get_temp_dir(), 'stickverse-catalogue-');
+        self::assertNotFalse($fichier);
+
+        $stickman = $this->creerStickman('recrue', 'Recrue', 60, 12, 14);
+
+        file_put_contents(
+            $fichier,
+            json_encode(
+                [
+                    'version' => 1,
+                    'stickmans' => [[
+                        'slug' => 'recrue',
+                        'nom' => 'Recrue',
+                        'description' => 'Description de Recrue.',
+                        'image' => 'recrue.png',
+                        'rarete' => 1,
+                        'pv' => 60,
+                        'attaque' => 12,
+                        'defense' => 14,
+                        'actif' => true,
+                    ]],
+                    'caisses' => [],
+                ],
+                JSON_THROW_ON_ERROR,
+            ),
+        );
+
+        $stickmanRepository = $this->createStub(StickmanRepository::class);
+        $stickmanRepository->method('findBy')->willReturn([$stickman]);
+
+        $caisseRepository = $this->createStub(CaisseRepository::class);
+        $caisseRepository->method('findBy')->willReturn([]);
+
+        $service = new CatalogueJeuService(
+            $stickmanRepository,
+            $caisseRepository,
+            $this->createStub(CaisseStickmanRepository::class),
+            $this->createStub(EntityManagerInterface::class),
+        );
+
+        try {
+            $this->expectException(LogicException::class);
+            $this->expectExceptionMessage(
+                'L’image du Stickman "recrue" est introuvable',
+            );
+            $service->verifierInstallationDepuisFichier(
+                $fichier,
+                sys_get_temp_dir(),
+            );
+        } finally {
+            unlink($fichier);
+        }
+    }
+
     private function creerStickman(
         string $slug,
         string $nom,

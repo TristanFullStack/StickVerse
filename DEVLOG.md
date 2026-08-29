@@ -4333,7 +4333,107 @@ Les Stickmans, les caisses, les probabilités et leurs images peuvent être vers
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J48 — Initialiser une nouvelle base avec le catalogue versionné
 
+### Objectif
+
+J48 valide la procédure complète permettant d’installer StickVerse sur une base de données entièrement vide puis d’y restaurer le catalogue versionné créé pendant J47.
+
+### Vérification d’une installation
+
+Une nouvelle commande Symfony en lecture seule est disponible :
+
+`php bin/console app:catalogue:verifier`
+
+Cette commande compare strictement :
+
+- les Stickmans présents dans la base ;
+- leurs statistiques et leurs statuts ;
+- les caisses ;
+- les associations caisse/Stickman ;
+- les poids de tirage ;
+- le fichier `data/catalogue.json` ;
+- les images présentes dans les dossiers publics.
+
+La vérification échoue si la base diffère du catalogue ou si une image référencée est absente.
+
+### Sécurité
+
+La commande de vérification n’écrit aucune donnée.
+
+Les noms de fichiers sont contrôlés afin d’empêcher qu’un chemin d’image sorte du dossier public prévu.
+
+L’import reste transactionnel et idempotent. Il peut être relancé sans créer de doublons.
+
+### Simulation sur une base neuve
+
+Une base MySQL temporaire dédiée a été créée pour simuler une nouvelle installation complète.
+
+La procédure a exécuté successivement :
+
+- la création d’une base vide ;
+- les migrations Doctrine depuis la première version ;
+- l’import de `data/catalogue.json` ;
+- la vérification stricte de la base ;
+- le comptage des données importées ;
+- la suppression de la base temporaire.
+
+Résultat obtenu :
+
+- **12 migrations appliquées** ;
+- **27 Stickmans importés** ;
+- **1 caisse importée** ;
+- **10 associations importées** ;
+- **28 images vérifiées** ;
+- aucune différence entre la base et le catalogue ;
+- base temporaire supprimée après le contrôle.
+
+Les bases habituelles de développement et de test n’ont pas été remplacées par cette simulation.
+
+### Documentation
+
+Le fichier `docs/INSTALLATION_CATALOGUE.md` décrit maintenant :
+
+- les prérequis de l’installation ;
+- l’application des migrations ;
+- l’import du catalogue ;
+- la vérification finale ;
+- la mise à jour du fichier versionné ;
+- les précautions à prendre avec une base existante ;
+- les données concernées et celles qui restent intactes.
+
+Aucun mot de passe ni identifiant de base de données n’est stocké dans cette documentation.
+
+### Validation
+
+Les vérifications PHP, Symfony, Doctrine et PHPUnit sont réussies.
+
+Résultat final :
+
+- **103 tests réussis** ;
+- **875 assertions réussies** ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- base de développement synchronisée ;
+- installation actuelle conforme au catalogue ;
+- aucune régression détectée.
+
+### Fichiers ajoutés
+
+- `src/Command/VerifierInstallationCatalogueJeuCommand.php`
+- `docs/INSTALLATION_CATALOGUE.md`
+
+### Fichiers modifiés
+
+- `src/Service/CatalogueJeuService.php`
+- `tests/Service/CatalogueJeuServiceTest.php`
+- `DEVLOG.md`
+
+### Conclusion
+
+StickVerse peut maintenant être installé sur une base entièrement vide de manière reproductible.
+
+Après les migrations et l’import, une commande en lecture seule confirme que la base, le catalogue et toutes les images correspondent exactement à la version attendue.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

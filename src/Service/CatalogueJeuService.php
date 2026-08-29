@@ -155,28 +155,7 @@ final class CatalogueJeuService
      */
     public function importerDepuisFichier(string $chemin): array
     {
-        if (!is_file($chemin) || !is_readable($chemin)) {
-            throw new RuntimeException(
-                sprintf('Le fichier catalogue "%s" est introuvable ou illisible.', $chemin),
-            );
-        }
-
-        $contenu = file_get_contents($chemin);
-
-        if (false === $contenu) {
-            throw new RuntimeException(
-                sprintf('Impossible de lire le catalogue "%s".', $chemin),
-            );
-        }
-
-        $catalogue = json_decode(
-            $contenu,
-            true,
-            512,
-            JSON_THROW_ON_ERROR,
-        );
-
-        $this->validerCatalogueImporte($catalogue);
+        $catalogue = $this->lireCatalogue($chemin);
 
         /** @var array{version: int, stickmans: list<array<string, mixed>>, caisses: list<array<string, mixed>>} $catalogue */
         return $this->entityManager->wrapInTransaction(
@@ -264,6 +243,59 @@ final class CatalogueJeuService
                 ];
             },
         );
+    }
+
+    /**
+     * Vérifie sans écriture que la base et les images correspondent au fichier versionné.
+     *
+     * @return array{stickmans: int, caisses: int, associations: int, images: int}
+     *
+     * @throws JsonException
+     */
+    public function verifierInstallationDepuisFichier(
+        string $chemin,
+        string $dossierProjet,
+    ): array {
+        $catalogueFichier = $this->lireCatalogue($chemin);
+        $catalogueBase = $this->exporter();
+
+        if ($catalogueFichier !== $catalogueBase) {
+            throw new LogicException(
+                'La base de données ne correspond pas exactement au catalogue versionné. Lancez d’abord app:catalogue:importer.',
+            );
+        }
+
+        $nombreImages = 0;
+
+        foreach ($catalogueFichier['stickmans'] as $stickman) {
+            $this->verifierImage(
+                $dossierProjet.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'stickmen',
+                $stickman['image'],
+                sprintf('Stickman "%s"', $stickman['slug']),
+            );
+            ++$nombreImages;
+        }
+
+        foreach ($catalogueFichier['caisses'] as $caisse) {
+            $this->verifierImage(
+                $dossierProjet.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'caisses',
+                $caisse['image'],
+                sprintf('caisse "%s"', $caisse['slug']),
+            );
+            ++$nombreImages;
+        }
+
+        return [
+            'stickmans' => count($catalogueFichier['stickmans']),
+            'caisses' => count($catalogueFichier['caisses']),
+            'associations' => array_sum(
+                array_map(
+                    static fn (array $caisse): int => count($caisse['contenus']),
+                    $catalogueFichier['caisses'],
+                ),
+            ),
+            'images' => $nombreImages,
+        ];
     }
 
     /**
@@ -462,6 +494,60 @@ final class CatalogueJeuService
         if (!array_key_exists($champ, $donnees) || !is_bool($donnees[$champ])) {
             throw new LogicException(
                 sprintf('Le champ "%s.%s" doit être un booléen.', $contexte, $champ),
+            );
+        }
+    }
+
+    /**
+     * @return array{version: int, stickmans: list<array<string, mixed>>, caisses: list<array<string, mixed>>}
+     *
+     * @throws JsonException
+     */
+    private function lireCatalogue(string $chemin): array
+    {
+        if (!is_file($chemin) || !is_readable($chemin)) {
+            throw new RuntimeException(
+                sprintf('Le fichier catalogue "%s" est introuvable ou illisible.', $chemin),
+            );
+        }
+
+        $contenu = file_get_contents($chemin);
+
+        if (false === $contenu) {
+            throw new RuntimeException(
+                sprintf('Impossible de lire le catalogue "%s".', $chemin),
+            );
+        }
+
+        $catalogue = json_decode(
+            $contenu,
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        $this->validerCatalogueImporte($catalogue);
+
+        /** @var array{version: int, stickmans: list<array<string, mixed>>, caisses: list<array<string, mixed>>} $catalogue */
+        return $catalogue;
+    }
+
+    private function verifierImage(
+        string $dossier,
+        string $nomFichier,
+        string $contexte,
+    ): void {
+        if ($nomFichier !== basename($nomFichier)) {
+            throw new LogicException(
+                sprintf('Le nom d’image du %s est invalide.', $contexte),
+            );
+        }
+
+        $chemin = $dossier.DIRECTORY_SEPARATOR.$nomFichier;
+
+        if (!is_file($chemin) || !is_readable($chemin)) {
+            throw new LogicException(
+                sprintf('L’image du %s est introuvable : %s.', $contexte, $chemin),
             );
         }
     }
