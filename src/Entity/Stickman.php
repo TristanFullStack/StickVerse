@@ -20,7 +20,7 @@ class Stickman
     #[Assert\NotBlank(message: 'Le nom est obligatoire')]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank(message: 'Le champ est obligatoire.')]
     private ?string $slug = null;
 

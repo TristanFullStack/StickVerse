@@ -4200,7 +4200,136 @@ Le joueur peut maintenant retrouver un combat terminé dans son historique et co
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J47 — Rendre le catalogue du jeu transférable
 
+### Objectif
+
+J47 permet de sauvegarder dans un fichier versionné le catalogue créé depuis l’administration, afin de pouvoir le réinstaller sur une nouvelle base de données ou sur le futur serveur de production.
+
+### Fonctionnalités ajoutées
+
+Une commande Symfony exporte maintenant le catalogue :
+
+`php bin/console app:catalogue:exporter`
+
+L’export génère le fichier :
+
+`data/catalogue.json`
+
+Ce fichier contient :
+
+- les Stickmans ;
+- leurs noms et slugs techniques ;
+- leurs descriptions et images ;
+- leur rareté ;
+- leurs PV, attaque et défense ;
+- leur statut actif ou inactif ;
+- les caisses ;
+- le prix et le statut des caisses ;
+- le contenu de chaque caisse ;
+- le poids de chaque Stickman dans chaque caisse.
+
+Les identifiants internes de la base de données ne sont pas exportés. Les relations utilisent les slugs techniques afin que le catalogue puisse être transféré vers une autre base.
+
+### Import du catalogue
+
+Une seconde commande Symfony permet de restaurer le catalogue :
+
+`php bin/console app:catalogue:importer`
+
+L’import est idempotent :
+
+- un Stickman absent est créé ;
+- un Stickman existant est mis à jour grâce à son slug ;
+- une caisse absente est créée ;
+- une caisse existante est mise à jour ;
+- les associations et leurs poids sont créés ou actualisés ;
+- relancer plusieurs fois le même import ne crée aucun doublon ;
+- aucune donnée absente du fichier n’est supprimée automatiquement.
+
+L’import est exécuté dans une transaction Doctrine. Une erreur annule donc entièrement l’opération.
+
+### Sécurité des données
+
+Le format JSON possède un numéro de version.
+
+Avant tout import, le service vérifie notamment :
+
+- la structure générale du fichier ;
+- les champs obligatoires ;
+- les types des valeurs ;
+- les limites de rareté et de statistiques ;
+- l’unicité des slugs ;
+- l’unicité du contenu d’une caisse ;
+- l’existence des Stickmans référencés par les caisses ;
+- la validité des poids.
+
+Le catalogue ne contient aucune donnée personnelle, aucun compte utilisateur, aucune collection de joueur, aucune équipe et aucun historique de combat.
+
+### Unicité des slugs
+
+Le slug devient l’identifiant technique stable utilisé pendant les transferts.
+
+Une contrainte unique a été ajoutée sur `stickman.slug` afin d’empêcher la création de futurs doublons.
+
+Les noms visibles peuvent rester identiques, mais chaque Stickman doit posséder un slug technique différent.
+
+### Catalogue sauvegardé
+
+Le premier export versionné contient :
+
+- **27 Stickmans** ;
+- **1 caisse** ;
+- **10 associations caisse/Stickman** ;
+- toutes les images actuellement utilisées par le catalogue.
+
+Les 17 nouvelles illustrations, de la Recrue au Capitaine, sont maintenant prêtes à être suivies par Git avec le catalogue.
+
+### Validation du transfert
+
+Le catalogue a été importé deux fois successivement dans la base de test.
+
+Il a ensuite été réexporté et comparé au fichier source.
+
+Résultat :
+
+- import idempotent confirmé ;
+- fichier réexporté strictement identique ;
+- empreinte SHA-256 identique ;
+- aucune image référencée manquante ;
+- schémas des bases `dev` et `test` synchronisés.
+
+### Validation générale
+
+Résultat final :
+
+- **101 tests réussis** ;
+- **870 assertions réussies** ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- bases `dev` et `test` synchronisées ;
+- aucune régression détectée.
+
+### Fichiers ajoutés
+
+- `data/catalogue.json`
+- `src/Command/ExporterCatalogueJeuCommand.php`
+- `src/Command/ImporterCatalogueJeuCommand.php`
+- `src/Service/CatalogueJeuService.php`
+- `tests/Service/CatalogueJeuServiceTest.php`
+- `migrations/Version20260829120000.php`
+- les nouvelles images `public/images/stickmen/11-Recrue.png` à `public/images/stickmen/27-Capitaine.png`
+
+### Fichier modifié
+
+- `src/Entity/Stickman.php`
+- `DEVLOG.md`
+
+### Conclusion
+
+Le catalogue administré localement n’est désormais plus enfermé dans la base de développement.
+
+Les Stickmans, les caisses, les probabilités et leurs images peuvent être versionnés avec le projet puis restaurés de manière fiable sur une nouvelle installation de StickVerse.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

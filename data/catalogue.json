@@ -1,0 +1,354 @@
+{
+    "version": 1,
+    "stickmans": [
+        {
+            "slug": "arbaletrier",
+            "nom": "Arbalétrier",
+            "description": "18",
+            "image": "18-Arbalétrirer.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "arbaletrier2",
+            "nom": "Arbalétrier2",
+            "description": "18",
+            "image": "18-Arbalétrirer.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "archer",
+            "nom": "Archer",
+            "description": "#2 Gros dégâts, fragile",
+            "image": "Card02Archer.png",
+            "rarete": 3,
+            "pv": 260,
+            "attaque": 80,
+            "defense": 45,
+            "actif": true
+        },
+        {
+            "slug": "archer2",
+            "nom": "Archer2",
+            "description": "16",
+            "image": "16-Archer.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "assasin",
+            "nom": "Assasin",
+            "description": "#5 Glass cannon",
+            "image": "Card05Assassin.png",
+            "rarete": 3,
+            "pv": 220,
+            "attaque": 105,
+            "defense": 35,
+            "actif": true
+        },
+        {
+            "slug": "bagarreur",
+            "nom": "Bagarreur",
+            "description": "20",
+            "image": "20-Bagarreur.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "berserker",
+            "nom": "Berserker",
+            "description": "#7 Offensif brutal",
+            "image": "Card07Berserker.png",
+            "rarete": 4,
+            "pv": 320,
+            "attaque": 110,
+            "defense": 40,
+            "actif": true
+        },
+        {
+            "slug": "capitaine",
+            "nom": "Capitaine",
+            "description": "27",
+            "image": "27-Capitaine.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "combatant",
+            "nom": "Combatant",
+            "description": "13",
+            "image": "13-Guerrier.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "double-lancier",
+            "nom": "Double Lancier",
+            "description": "#8 Polyvalent supérieur",
+            "image": "Card08DoubleLancier.png",
+            "rarete": 4,
+            "pv": 380,
+            "attaque": 85,
+            "defense": 75,
+            "actif": true
+        },
+        {
+            "slug": "eclaireur",
+            "nom": "Eclaireur",
+            "description": "21",
+            "image": "21-Éclaireur.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "fantassin",
+            "nom": "Fantassin",
+            "description": "12",
+            "image": "12-Fantassin.png",
+            "rarete": 1,
+            "pv": 60,
+            "attaque": 14,
+            "defense": 13,
+            "actif": true
+        },
+        {
+            "slug": "frondeur",
+            "nom": "Frondeur",
+            "description": "15",
+            "image": "15-Frondeur.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "garde",
+            "nom": "Garde",
+            "description": "14",
+            "image": "14-Garde.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "gardiennovice",
+            "nom": "Gardien Novice",
+            "description": "26",
+            "image": "26-Gardien novice.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "guerrier",
+            "nom": "Guerrier",
+            "description": "#1 Équilibré",
+            "image": "Card01Guerrier.png",
+            "rarete": 3,
+            "pv": 340,
+            "attaque": 55,
+            "defense": 70,
+            "actif": true
+        },
+        {
+            "slug": "lancier",
+            "nom": "Lancier",
+            "description": "#3 Défensif",
+            "image": "Card03Lancier.png",
+            "rarete": 3,
+            "pv": 300,
+            "attaque": 65,
+            "defense": 60,
+            "actif": true
+        },
+        {
+            "slug": "mage",
+            "nom": "Mage",
+            "description": "#6 Attaquant puissant",
+            "image": "Card06Mage.png",
+            "rarete": 3,
+            "pv": 270,
+            "attaque": 45,
+            "defense": 100,
+            "actif": true
+        },
+        {
+            "slug": "magenovice",
+            "nom": "Mage Novice",
+            "description": "24",
+            "image": "24-Mage novice.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "piquier",
+            "nom": "Piquier",
+            "description": "22",
+            "image": "22-Piquier.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "portebouclier",
+            "nom": "Porte-Bouclier",
+            "description": "23",
+            "image": "23-Porte-bouclier.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "recrue",
+            "nom": "Recrue",
+            "description": "11",
+            "image": "11-Recrue.png",
+            "rarete": 1,
+            "pv": 60,
+            "attaque": 12,
+            "defense": 14,
+            "actif": true
+        },
+        {
+            "slug": "roi-stick",
+            "nom": "Roi Stick",
+            "description": "#10 Légendaire",
+            "image": "Card10RoiStick.png",
+            "rarete": 5,
+            "pv": 460,
+            "attaque": 100,
+            "defense": 95,
+            "actif": true
+        },
+        {
+            "slug": "sorciernovice",
+            "nom": "Sorcier Novice",
+            "description": "25",
+            "image": "25-Sorcier novice.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "tank",
+            "nom": "Tank",
+            "description": "#4 Mur défensif",
+            "image": "Card04Tank.png",
+            "rarete": 3,
+            "pv": 520,
+            "attaque": 35,
+            "defense": 120,
+            "actif": true
+        },
+        {
+            "slug": "tireur",
+            "nom": "Tireur",
+            "description": "19",
+            "image": "19-Tireur.png",
+            "rarete": 1,
+            "pv": 1,
+            "attaque": 1,
+            "defense": 1,
+            "actif": true
+        },
+        {
+            "slug": "ultra-mage",
+            "nom": "Ultra Mage",
+            "description": "#9 Très gros attaquant",
+            "image": "Card09UltraMage.png",
+            "rarete": 5,
+            "pv": 250,
+            "attaque": 125,
+            "defense": 45,
+            "actif": true
+        }
+    ],
+    "caisses": [
+        {
+            "slug": "caisse-origine",
+            "nom": "Caisse Origine",
+            "description": "Une caisse contenant tout les premiers Stickmans",
+            "image": "caisse-commune.png",
+            "prix": 120,
+            "actif": true,
+            "contenus": [
+                {
+                    "stickman": "archer",
+                    "poids": 9
+                },
+                {
+                    "stickman": "assasin",
+                    "poids": 6
+                },
+                {
+                    "stickman": "berserker",
+                    "poids": 4
+                },
+                {
+                    "stickman": "double-lancier",
+                    "poids": 3
+                },
+                {
+                    "stickman": "guerrier",
+                    "poids": 10
+                },
+                {
+                    "stickman": "lancier",
+                    "poids": 7
+                },
+                {
+                    "stickman": "mage",
+                    "poids": 5
+                },
+                {
+                    "stickman": "roi-stick",
+                    "poids": 1
+                },
+                {
+                    "stickman": "tank",
+                    "poids": 8
+                },
+                {
+                    "stickman": "ultra-mage",
+                    "poids": 2
+                }
+            ]
+        }
+    ]
+}
