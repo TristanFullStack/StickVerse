@@ -96,6 +96,10 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="information"][role="status"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="reessayerButton"]'
+            .'[data-action="combat-en-ligne#rafraichir"]'
+        );
+        self::assertSelectorExists(
             'link[rel="stylesheet"][data-combat-en-ligne-style]'
         );
         self::assertSelectorExists(

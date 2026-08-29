@@ -4,6 +4,7 @@ export default class extends Controller {
     static targets = [
         'chargement',
         'erreur',
+        'reessayerButton',
         'information',
         'salon',
         'combatActif',
@@ -299,9 +300,13 @@ export default class extends Controller {
         } catch (erreur) {
             if (erreur.name !== 'AbortError') {
                 this.afficherErreur(
-                    erreur.message
-                    ?? 'Impossible de charger le salon.'
+                    this.messageErreur(
+                        erreur,
+                        'Impossible de charger le salon.',
+                    ),
+                    true,
                 );
+                this.programmerNouvelEssaiSalon();
             }
         } finally {
             if (this.requeteEnCours === requete) {
@@ -388,9 +393,13 @@ export default class extends Controller {
         } catch (erreur) {
             if (erreur.name !== 'AbortError') {
                 this.afficherErreur(
-                    erreur.message
-                    ?? 'Impossible de charger le combat.'
+                    this.messageErreur(
+                        erreur,
+                        'Impossible de charger le combat.',
+                    ),
+                    true,
                 );
+                this.programmerNouvelEssaiCombat(combatId);
             }
         } finally {
             if (this.requeteEnCours === requete) {
@@ -974,6 +983,34 @@ export default class extends Controller {
         }, 3000);
     }
 
+    programmerNouvelEssaiSalon() {
+        this.annulerActualisation();
+
+        if (this.actionEnCours) {
+            return;
+        }
+
+        this.minuterieActualisation = window.setTimeout(() => {
+            if (this.combatActifIdCourant === null) {
+                this.chargerSalon();
+            }
+        }, 5000);
+    }
+
+    programmerNouvelEssaiCombat(combatId) {
+        this.annulerActualisation();
+
+        if (this.actionEnCours) {
+            return;
+        }
+
+        this.minuterieActualisation = window.setTimeout(() => {
+            if (this.combatActifIdCourant === combatId) {
+                this.chargerCombat(combatId);
+            }
+        }, 5000);
+    }
+
     annulerActualisation() {
         if (this.minuterieActualisation !== null) {
             window.clearTimeout(this.minuterieActualisation);
@@ -1337,8 +1374,12 @@ export default class extends Controller {
             await action();
         } catch (erreur) {
             this.afficherErreur(
-                erreur.message
-                ?? 'L’action demandée a échoué.'
+                this.messageErreur(
+                    erreur,
+                    'L’action demandée a échoué.',
+                ),
+                erreur instanceof TypeError
+                    || window.navigator.onLine === false,
             );
         } finally {
             this.basculerBoutons(false);
@@ -1379,6 +1420,19 @@ export default class extends Controller {
     }
 
     async lireJson(reponse) {
+        if (reponse.redirected) {
+            const destination = new URL(
+                reponse.url,
+                window.location.origin,
+            );
+
+            if (destination.pathname.startsWith('/login')) {
+                throw new Error(
+                    'Ta session a expiré. Recharge la page pour te reconnecter.'
+                );
+            }
+        }
+
         const typeContenu = reponse.headers.get('content-type') ?? '';
 
         if (!typeContenu.includes('application/json')) {
@@ -1386,6 +1440,27 @@ export default class extends Controller {
         }
 
         return reponse.json();
+    }
+
+    messageErreur(erreur, messageParDefaut) {
+        if (window.navigator.onLine === false) {
+            return [
+                'Connexion internet interrompue.',
+                'La page réessaiera automatiquement.',
+            ].join(' ');
+        }
+
+        if (erreur instanceof TypeError) {
+            return [
+                'Impossible de contacter le serveur.',
+                'Vérifie ta connexion puis réessaie.',
+            ].join(' ');
+        }
+
+        return typeof erreur?.message === 'string'
+            && erreur.message !== ''
+            ? erreur.message
+            : messageParDefaut;
     }
 
     basculerBoutons(desactiver) {
@@ -1415,15 +1490,17 @@ export default class extends Controller {
         this.etatsInteractions.clear();
     }
 
-    afficherErreur(message) {
+    afficherErreur(message, proposerNouvelEssai = false) {
         this.masquerInformation();
         this.erreurTarget.textContent = message;
         this.erreurTarget.hidden = false;
+        this.reessayerButtonTarget.hidden = !proposerNouvelEssai;
     }
 
     masquerErreur() {
         this.erreurTarget.textContent = '';
         this.erreurTarget.hidden = true;
+        this.reessayerButtonTarget.hidden = true;
     }
 
     afficherInformation(message) {

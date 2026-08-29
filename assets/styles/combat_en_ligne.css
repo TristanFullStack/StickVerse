@@ -176,6 +176,11 @@ body:has(#rapport-combat) {
     background: rgba(116, 23, 30, 0.45);
 }
 
+#combat-en-ligne .combat-reessayer {
+    margin: -8px 0 20px;
+    border-color: var(--combat-rouge);
+}
+
 #combat-en-ligne [data-combat-en-ligne-target="information"] {
     color: #c9ffe3;
     border-color: rgba(65, 211, 142, 0.7);

@@ -4771,7 +4771,43 @@ Un double clic ou une actualisation automatique ne peut plus déclencher plusieu
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J52 — Rendre les erreurs réseau récupérables
 
+### Objectif
+
+J52 évite qu’une coupure réseau ou une indisponibilité temporaire du serveur bloque définitivement l’interface des combats en ligne.
+
+### Réalisations
+
+- ajout d’un bouton **Réessayer** lorsqu’une erreur réseau survient ;
+- nouvelle tentative automatique après 5 secondes ;
+- conservation de l’actualisation automatique après une erreur temporaire ;
+- affichage de messages d’erreur compréhensibles en français ;
+- détection d’une connexion internet interrompue ;
+- détection d’un serveur temporairement inaccessible ;
+- détection d’une session expirée redirigeant vers la connexion ;
+- arrêt propre des nouvelles tentatives lorsqu’une action du joueur est déjà en cours ;
+- ajout d’un test vérifiant la présence et le branchement du bouton **Réessayer**.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `templates/combat_en_ligne/index.html.twig`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+
+### Validation
+
+- syntaxe JavaScript valide ;
+- syntaxe Twig valide ;
+- conteneur Symfony valide ;
+- suite PHPUnit complète validée ;
+- **109 tests réussis** ;
+- **983 assertions réussies**.
+
+### Résultat
+
+Une erreur réseau temporaire n’arrête plus définitivement le salon ou le combat. Le joueur reçoit un message clair, peut relancer immédiatement le chargement et bénéficie également d’une nouvelle tentative automatique.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
