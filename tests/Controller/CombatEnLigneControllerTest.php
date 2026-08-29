@@ -459,6 +459,60 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
     }
 
+    public function testRefuseUnDeuxiemePlanDuMemeJoueurPourLeRound(): void
+    {
+        [
+            $combat,
+            $joueur1,
+        ] = $this->creerCombat();
+
+        $combatId = $combat->getId();
+        self::assertNotNull($combatId);
+
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etatInitial = $this->lireReponseJson();
+        $plan = [
+            'cibleAttaqueX' => 'A',
+            'cibleAttaqueY' => 'B',
+            'cibleDefenseX' => 'C',
+            'cibleDefenseY' => 'D',
+        ];
+        $entetes = [
+            'HTTP_X_CSRF_TOKEN' => $etatInitial['csrf']['plan'],
+        ];
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/plan',
+            $plan,
+            $entetes,
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/plan',
+            $plan,
+            $entetes,
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+
+        $reponse = $this->lireReponseJson();
+        self::assertSame(
+            'Le joueur a déjà soumis son plan pour ce round.',
+            $reponse['erreur'],
+        );
+
+        $plans = $this->entityManager
+            ->getRepository(PlanRoundCombat::class)
+            ->trouverPourCombatEtRound($combat, 1);
+
+        self::assertCount(1, $plans);
+    }
+
     public function testRefuseUnPlanSansJetonCsrfValide(): void
     {
         [

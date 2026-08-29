@@ -62,6 +62,8 @@ export default class extends Controller {
         this.combatActifIdCourant = null;
         this.requeteEnCours = null;
         this.minuterieActualisation = null;
+        this.actionEnCours = false;
+        this.etatsInteractions = new Map();
         this.chargerSalon();
     }
 
@@ -71,6 +73,10 @@ export default class extends Controller {
     }
 
     rafraichir() {
+        if (this.actionEnCours) {
+            return;
+        }
+
         if (this.combatActifIdCourant !== null) {
             this.chargerCombat(this.combatActifIdCourant);
 
@@ -81,6 +87,10 @@ export default class extends Controller {
     }
 
     async retournerSalon() {
+        if (this.actionEnCours) {
+            return;
+        }
+
         this.combatActifIdCourant = null;
         this.combat = null;
         this.annulerActualisation();
@@ -948,8 +958,11 @@ export default class extends Controller {
         this.annulerActualisation();
 
         if (
+            this.actionEnCours
+            || (
             this.combat?.statut !== 'en_attente'
             && this.combat?.statut !== 'en_cours'
+            )
         ) {
             return;
         }
@@ -1306,6 +1319,16 @@ export default class extends Controller {
     }
 
     async executerAction(action) {
+        if (this.actionEnCours) {
+            return;
+        }
+
+        this.actionEnCours = true;
+        this.annulerActualisation();
+        this.requeteEnCours?.abort();
+        this.requeteEnCours = null;
+        this.chargementTarget.hidden = true;
+        this.element.setAttribute('aria-busy', 'true');
         this.masquerErreur();
         this.masquerInformation();
         this.basculerBoutons(true);
@@ -1319,6 +1342,9 @@ export default class extends Controller {
             );
         } finally {
             this.basculerBoutons(false);
+            this.element.setAttribute('aria-busy', 'false');
+            this.actionEnCours = false;
+            this.programmerActualisation();
         }
     }
 
@@ -1363,9 +1389,30 @@ export default class extends Controller {
     }
 
     basculerBoutons(desactiver) {
-        for (const bouton of this.element.querySelectorAll('button')) {
-            bouton.disabled = desactiver;
+        if (desactiver) {
+            for (const interaction of this.element.querySelectorAll(
+                'button, select'
+            )) {
+                if (!this.etatsInteractions.has(interaction)) {
+                    this.etatsInteractions.set(
+                        interaction,
+                        interaction.disabled,
+                    );
+                }
+
+                interaction.disabled = true;
+            }
+
+            return;
         }
+
+        for (const [interaction, etaitDesactivee] of this.etatsInteractions) {
+            if (interaction.isConnected) {
+                interaction.disabled = etaitDesactivee;
+            }
+        }
+
+        this.etatsInteractions.clear();
     }
 
     afficherErreur(message) {

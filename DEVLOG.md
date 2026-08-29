@@ -4680,7 +4680,94 @@ Après une victoire, une défaite, un match nul ou un abandon, le joueur peut co
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J51 — Sécuriser les actualisations et les doubles actions
 
+### Objectif
+
+J51 empêche le navigateur d’envoyer plusieurs actions simultanées pendant un combat et évite qu’une actualisation automatique entre en conflit avec une action du joueur.
+
+### Protection des actions côté navigateur
+
+Le contrôleur JavaScript possède maintenant un état central indiquant qu’une action est en cours.
+
+Lorsqu’une action commence :
+
+- l’actualisation automatique est arrêtée ;
+- une éventuelle lecture HTTP encore active est annulée ;
+- les boutons et listes de sélection sont temporairement désactivés ;
+- l’interface reçoit l’état `aria-busy` ;
+- une seconde action JavaScript est immédiatement ignorée.
+
+Cette protection concerne notamment :
+
+- la création d’un combat ;
+- la jonction d’un combat ;
+- l’envoi d’un plan ;
+- l’abandon ;
+- l’annulation d’un combat en attente.
+
+### Reprise automatique
+
+À la fin de l’action :
+
+- les interactions retrouvent leur état précédent ;
+- l’état occupé de l’interface est retiré ;
+- l’actualisation automatique reprend uniquement si le combat est encore en attente ou en cours.
+
+Elle ne redémarre donc pas après une victoire, une défaite, un match nul, un abandon ou une annulation.
+
+### Conservation des états désactivés
+
+Le contrôleur mémorise l’état initial de chaque bouton et de chaque liste avant de les verrouiller.
+
+Une interaction déjà désactivée avant l’action reste désactivée après celle-ci. Cela évite de réactiver accidentellement une action qui ne devrait plus être disponible.
+
+### Protections serveur confirmées
+
+L’audit a confirmé que le serveur possédait déjà plusieurs protections complémentaires :
+
+- verrou d’écriture sur le combat ;
+- transaction Doctrine pendant l’enregistrement ;
+- unicité d’un plan par combat, joueur et round ;
+- refus d’un second plan du même joueur ;
+- refus des actions incompatibles avec le statut du combat.
+
+Aucune migration Doctrine supplémentaire n’est nécessaire.
+
+### Test de double soumission
+
+Un nouveau test HTTP envoie deux fois le même plan pour le même joueur et le même round.
+
+Il vérifie que :
+
+- la première soumission est acceptée ;
+- la seconde reçoit une réponse HTTP `409 Conflict` ;
+- le message indique que le plan a déjà été soumis ;
+- un seul plan est conservé dans la base de données.
+
+### Validation technique
+
+Résultat final :
+
+- **109 tests réussis** ;
+- **982 assertions réussies** ;
+- syntaxe JavaScript valide ;
+- syntaxe PHP valide ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- aucune régression détectée.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `tests/Controller/CombatEnLigneControllerTest.php`
+- `DEVLOG.md`
+
+### Conclusion
+
+Les actions du combat sont maintenant protégées à la fois dans le navigateur et sur le serveur.
+
+Un double clic ou une actualisation automatique ne peut plus déclencher plusieurs plans ou plusieurs changements d’état simultanés.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
