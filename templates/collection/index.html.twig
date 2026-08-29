@@ -5,6 +5,43 @@
 {% block body %}
     <h1>Ma collection</h1>
 
+    {% for message in app.flashes('success') %}
+        <p class="flash-success" role="status">
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    <section aria-labelledby="progression-joueur-titre">
+        <h2 id="progression-joueur-titre">Tes prochaines étapes</h2>
+
+        <ol>
+            <li>
+                Collection de départ :
+                <strong>
+                    {{ nombre_stickmen_differents }} Stickman(s) différent(s)
+                </strong>
+            </li>
+            <li>
+                {% if nombre_stickmen_differents >= 4 %}
+                    <a href="{{ path('app_equipe') }}">
+                        {{ equipe_prete ? 'Modifier mon équipe' : 'Composer ma première équipe' }}
+                    </a>
+                {% else %}
+                    Obtenir au moins quatre Stickmans différents
+                {% endif %}
+            </li>
+            <li>
+                {% if equipe_prete %}
+                    <a href="{{ path('app_combats_en_ligne') }}">
+                        Accéder aux combats en ligne
+                    </a>
+                {% else %}
+                    Accès au salon après la création de ton équipe
+                {% endif %}
+            </li>
+        </ol>
+    </section>
+
     {% if inventaires is empty %}
         <p>Tu ne possèdes encore aucun Stickman.</p>
 

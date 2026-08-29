@@ -15,6 +15,12 @@
             <p class="flash-success">
                 {{ message }}
             </p>
+
+            <p>
+                <a href="{{ path('app_combats_en_ligne') }}">
+                    Accéder aux combats en ligne
+                </a>
+            </p>
         {% endfor %}
 
         {% if nombre_stickmen_disponibles < 4 %}

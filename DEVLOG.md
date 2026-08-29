@@ -4437,7 +4437,142 @@ Après les migrations et l’import, une commande en lecture seule confirme que 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J49 — Sécuriser le parcours d’un nouveau joueur
 
+### Objectif
+
+J49 garantit qu’un nouveau joueur peut aller de la création de son compte jusqu’au salon des combats sans rester bloqué par une collection vide ou incomplète.
+
+### Pack de départ garanti
+
+Chaque nouveau compte reçoit automatiquement quatre Stickmans différents :
+
+- Guerrier ;
+- Archer ;
+- Lancier ;
+- Tank.
+
+Ces quatre Stickmans permettent de composer immédiatement une première équipe complète avec les emplacements A, B, C et D.
+
+Le pack repose sur les slugs stables du catalogue versionné :
+
+- `guerrier`
+- `archer`
+- `lancier`
+- `tank`
+
+### Initialisation sécurisée
+
+Le nouveau service `InitialisationNouveauJoueurService` :
+
+- recherche les quatre Stickmans actifs dans le catalogue ;
+- vérifie que le pack est complet avant toute attribution ;
+- crée les quatre entrées d’inventaire ;
+- conserve un ordre de départ stable ;
+- reste idempotent et ne crée pas de doublons s’il est relancé ;
+- refuse l’initialisation si un Stickman obligatoire est absent ou inactif.
+
+Aucune migration Doctrine n’est nécessaire.
+
+### Inscription améliorée
+
+Après une inscription réussie :
+
+- le mot de passe est haché normalement ;
+- le compte reçoit son pack de départ ;
+- le joueur est connecté automatiquement ;
+- un message de bienvenue est enregistré ;
+- le joueur est redirigé vers sa collection.
+
+Le passage manuel par la page de connexion après l’inscription n’est donc plus nécessaire.
+
+### Progression guidée
+
+La page « Ma collection » affiche maintenant les prochaines étapes du joueur :
+
+1. vérifier sa collection de départ ;
+2. composer sa première équipe ;
+3. accéder aux combats en ligne.
+
+Le lien proposé évolue selon la progression réelle :
+
+- composition de la première équipe lorsque le joueur possède quatre Stickmans ;
+- modification de l’équipe lorsqu’elle existe déjà ;
+- accès au salon des combats lorsque l’équipe est prête.
+
+Après la sauvegarde d’une équipe, un lien direct vers les combats en ligne est également affiché.
+
+### Interface d’inscription
+
+La page d’inscription est maintenant présentée en français.
+
+Elle indique clairement que le nouveau compte recevra quatre Stickmans différents permettant de composer sa première équipe.
+
+### Tests automatisés
+
+Un test unitaire vérifie :
+
+- l’attribution des quatre Stickmans ;
+- leur ordre stable ;
+- l’absence de doublons lors d’une seconde initialisation ;
+- le refus d’un catalogue incomplet.
+
+Un test HTTP complet reproduit le parcours réel d’un nouveau joueur :
+
+- ouverture de la page d’inscription ;
+- création du compte ;
+- connexion automatique ;
+- redirection vers la collection ;
+- vérification des quatre Stickmans ;
+- ouverture du formulaire d’équipe ;
+- sauvegarde d’une équipe complète ;
+- accès au salon des combats en ligne.
+
+### Validation manuelle
+
+Le parcours a également été vérifié manuellement avec un nouveau compte.
+
+Résultat :
+
+- création du compte fonctionnelle ;
+- connexion automatique fonctionnelle ;
+- pack de départ correctement attribué ;
+- collection accessible ;
+- première équipe enregistrable ;
+- salon des combats accessible ;
+- aucune étape bloquante constatée.
+
+### Validation technique
+
+Résultat final :
+
+- **107 tests réussis** ;
+- **921 assertions réussies** ;
+- syntaxe PHP valide ;
+- templates Twig valides ;
+- conteneur Symfony valide ;
+- aucune régression détectée.
+
+### Fichiers ajoutés
+
+- `src/Service/InitialisationNouveauJoueurService.php`
+- `tests/Service/InitialisationNouveauJoueurServiceTest.php`
+- `tests/Controller/ParcoursNouveauJoueurControllerTest.php`
+
+### Fichiers modifiés
+
+- `src/Controller/RegistrationController.php`
+- `src/Controller/CollectionController.php`
+- `templates/registration/register.html.twig`
+- `templates/collection/index.html.twig`
+- `templates/equipe/index.html.twig`
+- `DEVLOG.md`
+
+### Conclusion
+
+Un nouveau joueur dispose maintenant immédiatement d’une équipe potentielle complète.
+
+Le parcours inscription → collection → équipe → combats est guidé, testé automatiquement et validé manuellement, sans dépendre de tirages aléatoires pour débloquer l’accès au jeu.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
