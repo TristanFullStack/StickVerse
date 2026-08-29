@@ -4811,7 +4811,41 @@ Une erreur réseau temporaire n’arrête plus définitivement le salon ou le co
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J53 — Déclarer le match nul après trois rounds sans dégâts
 
+### Objectif
+
+J53 empêche un combat de continuer indéfiniment lorsque les choix des deux joueurs ne produisent aucun dégât.
+
+### Réalisations
+
+- détection des rounds sans aucun dégât effectif ;
+- déclaration d’un match nul après 3 rounds consécutifs sans dégâts ;
+- remise à zéro de la série dès qu’un dégât est infligé ;
+- conservation du match nul immédiat lors d’une élimination simultanée ;
+- utilisation de l’historique persistant des rounds sans nouvelle colonne en base ;
+- remplacement de l’ancienne détection immédiate limitée au dernier Stickman de chaque équipe ;
+- ajout d’un test HTTP complet sur trois rounds ;
+- vérification du rapport final affichant le match nul.
+
+### Fichiers modifiés
+
+- `src/Service/DeterminationFinCombatService.php`
+- `tests/Service/DeterminationFinCombatServiceTest.php`
+- `tests/Controller/ResolutionRoundCombatHttpTest.php`
+
+### Validation
+
+- syntaxe PHP valide ;
+- conteneur Symfony valide ;
+- tests ciblés validés ;
+- suite PHPUnit complète validée ;
+- **112 tests réussis** ;
+- **1044 assertions réussies**.
+
+### Résultat
+
+Un combat est désormais automatiquement terminé en match nul après trois rounds consécutifs sans aucun dégât effectif. Un round produisant au moins un dégât interrompt immédiatement cette série.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

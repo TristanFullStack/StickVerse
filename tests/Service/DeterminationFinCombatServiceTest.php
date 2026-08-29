@@ -4,6 +4,7 @@ namespace App\Tests\Service;
 
 use App\Entity\Combat;
 use App\Entity\CombattantCombat;
+use App\Entity\ResultatRoundCombat;
 use App\Entity\User;
 use App\Service\DeterminationFinCombatService;
 use PHPUnit\Framework\TestCase;
@@ -76,7 +77,7 @@ final class DeterminationFinCombatServiceTest extends TestCase
         self::assertNull($combat->getGagnant());
     }
 
-    public function testDeclareUnMatchNulMathematique(): void
+    public function testContinueAvantTroisRoundsSansDegat(): void
     {
         $joueur1 = new User();
         $joueur2 = new User();
@@ -85,12 +86,6 @@ final class DeterminationFinCombatServiceTest extends TestCase
         $combat->setJoueur2($joueur2);
         $combat->setStatut(Combat::STATUT_EN_COURS);
 
-        /*
-         * Joueur 1 : attaque 2 contre défense 4.
-         * Joueur 2 : attaque 3 contre défense 5.
-         *
-         * Aucun des deux ne peut infliger de dégâts.
-         */
         $equipeJoueur1 = $this->creerEquipeAvecUnVivant(
             attaque: 2,
             defense: 5,
@@ -109,8 +104,8 @@ final class DeterminationFinCombatServiceTest extends TestCase
             combattantsJoueur2: $equipeJoueur2,
         );
 
-        self::assertTrue($termine);
-        self::assertTrue($combat->estTermine());
+        self::assertFalse($termine);
+        self::assertTrue($combat->estEnCours());
         self::assertNull($combat->getGagnant());
     }
 
@@ -144,6 +139,78 @@ final class DeterminationFinCombatServiceTest extends TestCase
         self::assertFalse($termine);
         self::assertTrue($combat->estEnCours());
         self::assertNull($combat->getGagnant());
+    }
+
+    public function testDeclareUnMatchNulApresTroisRoundsSansDegat(): void
+    {
+        $joueur1 = new User();
+        $joueur2 = new User();
+
+        $combat = new Combat($joueur1);
+        $combat->setJoueur2($joueur2);
+        $combat->setStatut(Combat::STATUT_EN_COURS);
+
+        $this->ajouterRound($combat, 1, 0);
+        $this->ajouterRound($combat, 2, 0);
+        $this->ajouterRound($combat, 3, 0);
+
+        $service = new DeterminationFinCombatService();
+
+        $termine = $service->terminerSiNecessaire(
+            combat: $combat,
+            combattantsJoueur1: $this->creerEquipeVivante(),
+            combattantsJoueur2: $this->creerEquipeVivante(),
+        );
+
+        self::assertTrue($termine);
+        self::assertTrue($combat->estTermine());
+        self::assertNull($combat->getGagnant());
+    }
+
+    public function testUnRoundAvecDegatReinitialiseLaSerie(): void
+    {
+        $joueur1 = new User();
+        $joueur2 = new User();
+
+        $combat = new Combat($joueur1);
+        $combat->setJoueur2($joueur2);
+        $combat->setStatut(Combat::STATUT_EN_COURS);
+
+        $this->ajouterRound($combat, 1, 0);
+        $this->ajouterRound($combat, 2, 5);
+        $this->ajouterRound($combat, 3, 0);
+        $this->ajouterRound($combat, 4, 0);
+
+        $service = new DeterminationFinCombatService();
+
+        $termine = $service->terminerSiNecessaire(
+            combat: $combat,
+            combattantsJoueur1: $this->creerEquipeVivante(),
+            combattantsJoueur2: $this->creerEquipeVivante(),
+        );
+
+        self::assertFalse($termine);
+        self::assertTrue($combat->estEnCours());
+        self::assertNull($combat->getGagnant());
+    }
+
+    private function ajouterRound(
+        Combat $combat,
+        int $numeroRound,
+        int $degatsEffectifs,
+    ): void {
+        new ResultatRoundCombat(
+            $combat,
+            $numeroRound,
+            [
+                'joueur1_A' => [
+                    'degatsEffectifs' => $degatsEffectifs,
+                ],
+                'joueur2_A' => [
+                    'degatsEffectifs' => 0,
+                ],
+            ],
+        );
     }
 
     /**

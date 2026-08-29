@@ -9,6 +9,8 @@ use LogicException;
 
 final class DeterminationFinCombatService
 {
+    public const NOMBRE_ROUNDS_SANS_DEGAT_AVANT_MATCH_NUL = 3;
+
     /**
      * @param list<CombattantCombat> $combattantsJoueur1
      * @param list<CombattantCombat> $combattantsJoueur2
@@ -63,47 +65,52 @@ final class DeterminationFinCombatService
         }
 
         /*
-         * Le match nul mathématique n'est possible
-         * que lorsqu'il reste exactement un combattant
-         * vivant de chaque côté.
+         * Trois rounds consécutifs sans aucun dégât effectif
+         * indiquent que les choix des deux joueurs ont créé
+         * une situation de blocage durable.
          */
-        if (
-            count($vivantsJoueur1) !== 1
-            || count($vivantsJoueur2) !== 1
+        if ($this->nombreRoundsConsecutifsSansDegat($combat)
+            >= self::NOMBRE_ROUNDS_SANS_DEGAT_AVANT_MATCH_NUL
         ) {
-            return false;
+            return $this->terminer(
+                combat: $combat,
+                gagnant: null,
+            );
         }
 
-        $dernierJoueur1 = $vivantsJoueur1[0];
-        $dernierJoueur2 = $vivantsJoueur2[0];
+        return false;
+    }
 
-        $degatsPossiblesJoueur1 = max(
-            0,
-            $dernierJoueur1->getAttaqueSnapshot()
-                - $dernierJoueur2->getDefenseSnapshot(),
+    private function nombreRoundsConsecutifsSansDegat(
+        Combat $combat,
+    ): int {
+        $resultatsRounds = $combat
+            ->getResultatsRounds()
+            ->toArray();
+
+        usort(
+            $resultatsRounds,
+            static fn ($a, $b): int =>
+                $b->getNumeroRound() <=> $a->getNumeroRound(),
         );
 
-        $degatsPossiblesJoueur2 = max(
-            0,
-            $dernierJoueur2->getAttaqueSnapshot()
-                - $dernierJoueur1->getDefenseSnapshot(),
-        );
+        $nombreRounds = 0;
 
-        /*
-         * Si au moins l'un des deux combattants peut
-         * encore infliger des dégâts, le combat continue.
-         */
-        if (
-            $degatsPossiblesJoueur1 > 0
-            || $degatsPossiblesJoueur2 > 0
-        ) {
-            return false;
+        foreach ($resultatsRounds as $resultatRound) {
+            foreach ($resultatRound->getResultats() as $resultat) {
+                if (
+                    !isset($resultat['degatsEffectifs'])
+                    || !is_int($resultat['degatsEffectifs'])
+                    || $resultat['degatsEffectifs'] > 0
+                ) {
+                    return $nombreRounds;
+                }
+            }
+
+            $nombreRounds++;
         }
 
-        return $this->terminer(
-            combat: $combat,
-            gagnant: null,
-        );
+        return $nombreRounds;
     }
 
     private function terminer(

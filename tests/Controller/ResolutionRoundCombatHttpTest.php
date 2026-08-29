@@ -724,10 +724,93 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         self::assertSame('egalite', $salon['historiqueCombats'][0]['resultat']);
     }
 
+    public function testTroisRoundsSansDegatTerminentLeCombatEnMatchNul(): void
+    {
+        [
+            $combat,
+            $joueur1,
+            $joueur2,
+        ] = $this->creerCombatAvecSnapshots(
+            pv: 10,
+            attaque: 1,
+            defense: 10,
+        );
+
+        $combatId = $combat->getId();
+        self::assertNotNull($combatId);
+
+        $plan = [
+            'cibleAttaqueX' => 'A',
+            'cibleAttaqueY' => 'B',
+            'cibleDefenseX' => 'A',
+            'cibleDefenseY' => 'B',
+        ];
+
+        for ($numeroRound = 1; $numeroRound <= 3; $numeroRound++) {
+            $this->soumettrePlan(
+                $joueur1,
+                $combatId,
+                $plan,
+                Response::HTTP_CREATED,
+            );
+
+            $resolution = $this->soumettrePlan(
+                $joueur2,
+                $combatId,
+                $plan,
+                Response::HTTP_OK,
+            );
+
+            if ($numeroRound < 3) {
+                self::assertSame('round_resolu', $resolution['etat']);
+                self::assertSame(
+                    Combat::STATUT_EN_COURS,
+                    $resolution['statut'],
+                );
+                self::assertSame(
+                    $numeroRound + 1,
+                    $resolution['numeroRound'],
+                );
+
+                continue;
+            }
+
+            self::assertSame('combat_termine', $resolution['etat']);
+            self::assertSame(
+                Combat::STATUT_TERMINE,
+                $resolution['statut'],
+            );
+            self::assertSame(3, $resolution['numeroRound']);
+            self::assertNull($resolution['gagnantId']);
+        }
+
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etatFinal = $this->lireReponseJson();
+        self::assertCount(3, $etatFinal['historiqueRounds']);
+
+        foreach ($etatFinal['historiqueRounds'] as $round) {
+            foreach ($round['resultats'] as $resultat) {
+                self::assertSame(0, $resultat['degatsEffectifs']);
+            }
+        }
+
+        $this->client->request('GET', '/combats/'.$combatId.'/rapport');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.rapport-resultat', 'Match nul');
+        self::assertSelectorCount(3, '.rapport-round');
+    }
+
     /**
      * @return array{Combat, User, User}
      */
-    private function creerCombatAvecSnapshots(int $pv = 10): array
+    private function creerCombatAvecSnapshots(
+        int $pv = 10,
+        int $attaque = 1,
+        int $defense = 0,
+    ): array
     {
         $suffixe = bin2hex(random_bytes(6));
 
@@ -753,6 +836,8 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
                 $slot,
                 $suffixe,
                 $pv,
+                $attaque,
+                $defense,
             );
 
             $stickmen[$slot] = $stickman;
@@ -795,6 +880,8 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         string $slot,
         string $suffixe,
         int $pv,
+        int $attaque,
+        int $defense,
     ): Stickman {
         return (new Stickman())
             ->setNom(
@@ -816,8 +903,8 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
             )
             ->setRarete(1)
             ->setPv($pv)
-            ->setAttaque(1)
-            ->setDefense(0)
+            ->setAttaque($attaque)
+            ->setDefense($defense)
             ->setStatutActif(true);
     }
 
