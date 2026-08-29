@@ -425,6 +425,10 @@ final class SalonCombatEnLigneController extends AbstractController
             $resultat = $gagnantId === $utilisateurId
                 ? 'victoire_abandon'
                 : 'abandon';
+        } elseif ($combat->getStatut() === Combat::STATUT_FORFAIT) {
+            $resultat = $gagnantId === $utilisateurId
+                ? 'victoire_forfait'
+                : 'forfait';
         } elseif ($gagnantId === null) {
             $resultat = 'egalite';
         } else {

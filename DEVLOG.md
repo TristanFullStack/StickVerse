@@ -4849,7 +4849,60 @@ Un combat est désormais automatiquement terminé en match nul après trois roun
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J54 — Déclarer un forfait après cinq minutes d’inactivité
 
+### Objectif
+
+J54 empêche un combat en cours de rester bloqué lorsqu’un joueur envoie son plan mais que son adversaire ne répond jamais.
+
+### Réalisations
+
+- démarrage d’un délai de 5 minutes dès la soumission du premier plan du round ;
+- aucun chronomètre tant qu’aucun joueur n’a envoyé son plan ;
+- affichage du temps restant pour les deux participants ;
+- victoire automatique du joueur ayant envoyé son plan lorsque le délai expire ;
+- ajout du statut distinct `forfait` ;
+- distinction entre le forfait automatique et l’abandon volontaire ;
+- protection concurrente de l’expiration et de la soumission du second plan ;
+- ajout du forfait dans l’historique des combats ;
+- ajout des résultats « Victoire par forfait » et « Défaite par forfait » ;
+- prise en charge du forfait dans le rapport définitif ;
+- ajout de tests unitaires et HTTP couvrant l’expiration du délai.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `src/Controller/CombatEnLigneController.php`
+- `src/Controller/InterfaceCombatEnLigneController.php`
+- `src/Controller/SalonCombatEnLigneController.php`
+- `src/Entity/Combat.php`
+- `src/Repository/CombatRepository.php`
+- `src/Service/ExpirationPlanCombatEnLigneService.php`
+- `templates/combat_en_ligne/rapport.html.twig`
+- `tests/Controller/CombatEnLigneControllerTest.php`
+- `tests/Service/ExpirationPlanCombatEnLigneServiceTest.php`
+
+### Validation
+
+- syntaxe PHP valide ;
+- syntaxe JavaScript valide ;
+- templates Twig valides ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- base de données synchronisée ;
+- test HTTP réel de l’expiration validé ;
+- suite PHPUnit complète validée ;
+- **117 tests réussis** ;
+- **1085 assertions réussies**.
+
+### Test manuel restant
+
+Le comportement visuel complet sera vérifié demain avec deux comptes en laissant volontairement expirer le délai de 5 minutes.
+
+### Résultat
+
+Lorsqu’un seul joueur a envoyé son plan, son adversaire dispose désormais de cinq minutes pour répondre. Une fois le délai dépassé, le joueur prêt remporte automatiquement le combat par forfait.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

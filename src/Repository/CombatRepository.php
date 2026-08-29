@@ -95,6 +95,7 @@ class CombatRepository extends ServiceEntityRepository
                 [
                     Combat::STATUT_TERMINE,
                     Combat::STATUT_ABANDONNE,
+                    Combat::STATUT_FORFAIT,
                 ],
             )
             ->orderBy('combat.dateMiseAJour', 'DESC')

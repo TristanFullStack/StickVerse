@@ -21,6 +21,7 @@ class Combat
     public const STATUT_EN_COURS = 'en_cours';
     public const STATUT_TERMINE = 'termine';
     public const STATUT_ABANDONNE = 'abandonne';
+    public const STATUT_FORFAIT = 'forfait';
     public const STATUT_ANNULE = 'annule';
 
     private const STATUTS_VALIDES = [
@@ -28,6 +29,7 @@ class Combat
         self::STATUT_EN_COURS,
         self::STATUT_TERMINE,
         self::STATUT_ABANDONNE,
+        self::STATUT_FORFAIT,
         self::STATUT_ANNULE,
     ];
 
@@ -273,6 +275,11 @@ class Combat
     public function estAnnule(): bool
     {
         return $this->statut === self::STATUT_ANNULE;
+    }
+
+    public function estForfait(): bool
+    {
+        return $this->statut === self::STATUT_FORFAIT;
     }
 
     public function getDateExpirationAttente(): DateTimeImmutable

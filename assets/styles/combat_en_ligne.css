@@ -663,14 +663,16 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .historique-combat[data-resultat="victoire"] .historique-combat-resultat,
-#combat-en-ligne .historique-combat[data-resultat="victoire_abandon"] .historique-combat-resultat {
+#combat-en-ligne .historique-combat[data-resultat="victoire_abandon"] .historique-combat-resultat,
+#combat-en-ligne .historique-combat[data-resultat="victoire_forfait"] .historique-combat-resultat {
     color: #caffb7;
     border-color: #46ad3c;
     background: rgba(44, 125, 39, 0.2);
 }
 
 #combat-en-ligne .historique-combat[data-resultat="defaite"] .historique-combat-resultat,
-#combat-en-ligne .historique-combat[data-resultat="abandon"] .historique-combat-resultat {
+#combat-en-ligne .historique-combat[data-resultat="abandon"] .historique-combat-resultat,
+#combat-en-ligne .historique-combat[data-resultat="forfait"] .historique-combat-resultat {
     color: #ffd2d0;
     border-color: var(--combat-rouge);
     background: rgba(138, 32, 37, 0.2);
@@ -719,11 +721,13 @@ body:has(#rapport-combat) {
     font-size: clamp(28px, 5vw, 52px);
 }
 
-#rapport-combat .rapport-resultat[data-resultat="victoire"] {
+#rapport-combat .rapport-resultat[data-resultat="victoire"],
+#rapport-combat .rapport-resultat[data-resultat="victoire_forfait"] {
     color: var(--combat-vert);
 }
 
-#rapport-combat .rapport-resultat[data-resultat="defaite"] {
+#rapport-combat .rapport-resultat[data-resultat="defaite"],
+#rapport-combat .rapport-resultat[data-resultat="forfait"] {
     color: var(--combat-rouge);
 }
 

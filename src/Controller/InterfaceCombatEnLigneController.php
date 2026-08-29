@@ -44,6 +44,7 @@ final class InterfaceCombatEnLigneController extends AbstractController
 
         if (!$combat->estTermine()
             && $combat->getStatut() !== Combat::STATUT_ABANDONNE
+            && $combat->getStatut() !== Combat::STATUT_FORFAIT
         ) {
             throw $this->createNotFoundException(
                 'Le rapport est disponible à la fin du combat.'
@@ -101,9 +102,17 @@ final class InterfaceCombatEnLigneController extends AbstractController
         }
 
         if ($combat->getGagnant() === $utilisateur) {
+            if ($combat->getStatut() === Combat::STATUT_FORFAIT) {
+                return ['victoire', 'Victoire par forfait'];
+            }
+
             return $combat->getStatut() === Combat::STATUT_ABANDONNE
                 ? ['victoire', 'Victoire par abandon']
                 : ['victoire', 'Victoire'];
+        }
+
+        if ($combat->getStatut() === Combat::STATUT_FORFAIT) {
+            return ['defaite', 'Défaite par forfait'];
         }
 
         return $combat->getStatut() === Combat::STATUT_ABANDONNE

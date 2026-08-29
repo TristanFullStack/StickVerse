@@ -15,6 +15,7 @@ use App\Security\Voter\CombatVoter;
 use App\Service\AbandonCombatService;
 use App\Service\AnnulationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
+use App\Service\ExpirationPlanCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
 use InvalidArgumentException;
@@ -48,6 +49,7 @@ final class CombatEnLigneController extends AbstractController
         ResultatRoundCombatRepository $resultatRoundRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
         ExpirationCombatEnAttenteService $expirationService,
+        ExpirationPlanCombatEnLigneService $expirationPlanService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -63,6 +65,8 @@ final class CombatEnLigneController extends AbstractController
         $combatId = $combat->getId();
         $expirationAutomatique = $combatId !== null
             && $expirationService->expirerSiNecessaire($combatId);
+        $forfaitAutomatique = $combatId !== null
+            && $expirationPlanService->expirerSiNecessaire($combatId);
 
         $adversaire = $combat->getJoueur1() === $utilisateur
             ? $combat->getJoueur2()
@@ -76,6 +80,7 @@ final class CombatEnLigneController extends AbstractController
 
         $planSoumis = false;
         $adversairePret = false;
+        $expirationPlan = null;
 
         foreach ($plans as $plan) {
             if (!$plan instanceof PlanRoundCombat) {
@@ -91,10 +96,22 @@ final class CombatEnLigneController extends AbstractController
             $adversairePret = true;
         }
 
+        if (count($plans) === 1 && $combat->estEnCours()) {
+            $planEnAttente = $plans[0];
+
+            if ($planEnAttente instanceof PlanRoundCombat) {
+                $expirationPlan = $expirationPlanService
+                    ->dateExpiration($planEnAttente)
+                    ->format(DATE_ATOM);
+            }
+        }
+
         return $this->json([
             'combatId' => $combat->getId(),
             'statut' => $combat->getStatut(),
             'expirationAutomatique' => $expirationAutomatique,
+            'forfaitAutomatique' => $forfaitAutomatique,
+            'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),
             'dernierRound' => $combat->getDernierRoundResolu() !== null
@@ -217,6 +234,7 @@ final class CombatEnLigneController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager,
         SoumissionPlanCombatService $soumissionService,
         ResolutionRoundCombatEnLigneService $resolutionService,
+        ExpirationPlanCombatEnLigneService $expirationPlanService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::JOUER,
@@ -275,6 +293,15 @@ final class CombatEnLigneController extends AbstractController
                     'erreur' => 'Le combat demandé est introuvable.',
                 ],
                 Response::HTTP_NOT_FOUND,
+            );
+        }
+
+        if ($expirationPlanService->expirerSiNecessaire($combatId)) {
+            return $this->json(
+                [
+                    'erreur' => 'Le délai pour envoyer le plan est expiré.',
+                ],
+                Response::HTTP_CONFLICT,
             );
         }
 

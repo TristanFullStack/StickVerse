@@ -115,6 +115,8 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertSame([], $donnees['historiqueRounds']);
         self::assertFalse($donnees['planSoumis']);
         self::assertFalse($donnees['adversairePret']);
+        self::assertFalse($donnees['forfaitAutomatique']);
+        self::assertNull($donnees['expirationPlan']);
 
         self::assertSame(
             $joueur1->getId(),
@@ -453,6 +455,26 @@ final class CombatEnLigneControllerTest extends WebTestCase
             $planEnregistre->getCibleDefenseX(),
         );
 
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatEnAttente = $this->lireReponseJson();
+
+        self::assertTrue($etatEnAttente['planSoumis']);
+        self::assertFalse($etatEnAttente['adversairePret']);
+        self::assertFalse($etatEnAttente['forfaitAutomatique']);
+        self::assertSame(
+            $planEnregistre
+                ->getDateSoumission()
+                ->modify('+5 minutes')
+                ->format(DATE_ATOM),
+            $etatEnAttente['expirationPlan'],
+        );
+
         self::assertSame(
             'D',
             $planEnregistre->getCibleDefenseY(),
@@ -511,6 +533,86 @@ final class CombatEnLigneControllerTest extends WebTestCase
             ->trouverPourCombatEtRound($combat, 1);
 
         self::assertCount(1, $plans);
+    }
+
+    public function testDeclareLeJoueurPretGagnantQuandLeDelaiDuPlanExpire(): void
+    {
+        [
+            $combat,
+            $joueur1,
+        ] = $this->creerCombat();
+
+        $combatId = $combat->getId();
+        $joueur1Id = $joueur1->getId();
+
+        self::assertNotNull($combatId);
+        self::assertNotNull($joueur1Id);
+
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etatInitial = $this->lireReponseJson();
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/plan',
+            [
+                'cibleAttaqueX' => 'A',
+                'cibleAttaqueY' => 'B',
+                'cibleDefenseX' => 'C',
+                'cibleDefenseY' => 'D',
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' => $etatInitial['csrf']['plan'],
+            ],
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $plans = $this->entityManager
+            ->getRepository(PlanRoundCombat::class)
+            ->trouverPourCombatEtRound($combat, 1);
+
+        self::assertCount(1, $plans);
+
+        $plan = $plans[0];
+        $planId = $plan->getId();
+
+        self::assertNotNull($planId);
+
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE plan_round_combat'
+            .' SET date_soumission = :dateSoumission'
+            .' WHERE id = :planId',
+            [
+                'dateSoumission' => (new \DateTimeImmutable(
+                    '-6 minutes'
+                ))->format('Y-m-d H:i:s'),
+                'planId' => $planId,
+            ],
+        );
+        $this->entityManager->refresh($plan);
+
+        self::assertLessThanOrEqual(
+            new \DateTimeImmutable('-5 minutes'),
+            $plan->getDateSoumission(),
+        );
+
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+        self::assertResponseIsSuccessful();
+
+        $etatExpire = $this->lireReponseJson();
+
+        self::assertTrue(
+            $etatExpire['forfaitAutomatique'],
+            json_encode($etatExpire, JSON_THROW_ON_ERROR),
+        );
+        self::assertSame(Combat::STATUT_FORFAIT, $etatExpire['statut']);
+        self::assertSame($joueur1Id, $etatExpire['gagnantId']);
+        self::assertNull($etatExpire['expirationPlan']);
     }
 
     public function testRefuseUnPlanSansJetonCsrfValide(): void

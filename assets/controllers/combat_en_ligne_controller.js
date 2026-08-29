@@ -415,6 +415,7 @@ export default class extends Controller {
             en_cours: 'En cours',
             termine: 'Terminé',
             abandonne: 'Abandonné',
+            forfait: 'Terminé par forfait',
             annule: 'Annulé',
         };
 
@@ -468,6 +469,7 @@ export default class extends Controller {
     afficherFinCombat() {
         const estTermine = this.combat.statut === 'termine'
             || this.combat.statut === 'abandonne'
+            || this.combat.statut === 'forfait'
             || this.combat.statut === 'annule';
 
         if (!estTermine) {
@@ -503,6 +505,16 @@ export default class extends Controller {
                 titre = 'Combat abandonné';
                 message = 'Le combat a été interrompu.';
                 resultat = 'abandon';
+            }
+        } else if (this.combat.statut === 'forfait') {
+            if (victoire) {
+                titre = 'Victoire par forfait';
+                message = 'Ton adversaire n’a pas envoyé son plan à temps.';
+                resultat = 'victoire';
+            } else {
+                titre = 'Défaite par forfait';
+                message = 'Le délai pour envoyer ton plan est dépassé.';
+                resultat = 'defaite';
             }
         } else if (gagnantId === null) {
             titre = 'Match nul';
@@ -943,6 +955,7 @@ export default class extends Controller {
         if (
             this.combat.statut === 'termine'
             || this.combat.statut === 'abandonne'
+            || this.combat.statut === 'forfait'
             || this.combat.statut === 'annule'
         ) {
             this.etatRoundTarget.textContent =
@@ -954,13 +967,39 @@ export default class extends Controller {
         if (this.combat.planSoumis) {
             this.etatRoundTarget.textContent = this.combat.adversairePret
                 ? 'Les deux plans sont prêts.'
-                : 'Ton plan est envoyé. En attente du plan adverse.';
+                : 'Ton plan est envoyé. En attente du plan adverse.'
+                    + this.texteDelaiPlan();
+
+            return;
+        }
+
+        if (this.combat.adversairePret) {
+            this.etatRoundTarget.textContent =
+                'Ton adversaire a envoyé son plan.'
+                + this.texteDelaiPlan(' Envoie le tien dans ');
 
             return;
         }
 
         this.etatRoundTarget.textContent =
             'Les deux joueurs sont prêts à préparer leur plan secret.';
+    }
+
+    texteDelaiPlan(prefixe = ' Forfait adverse possible dans ') {
+        const expiration = Date.parse(this.combat?.expirationPlan ?? '');
+
+        if (Number.isNaN(expiration)) {
+            return '';
+        }
+
+        const secondes = Math.max(
+            0,
+            Math.ceil((expiration - Date.now()) / 1000),
+        );
+        const minutes = Math.floor(secondes / 60);
+        const reste = secondes % 60;
+
+        return `${prefixe}${minutes} min ${String(reste).padStart(2, '0')} s.`;
     }
 
     programmerActualisation() {
@@ -1262,6 +1301,8 @@ export default class extends Controller {
             egalite: 'Égalité',
             victoire_abandon: 'Victoire par abandon',
             abandon: 'Abandon',
+            victoire_forfait: 'Victoire par forfait',
+            forfait: 'Défaite par forfait',
         };
 
         for (const combat of historique) {
