@@ -4576,7 +4576,107 @@ Le parcours inscription → collection → équipe → combats est guidé, test�
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J50 — Valider le parcours complet d’un combat en ligne
 
+### Objectif
+
+J50 vérifie qu’un combat en ligne peut parcourir tout son cycle sans laisser le joueur bloqué : préparation, rounds successifs, fin du combat, consultation du rapport et retour au salon.
+
+### Audit du parcours
+
+Le cycle suivant a été contrôlé :
+
+1. création d’un combat ;
+2. arrivée du second participant ;
+3. soumission des plans secrets ;
+4. résolution successive des rounds ;
+5. mise à jour des points de vie ;
+6. détection automatique de la fin ;
+7. enregistrement du résultat définitif ;
+8. consultation du rapport ;
+9. retour au salon ;
+10. présence du combat dans l’historique.
+
+Les mécanismes de création et de jonction étaient déjà couverts par les tests du salon. J50 complète cette couverture jusqu’au résultat définitif.
+
+### Sortie de l’écran final
+
+L’écran de fin du combat propose maintenant deux actions explicites :
+
+- « Voir le rapport » ;
+- « Retour aux combats ».
+
+Le bouton de rapport utilise directement l’identifiant du combat terminé.
+
+Le retour au salon :
+
+- arrête l’actualisation automatique ;
+- oublie le combat actif local ;
+- recharge les équipes disponibles ;
+- recharge les combats en attente ;
+- recharge l’historique du joueur.
+
+Un combat annulé ne propose pas de rapport, car aucun affrontement n’a eu lieu.
+
+### Test HTTP de fin complète
+
+Un nouveau scénario automatisé reproduit un combat jusqu’à l’élimination des deux équipes.
+
+Il vérifie notamment :
+
+- la résolution de plusieurs rounds ;
+- le passage du statut `en_cours` au statut `termine` ;
+- la réponse serveur `combat_termine` ;
+- la conservation du dernier numéro de round ;
+- la détection d’un match nul ;
+- la disparition du combat actif ;
+- la persistance des deux rounds ;
+- les points de vie finaux à zéro ;
+- l’état éliminé des huit combattants ;
+- l’accès au rapport pour les deux participants ;
+- la présence du combat dans l’historique du salon.
+
+### Validation manuelle
+
+Un combat réel de huit rounds a été utilisé pour vérifier le parcours.
+
+Le rapport affiche correctement :
+
+- le résultat « Abandon » ;
+- les deux participants ;
+- les compositions finales ;
+- les points de vie restants ;
+- les statistiques de chaque Stickman ;
+- le détail des huit rounds ;
+- le lien de retour vers les combats.
+
+Le joueur peut donc quitter proprement l’écran final sans devoir actualiser entièrement la page.
+
+### Validation technique
+
+Résultat final :
+
+- **108 tests réussis** ;
+- **973 assertions réussies** ;
+- syntaxe JavaScript valide ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- aucune régression détectée.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `templates/combat_en_ligne/index.html.twig`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+- `tests/Controller/ResolutionRoundCombatHttpTest.php`
+- `DEVLOG.md`
+
+### Conclusion
+
+Le parcours principal d’un combat en ligne est maintenant couvert jusqu’à sa conclusion réelle.
+
+Après une victoire, une défaite, un match nul ou un abandon, le joueur peut consulter immédiatement le rapport définitif puis retourner normalement au salon et à son historique.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

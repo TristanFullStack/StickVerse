@@ -233,6 +233,19 @@ body:has(#rapport-combat) {
     font-size: clamp(32px, 5vw, 56px);
 }
 
+#combat-en-ligne .fin-combat-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#combat-en-ligne .fin-combat-actions a,
+#combat-en-ligne .fin-combat-actions button {
+    min-width: 190px;
+}
+
 #combat-en-ligne [data-resultat="victoire"] {
     border-color: var(--combat-vert);
 }

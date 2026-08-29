@@ -14,6 +14,7 @@ export default class extends Controller {
         'finCombat',
         'finCombatTitre',
         'finCombatMessage',
+        'rapportFinalLink',
         'resultatRound',
         'resultatRoundNumero',
         'resultatRoundLignes',
@@ -77,6 +78,13 @@ export default class extends Controller {
         }
 
         this.chargerSalon();
+    }
+
+    async retournerSalon() {
+        this.combatActifIdCourant = null;
+        this.combat = null;
+        this.annulerActualisation();
+        await this.chargerSalon();
     }
 
     changerEquipe() {
@@ -446,6 +454,8 @@ export default class extends Controller {
         if (!estTermine) {
             this.finCombatTarget.hidden = true;
             this.finCombatTarget.dataset.resultat = '';
+            this.rapportFinalLinkTarget.hidden = true;
+            this.rapportFinalLinkTarget.removeAttribute('href');
 
             return;
         }
@@ -492,6 +502,18 @@ export default class extends Controller {
         this.finCombatTitreTarget.textContent = titre;
         this.finCombatMessageTarget.textContent = message;
         this.finCombatTarget.dataset.resultat = resultat;
+        this.rapportFinalLinkTarget.hidden =
+            this.combat.statut === 'annule';
+
+        if (this.combat.statut === 'annule') {
+            this.rapportFinalLinkTarget.removeAttribute('href');
+        } else {
+            this.rapportFinalLinkTarget.href = this.remplacerCombatId(
+                this.rapportUrlModeleValue,
+                this.combat.combatId,
+            );
+        }
+
         this.finCombatTarget.hidden = false;
     }
 

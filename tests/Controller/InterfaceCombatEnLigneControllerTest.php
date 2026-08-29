@@ -145,6 +145,12 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="finCombatMessage"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="rapportFinalLink"]'
+        );
+        self::assertSelectorExists(
+            '[data-action="combat-en-ligne#retournerSalon"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="attenteAdversaire"]'
         );
         self::assertSelectorExists(

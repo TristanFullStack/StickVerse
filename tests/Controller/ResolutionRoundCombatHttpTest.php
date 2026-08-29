@@ -629,10 +629,105 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         );
     }
 
+    public function testDeuxParticipantsAtteignentLaFinEtConsultentLeRapport(): void
+    {
+        [
+            $combat,
+            $joueur1,
+            $joueur2,
+        ] = $this->creerCombatAvecSnapshots(1);
+
+        $combatId = $combat->getId();
+        self::assertNotNull($combatId);
+
+        $round1 = [
+            'cibleAttaqueX' => 'A',
+            'cibleAttaqueY' => 'D',
+            'cibleDefenseX' => 'A',
+            'cibleDefenseY' => 'D',
+        ];
+        $round2 = [
+            'cibleAttaqueX' => 'B',
+            'cibleAttaqueY' => 'C',
+            'cibleDefenseX' => 'B',
+            'cibleDefenseY' => 'C',
+        ];
+
+        $this->soumettrePlan(
+            $joueur1,
+            $combatId,
+            $round1,
+            Response::HTTP_CREATED,
+        );
+        $resolutionRound1 = $this->soumettrePlan(
+            $joueur2,
+            $combatId,
+            $round1,
+            Response::HTTP_OK,
+        );
+
+        self::assertSame('round_resolu', $resolutionRound1['etat']);
+        self::assertSame(Combat::STATUT_EN_COURS, $resolutionRound1['statut']);
+        self::assertSame(2, $resolutionRound1['numeroRound']);
+
+        $this->soumettrePlan(
+            $joueur1,
+            $combatId,
+            $round2,
+            Response::HTTP_CREATED,
+        );
+        $resolutionFinale = $this->soumettrePlan(
+            $joueur2,
+            $combatId,
+            $round2,
+            Response::HTTP_OK,
+        );
+
+        self::assertSame('combat_termine', $resolutionFinale['etat']);
+        self::assertSame(Combat::STATUT_TERMINE, $resolutionFinale['statut']);
+        self::assertSame(2, $resolutionFinale['numeroRound']);
+        self::assertNull($resolutionFinale['gagnantId']);
+
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etatFinal = $this->lireReponseJson();
+        self::assertSame(Combat::STATUT_TERMINE, $etatFinal['statut']);
+        self::assertCount(2, $etatFinal['historiqueRounds']);
+        self::assertSame(
+            [1, 2],
+            array_column($etatFinal['historiqueRounds'], 'numero'),
+        );
+
+        foreach ($etatFinal['moi']['combattants'] as $combattant) {
+            self::assertSame(0, $combattant['pvActuels']);
+            self::assertFalse($combattant['vivant']);
+        }
+
+        $this->client->request('GET', '/combats/'.$combatId.'/rapport');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.rapport-resultat', 'Match nul');
+        self::assertSelectorCount(2, '.rapport-round');
+
+        $this->client->loginUser($joueur2);
+        $this->client->request('GET', '/combats/'.$combatId.'/rapport');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.rapport-resultat', 'Match nul');
+
+        $this->client->request('GET', '/salon-combat-en-ligne');
+        self::assertResponseIsSuccessful();
+
+        $salon = $this->lireReponseJson();
+        self::assertNull($salon['combatActifId']);
+        self::assertSame($combatId, $salon['historiqueCombats'][0]['id']);
+        self::assertSame('egalite', $salon['historiqueCombats'][0]['resultat']);
+    }
+
     /**
      * @return array{Combat, User, User}
      */
-    private function creerCombatAvecSnapshots(): array
+    private function creerCombatAvecSnapshots(int $pv = 10): array
     {
         $suffixe = bin2hex(random_bytes(6));
 
@@ -657,6 +752,7 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
             $stickman = $this->creerStickman(
                 $slot,
                 $suffixe,
+                $pv,
             );
 
             $stickmen[$slot] = $stickman;
@@ -698,6 +794,7 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
     private function creerStickman(
         string $slot,
         string $suffixe,
+        int $pv,
     ): Stickman {
         return (new Stickman())
             ->setNom(
@@ -718,10 +815,41 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
                 .'.png'
             )
             ->setRarete(1)
-            ->setPv(10)
+            ->setPv($pv)
             ->setAttaque(1)
             ->setDefense(0)
             ->setStatutActif(true);
+    }
+
+    /**
+     * @param array<string, string> $plan
+     *
+     * @return array<string, mixed>
+     */
+    private function soumettrePlan(
+        User $joueur,
+        int $combatId,
+        array $plan,
+        int $statutAttendu,
+    ): array {
+        $this->client->loginUser($joueur);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etat = $this->lireReponseJson();
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/plan',
+            $plan,
+            [
+                'HTTP_X_CSRF_TOKEN' => $etat['csrf']['plan'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame($statutAttendu);
+
+        return $this->lireReponseJson();
     }
 
     /**
