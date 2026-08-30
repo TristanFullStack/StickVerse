@@ -266,6 +266,7 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '.site-navigation a[href="/combats"][aria-current="page"]',
         );
         self::assertSelectorExists('.site-account a[href="/logout"]');
+        self::assertSelectorExists('.site-account a[href="/profil"]');
         self::assertSelectorNotExists('[data-navigation-admin]');
     }
 

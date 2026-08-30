@@ -24,6 +24,7 @@ final class SecurityControllerTest extends WebTestCase
         );
         self::assertSelectorNotExists('.site-navigation a[href="/equipe"]');
         self::assertSelectorNotExists('.site-navigation a[href="/combats"]');
+        self::assertSelectorNotExists('.site-account a[href="/profil"]');
         self::assertSelectorNotExists('[data-navigation-admin]');
     }
 

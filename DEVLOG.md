@@ -5855,6 +5855,133 @@ Le tableau de bord rassemble les informations essentielles du compte sans introd
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J66 — Créer le profil du joueur
+
+### Objectif
+
+J66 ajoute une page personnelle permettant au joueur de consulter les informations principales de son compte et sa progression dans StickVerse.
+
+Cette page reste volontairement simple afin de conserver l’apparence prototype utilisée pour les premiers menus du jeu.
+
+### Accès au profil
+
+Un lien `Profil` est maintenant présent dans la zone du compte lorsque l’utilisateur est connecté.
+
+Ce lien conduit vers la nouvelle adresse :
+
+`/profil`
+
+Le lien actif est indiqué dans le menu lorsque le joueur consulte cette page.
+
+Un visiteur non connecté ne voit pas ce lien et ne peut pas accéder directement au profil. Il est redirigé vers la page de connexion.
+
+### Informations du compte
+
+La première section du profil affiche :
+
+- l’adresse électronique du joueur ;
+- le type du compte ;
+- la mention `Joueur` pour un compte normal ;
+- la mention `Administrateur` pour un compte possédant le rôle correspondant.
+
+Les outils d’administration restent visibles uniquement pour les administrateurs.
+
+### Progression du joueur
+
+Le profil indique également :
+
+- le nombre de Stickmans différents présents dans la collection ;
+- le nom de l’équipe enregistrée ;
+- un message lorsqu’aucune équipe n’est encore disponible ;
+- un lien vers la collection ;
+- un lien vers la gestion de l’équipe.
+
+### Statistiques des combats
+
+Une nouvelle méthode du dépôt des combats calcule les statistiques définitives du joueur.
+
+Le profil affiche :
+
+- le nombre total de combats joués ;
+- le nombre de victoires ;
+- le nombre de défaites ;
+- le nombre de matchs nuls.
+
+Les combats encore actifs et les combats annulés ne sont pas comptabilisés.
+
+Les victoires obtenues après un abandon ou un forfait sont correctement prises en compte lorsque le joueur est enregistré comme gagnant.
+
+### Service du profil
+
+La construction des informations est centralisée dans le service `ProfilJoueurService`.
+
+Il rassemble :
+
+- le nombre de Stickmans différents ;
+- l’équipe du joueur ;
+- les statistiques de ses combats.
+
+Le contrôleur reste limité à la vérification de l’utilisateur connecté et à l’affichage du profil.
+
+### Sécurité du compte
+
+Une section informe le joueur que la modification et la récupération du mot de passe seront ajoutées pendant la prochaine étape du développement.
+
+Ces fonctionnalités restent volontairement séparées de J66 afin de ne pas mélanger l’affichage du profil avec la gestion sensible des identifiants.
+
+### Apparence du prototype
+
+La page utilise uniquement :
+
+- des sections blanches ;
+- des bordures grises ;
+- des listes simples ;
+- une disposition adaptable pour les statistiques ;
+- aucun effet graphique complexe ;
+- aucune animation.
+
+La page reste ainsi fonctionnelle sur ordinateur et sur petit écran sans anticiper le futur design définitif.
+
+### Tests automatisés
+
+Les tests vérifient notamment :
+
+- la redirection d’un visiteur vers la connexion ;
+- l’affichage du profil pour un joueur ;
+- l’adresse électronique affichée ;
+- le type du compte ;
+- le calcul des combats joués ;
+- le calcul des victoires ;
+- le calcul des défaites ;
+- le calcul des matchs nuls ;
+- l’identification d’un administrateur ;
+- l’absence du lien Profil pour un visiteur ;
+- l’état actif du lien Profil ;
+- la construction des informations par le service dédié.
+
+La validation complète du projet donne :
+
+- 154 tests réussis ;
+- 1 471 assertions ;
+- aucune erreur PHP ;
+- templates Twig valides ;
+- conteneur Symfony valide ;
+- schémas Doctrine de développement et de test synchronisés ;
+- aucun avertissement PHPUnit.
+
+### Validation manuelle
+
+La page Profil a été vérifiée depuis le navigateur avec plusieurs comptes.
+
+Les informations du compte, la collection, l’équipe et les statistiques correspondent aux données réellement enregistrées.
+
+Le compte administrateur est correctement identifié et les liens du profil fonctionnent.
+
+### Résultat
+
+Chaque joueur possède maintenant un espace personnel simple permettant de consulter son identité, sa progression et ses résultats.
+
+Cette base pourra accueillir pendant J67 les fonctionnalités de modification et de récupération du mot de passe.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

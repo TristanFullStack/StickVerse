@@ -46,7 +46,8 @@ a {
     text-decoration: none;
 }
 
-.site-navigation a[aria-current="page"] {
+.site-navigation a[aria-current="page"],
+.site-account a[aria-current="page"] {
     background: #ddd;
     font-weight: bold;
 }
@@ -83,6 +84,7 @@ img {
 .caisse-card,
 .dashboard-card,
 .dashboard-section,
+.profile-section,
 fieldset {
     padding: 12px;
     border: 1px solid #999;
@@ -105,6 +107,28 @@ fieldset {
 
 .dashboard-combats li {
     margin-bottom: 8px;
+}
+
+.profile-section {
+    margin-bottom: 16px;
+}
+
+.profile-section dt {
+    font-weight: bold;
+}
+
+.profile-section dd {
+    margin-bottom: 10px;
+}
+
+.profile-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.profile-stats dd {
+    margin-left: 0;
 }
 
 input,

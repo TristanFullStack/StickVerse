@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Mon profil</h1>
+
+    <section class="profile-section" aria-labelledby="compte-titre">
+        <h2 id="compte-titre">Compte</h2>
+        <dl>
+            <dt>Adresse électronique</dt>
+            <dd>{{ app.user.userIdentifier }}</dd>
+
+            <dt>Type de compte</dt>
+            <dd data-profile-account-type>
+                {% if is_granted('ROLE_ADMIN') %}
+                    Administrateur
+                {% else %}
+                    Joueur
+                {% endif %}
+            </dd>
+        </dl>
+    </section>
+
+    <section class="profile-section" aria-labelledby="progression-titre">
+        <h2 id="progression-titre">Progression</h2>
+        <ul>
+            <li>{{ profil.nombreStickmen }} Stickman(s) différent(s)</li>
+            <li>
+                Équipe :
+                {% if profil.equipe %}
+                    {{ profil.equipe.nom }}
+                {% else %}
+                    aucune équipe enregistrée
+                {% endif %}
+            </li>
+        </ul>
+        <p>
+            <a href="{{ path('app_collection') }}">Voir ma collection</a>
+            <a href="{{ path('app_equipe') }}">Gérer mon équipe</a>
+        </p>
+    </section>
+
+    <section class="profile-section" aria-labelledby="statistiques-titre">
+        <h2 id="statistiques-titre">Statistiques des combats</h2>
+        <dl class="profile-stats">
+            <div data-profile-stat="total">
+                <dt>Combats joués</dt>
+                <dd>{{ profil.statistiques.total }}</dd>
+            </div>
+            <div data-profile-stat="victoires">
+                <dt>Victoires</dt>
+                <dd>{{ profil.statistiques.victoires }}</dd>
+            </div>
+            <div data-profile-stat="defaites">
+                <dt>Défaites</dt>
+                <dd>{{ profil.statistiques.defaites }}</dd>
+            </div>
+            <div data-profile-stat="matchs-nuls">
+                <dt>Matchs nuls</dt>
+                <dd>{{ profil.statistiques.matchsNuls }}</dd>
+            </div>
+        </dl>
+        <p><a href="{{ path('app_combats_en_ligne') }}">Voir mes combats</a></p>
+    </section>
+
+    <section class="profile-section" aria-labelledby="securite-titre">
+        <h2 id="securite-titre">Sécurité du compte</h2>
+        <p>
+            La modification et la récupération du mot de passe seront ajoutées
+            pendant la prochaine étape du développement.
+        </p>
+    </section>
+{% endblock %}

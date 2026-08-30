@@ -146,4 +146,59 @@ class CombatRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return array{
+     *     total: int,
+     *     victoires: int,
+     *     defaites: int,
+     *     matchsNuls: int
+     * }
+     */
+    public function calculerStatistiquesPourJoueur(
+        User $joueur,
+    ): array {
+        $resultat = $this->createQueryBuilder('combat')
+            ->select('COUNT(combat.id) AS total')
+            ->addSelect(
+                'SUM(CASE WHEN combat.gagnant = :joueur'
+                .' THEN 1 ELSE 0 END) AS victoires'
+            )
+            ->addSelect(
+                'SUM(CASE WHEN combat.statut = :termine'
+                .' AND combat.gagnant IS NULL'
+                .' THEN 1 ELSE 0 END) AS matchsNuls'
+            )
+            ->andWhere(
+                'combat.joueur1 = :joueur'
+                .' OR combat.joueur2 = :joueur'
+            )
+            ->andWhere('combat.statut IN (:statuts)')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('termine', Combat::STATUT_TERMINE)
+            ->setParameter(
+                'statuts',
+                [
+                    Combat::STATUT_TERMINE,
+                    Combat::STATUT_ABANDONNE,
+                    Combat::STATUT_FORFAIT,
+                ],
+            )
+            ->getQuery()
+            ->getSingleResult();
+
+        $total = (int) $resultat['total'];
+        $victoires = (int) $resultat['victoires'];
+        $matchsNuls = (int) $resultat['matchsNuls'];
+
+        return [
+            'total' => $total,
+            'victoires' => $victoires,
+            'defaites' => max(
+                0,
+                $total - $victoires - $matchsNuls,
+            ),
+            'matchsNuls' => $matchsNuls,
+        ];
+    }
 }

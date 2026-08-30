@@ -60,6 +60,10 @@
             <div class="site-account">
                 {% if app.user %}
                     <span>{{ app.user.userIdentifier }}</span>
+                    <a
+                        href="{{ path('app_profil') }}"
+                        {% if navigation_route == 'app_profil' %}aria-current="page"{% endif %}
+                    >Profil</a>
                     <a href="{{ path('app_logout') }}">Déconnexion</a>
                 {% else %}
                     <a href="{{ path('app_login') }}">Connexion</a>
