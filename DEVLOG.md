@@ -5094,7 +5094,72 @@ Un combat rejoint ne commence plus immédiatement. Chaque joueur dispose mainten
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J58 — Sécuriser l’attente pendant la préparation
 
+### Objectif
+
+J58 empêche un combat rejoint de rester bloqué indéfiniment lorsqu’un ou deux joueurs ne confirment pas leur préparation.
+
+### Réalisations
+
+- ajout d’un délai maximal de 5 minutes pendant la préparation ;
+- démarrage du délai lorsque le second joueur rejoint le combat ;
+- redémarrage du délai après la première confirmation afin de laisser 5 minutes complètes à l’adversaire ;
+- annulation automatique du combat si aucun joueur ne confirme sa préparation ;
+- victoire par forfait du seul joueur prêt si son adversaire ne confirme pas dans le délai ;
+- affichage dynamique du temps restant dans l’interface ;
+- message adapté selon que le joueur attend une victoire, risque un forfait ou attend une annulation ;
+- retour automatique au salon lorsqu’une préparation sans confirmation est annulée ;
+- affichage du résultat final lorsqu’un joueur gagne pendant la préparation ;
+- refus des confirmations envoyées après l’expiration du délai ;
+- utilisation d’une transaction et d’un verrou d’écriture pendant l’expiration ;
+- protection contre les doubles confirmations qui pourraient repousser artificiellement le délai ;
+- maintien de la compatibilité avec les anciens combats ne possédant pas de phase de préparation ;
+- ajout de tests métier, HTTP et d’interface couvrant les différents résultats.
+
+### Règles appliquées
+
+- aucun joueur prêt après 5 minutes : combat annulé sans gagnant ;
+- un seul joueur prêt après 5 minutes : victoire de ce joueur par forfait ;
+- deux joueurs prêts : la préparation se termine normalement et les plans deviennent disponibles ;
+- nouvelle confirmation du même joueur : aucune modification du délai ;
+- confirmation après expiration : action refusée par le serveur.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `src/Controller/CombatEnLigneController.php`
+- `src/Entity/Combat.php`
+- `src/Service/ExpirationPreparationCombatEnLigneService.php`
+- `src/Service/PreparationCombatEnLigneService.php`
+- `tests/Controller/CombatEnLigneControllerTest.php`
+- `tests/Entity/CombatTest.php`
+- `tests/Service/ExpirationPreparationCombatEnLigneServiceTest.php`
+- `tests/Service/PreparationCombatEnLigneServiceTest.php`
+
+### Validation
+
+- syntaxes PHP et JavaScript valides ;
+- conteneur Symfony valide ;
+- mappings Doctrine valides ;
+- bases normale et de test synchronisées ;
+- aucun changement de base de données nécessaire ;
+- annulation automatique sans joueur prêt validée ;
+- victoire par forfait du seul joueur prêt validée ;
+- refus d’une confirmation tardive validé ;
+- protection contre le prolongement du délai par double confirmation validée ;
+- parcours HTTP d’expiration validé ;
+- suite PHPUnit complète validée ;
+- **131 tests réussis** ;
+- **1219 assertions réussies**.
+
+### Test manuel restant
+
+Le chronomètre, les messages affichés aux deux joueurs, l’annulation automatique et la victoire par forfait seront vérifiés demain avec deux comptes.
+
+### Résultat
+
+La salle de préparation ne peut plus bloquer un combat indéfiniment. Après 5 minutes, le serveur prend automatiquement une décision juste selon les confirmations reçues.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

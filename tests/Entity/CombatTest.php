@@ -74,6 +74,30 @@ final class CombatTest extends KernelTestCase
         self::assertFalse($combat->estEnPreparation());
     }
 
+    public function testUneDoubleConfirmationNeRepoussePasLeDelai(): void
+    {
+        $joueur1 = new User();
+        $combat = (new Combat($joueur1))
+            ->setJoueur2(new User())
+            ->setStatut(Combat::STATUT_EN_COURS)
+            ->initialiserPreparation()
+            ->confirmerPret($joueur1);
+        $dateFixe = new \DateTimeImmutable('2026-08-30 12:00:00');
+        $propriete = new \ReflectionProperty(
+            Combat::class,
+            'dateMiseAJour',
+        );
+        $propriete->setValue($combat, $dateFixe);
+
+        $combat->confirmerPret($joueur1);
+
+        self::assertSame($dateFixe, $combat->getDateMiseAJour());
+        self::assertEquals(
+            $dateFixe->modify('+5 minutes'),
+            $combat->getDateExpirationPreparation(),
+        );
+    }
+
     public function testPasserAuRoundSuivant(): void
     {
         $combat = new Combat(new User());

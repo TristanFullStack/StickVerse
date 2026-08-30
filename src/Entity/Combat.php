@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 class Combat
 {
     public const DUREE_MAX_ATTENTE_SECONDES = 300;
+    public const DUREE_MAX_PREPARATION_SECONDES = 300;
 
     public const STATUT_EN_ATTENTE = 'en_attente';
     public const STATUT_EN_COURS = 'en_cours';
@@ -333,6 +334,20 @@ class Combat
             && !$this->estPretAJouer();
     }
 
+    public function getDateExpirationPreparation(): DateTimeImmutable
+    {
+        return $this->dateMiseAJour->modify(
+            '+'.self::DUREE_MAX_PREPARATION_SECONDES.' seconds'
+        );
+    }
+
+    public function estPreparationExpiree(
+        DateTimeImmutable $maintenant,
+    ): bool {
+        return $this->estEnPreparation()
+            && $maintenant >= $this->getDateExpirationPreparation();
+    }
+
     public function estPret(User $joueur): bool
     {
         if (!$this->estPreparationInitialisee()) {
@@ -369,11 +384,19 @@ class Combat
         }
 
         if ($this->memeJoueur($joueur, $this->joueur1)) {
+            if ($this->joueur1Pret === true) {
+                return $this;
+            }
+
             $this->joueur1Pret = true;
         } elseif (
             $this->joueur2 instanceof User
             && $this->memeJoueur($joueur, $this->joueur2)
         ) {
+            if ($this->joueur2Pret === true) {
+                return $this;
+            }
+
             $this->joueur2Pret = true;
         } else {
             throw new InvalidArgumentException(

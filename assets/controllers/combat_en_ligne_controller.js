@@ -478,8 +478,29 @@ export default class extends Controller {
                 return;
             }
 
+            if (donnees.annulationPreparationAutomatique === true) {
+                this.combatActifIdCourant = null;
+                this.combat = null;
+                await this.chargerSalon();
+                this.afficherInformation([
+                    'Le combat a été annulé automatiquement',
+                    'car aucun joueur n’a confirmé sa préparation',
+                    'dans les 5 minutes.',
+                ].join(' '));
+
+                return;
+            }
+
             this.combat = donnees;
             this.afficherCombat();
+
+            if (donnees.forfaitPreparationAutomatique === true) {
+                this.afficherInformation([
+                    'La préparation est terminée par forfait',
+                    'après 5 minutes sans seconde confirmation.',
+                ].join(' '));
+            }
+
             this.programmerActualisation();
         } catch (erreur) {
             if (erreur.name !== 'AbortError') {
@@ -574,13 +595,22 @@ export default class extends Controller {
 
         if (moiPret && !adversairePret) {
             this.preparationMessageTarget.textContent =
-                'Tu es prêt. En attente de la confirmation adverse.';
+                'Tu es prêt. En attente de la confirmation adverse.'
+                + this.texteDelaiPreparation(
+                    ' Victoire par forfait possible dans '
+                );
         } else if (!moiPret && adversairePret) {
             this.preparationMessageTarget.textContent =
-                'Ton adversaire est prêt. Confirme quand ton équipe est prête.';
+                'Ton adversaire est prêt. Confirme quand ton équipe est prête.'
+                + this.texteDelaiPreparation(
+                    ' Tu seras déclaré forfait dans '
+                );
         } else {
             this.preparationMessageTarget.textContent =
-                'Vérifie ton équipe puis confirme ta préparation.';
+                'Vérifie ton équipe puis confirme ta préparation.'
+                + this.texteDelaiPreparation(
+                    ' Annulation automatique dans '
+                );
         }
 
         this.pretButtonTarget.disabled = moiPret;
@@ -1132,6 +1162,25 @@ export default class extends Controller {
 
     texteDelaiPlan(prefixe = ' Forfait adverse possible dans ') {
         const expiration = Date.parse(this.combat?.expirationPlan ?? '');
+
+        if (Number.isNaN(expiration)) {
+            return '';
+        }
+
+        const secondes = Math.max(
+            0,
+            Math.ceil((expiration - Date.now()) / 1000),
+        );
+        const minutes = Math.floor(secondes / 60);
+        const reste = secondes % 60;
+
+        return `${prefixe}${minutes} min ${String(reste).padStart(2, '0')} s.`;
+    }
+
+    texteDelaiPreparation(prefixe) {
+        const expiration = Date.parse(
+            this.combat?.preparation?.expiration ?? ''
+        );
 
         if (Number.isNaN(expiration)) {
             return '';

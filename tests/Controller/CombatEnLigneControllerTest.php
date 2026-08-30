@@ -118,7 +118,10 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertFalse($donnees['preparation']['active']);
         self::assertTrue($donnees['preparation']['moiPret']);
         self::assertTrue($donnees['preparation']['adversairePret']);
+        self::assertNull($donnees['preparation']['expiration']);
         self::assertFalse($donnees['forfaitAutomatique']);
+        self::assertFalse($donnees['forfaitPreparationAutomatique']);
+        self::assertFalse($donnees['annulationPreparationAutomatique']);
         self::assertNull($donnees['expirationPlan']);
 
         self::assertSame(
@@ -516,6 +519,7 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertTrue($etatJoueur1['preparation']['active']);
         self::assertFalse($etatJoueur1['preparation']['moiPret']);
         self::assertFalse($etatJoueur1['preparation']['adversairePret']);
+        self::assertIsString($etatJoueur1['preparation']['expiration']);
 
         $this->client->jsonRequest(
             'POST',
@@ -562,6 +566,67 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertFalse($etatFinal['preparation']['active']);
         self::assertTrue($etatFinal['preparation']['moiPret']);
         self::assertTrue($etatFinal['preparation']['adversairePret']);
+    }
+
+    public function testAnnuleLaPreparationSiPersonneNestPret(): void
+    {
+        [
+            $combat,
+            $joueur1,
+        ] = $this->creerCombat();
+
+        $combat->initialiserPreparation();
+        $this->entityManager->flush();
+
+        $combatId = $combat->getId();
+        self::assertNotNull($combatId);
+
+        $this->vieillirPreparation($combatId);
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etat = $this->lireReponseJson();
+
+        self::assertTrue($etat['annulationPreparationAutomatique']);
+        self::assertFalse($etat['forfaitPreparationAutomatique']);
+        self::assertFalse($etat['forfaitAutomatique']);
+        self::assertSame(Combat::STATUT_ANNULE, $etat['statut']);
+        self::assertNull($etat['gagnantId']);
+        self::assertFalse($etat['preparation']['active']);
+        self::assertNull($etat['preparation']['expiration']);
+    }
+
+    public function testDeclareLeJoueurPretGagnantApresCinqMinutes(): void
+    {
+        [
+            $combat,
+            $joueur1,
+        ] = $this->creerCombat();
+
+        $combat->initialiserPreparation();
+        $combat->confirmerPret($joueur1);
+        $this->entityManager->flush();
+
+        $combatId = $combat->getId();
+        $joueur1Id = $joueur1->getId();
+        self::assertNotNull($combatId);
+        self::assertNotNull($joueur1Id);
+
+        $this->vieillirPreparation($combatId);
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+
+        $etat = $this->lireReponseJson();
+
+        self::assertFalse($etat['annulationPreparationAutomatique']);
+        self::assertTrue($etat['forfaitPreparationAutomatique']);
+        self::assertTrue($etat['forfaitAutomatique']);
+        self::assertSame(Combat::STATUT_FORFAIT, $etat['statut']);
+        self::assertSame($joueur1Id, $etat['gagnantId']);
+        self::assertFalse($etat['preparation']['active']);
+        self::assertNull($etat['preparation']['expiration']);
     }
 
     public function testRefuseUnDeuxiemePlanDuMemeJoueurPourLeRound(): void
@@ -1133,6 +1198,25 @@ final class CombatEnLigneControllerTest extends WebTestCase
             $joueur2,
             $intrus,
         ];
+    }
+
+    private function vieillirPreparation(int $combatId): void
+    {
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE combat'
+            .' SET date_mise_ajour = :dateMiseAJour'
+            .' WHERE id = :combatId',
+            [
+                'dateMiseAJour' => (new \DateTimeImmutable(
+                    '-6 minutes'
+                ))->format('Y-m-d H:i:s'),
+                'combatId' => $combatId,
+            ],
+        );
+
+        $combat = $this->entityManager->find(Combat::class, $combatId);
+        self::assertInstanceOf(Combat::class, $combat);
+        $this->entityManager->refresh($combat);
     }
 
     private function creerStickman(

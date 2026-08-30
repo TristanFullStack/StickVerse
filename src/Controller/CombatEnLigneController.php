@@ -16,6 +16,7 @@ use App\Service\AbandonCombatService;
 use App\Service\AnnulationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ExpirationPlanCombatEnLigneService;
+use App\Service\ExpirationPreparationCombatEnLigneService;
 use App\Service\PreparationCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
@@ -51,6 +52,7 @@ final class CombatEnLigneController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager,
         ExpirationCombatEnAttenteService $expirationService,
         ExpirationPlanCombatEnLigneService $expirationPlanService,
+        ExpirationPreparationCombatEnLigneService $expirationPreparationService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -66,8 +68,16 @@ final class CombatEnLigneController extends AbstractController
         $combatId = $combat->getId();
         $expirationAutomatique = $combatId !== null
             && $expirationService->expirerSiNecessaire($combatId);
-        $forfaitAutomatique = $combatId !== null
+        $expirationPreparation = $combatId !== null
+            ? $expirationPreparationService
+                ->expirerSiNecessaire($combatId)
+            : null;
+        $forfaitPlanAutomatique = $combatId !== null
             && $expirationPlanService->expirerSiNecessaire($combatId);
+        $forfaitPreparationAutomatique = $expirationPreparation
+            === ExpirationPreparationCombatEnLigneService::RESULTAT_FORFAIT;
+        $annulationPreparationAutomatique = $expirationPreparation
+            === ExpirationPreparationCombatEnLigneService::RESULTAT_ANNULE;
 
         $adversaire = $combat->getJoueur1() === $utilisateur
             ? $combat->getJoueur2()
@@ -113,7 +123,12 @@ final class CombatEnLigneController extends AbstractController
             'prive' => $combat->estPrive(),
             'statut' => $combat->getStatut(),
             'expirationAutomatique' => $expirationAutomatique,
-            'forfaitAutomatique' => $forfaitAutomatique,
+            'forfaitAutomatique' => $forfaitPreparationAutomatique
+                || $forfaitPlanAutomatique,
+            'forfaitPreparationAutomatique' =>
+                $forfaitPreparationAutomatique,
+            'annulationPreparationAutomatique' =>
+                $annulationPreparationAutomatique,
             'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),
@@ -153,6 +168,11 @@ final class CombatEnLigneController extends AbstractController
                 'moiPret' => $combat->estPret($utilisateur),
                 'adversairePret' => $adversaire instanceof User
                     && $combat->estPret($adversaire),
+                'expiration' => $combat->estEnPreparation()
+                    ? $combat
+                        ->getDateExpirationPreparation()
+                        ->format(DATE_ATOM)
+                    : null,
             ],
             'planSoumis' => $planSoumis,
             'adversairePret' => $adversairePret,
