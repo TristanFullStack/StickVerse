@@ -1,26 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}CaisseStickman{% endblock %}
+{% block title %}Contenu de caisse - Administration{% endblock %}
 
 {% block body %}
-    <h1>CaisseStickman</h1>
-
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ caisse_stickman.id }}</td>
-            </tr>
-            <tr>
-                <th>Poids</th>
-                <td>{{ caisse_stickman.poids }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_caisse_stickman_index') }}">back to list</a>
-
-    <a href="{{ path('app_caisse_stickman_edit', {'id': caisse_stickman.id}) }}">edit</a>
-
-    {{ include('caisse_stickman/_delete_form.html.twig') }}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Contenu</p><h1>Contenu de caisse</h1><p>{{ caisse_stickman.caisse.nom }} · {{ caisse_stickman.stickman.nom }}</p></div>
+        <a class="admin-primary-action" href="{{ path('app_caisse_stickman_edit', {'id': caisse_stickman.id}) }}">Modifier ce contenu</a>
+    </div>
+    <section class="admin-detail-card">
+        <div class="admin-detail-media">
+            <img class="admin-stickman-detail-image" src="{{ asset('images/stickmen/' ~ caisse_stickman.stickman.image) }}" alt="{{ caisse_stickman.stickman.nom }}">
+            <strong>{{ caisse_stickman.stickman.nom }}</strong>
+        </div>
+        <dl class="admin-detail-list">
+            <div><dt>Caisse</dt><dd>{{ caisse_stickman.caisse.nom }}</dd></div>
+            <div><dt>Rareté</dt><dd>{{ caisse_stickman.stickman.rarete }}</dd></div>
+            <div><dt>Poids</dt><dd>{{ caisse_stickman.poids }}</dd></div>
+            <div><dt>Probabilité</dt><dd>{{ caisse_stickman.probabilite|round(2) }} %</dd></div>
+            <div><dt>Stats</dt><dd>{{ caisse_stickman.stickman.pv }} PV · {{ caisse_stickman.stickman.attaque }} ATQ · {{ caisse_stickman.stickman.defense }} DEF</dd></div>
+        </dl>
+    </section>
+    <div class="admin-secondary-actions">
+        <a href="{{ path('app_caisse_stickman_index') }}">← Retour au contenu des caisses</a>
+        {{ include('caisse_stickman/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

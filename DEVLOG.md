@@ -6907,6 +6907,123 @@ StickVerse possède maintenant une première base compétitive avec une cote ind
 
 Chaque combat terminé peut faire évoluer le niveau des joueurs, tandis que la page de classement permet de consulter la position de toute la communauté.
 
+## J77 — Refaire proprement les outils de l’administration
+
+### Objectif
+
+J77 harmonise l’ensemble de l’espace d’administration afin de rendre la gestion du catalogue plus claire et plus pratique, tout en conservant le style de prototype volontairement simple de StickVerse.
+
+### Tableau de bord administrateur
+
+La console d’administration présente maintenant :
+
+- une introduction claire de l’espace réservé aux administrateurs ;
+- la console de commandes dans un bloc dédié ;
+- les commandes utiles affichées directement sous le champ de saisie ;
+- quatre accès rapides vers les outils du catalogue et les comptes ;
+- le nombre de Stickmans, de caisses, de contenus de caisses et de joueurs.
+
+Les accès rapides permettent d’ouvrir directement :
+
+- le catalogue des Stickmans ;
+- la gestion des caisses ;
+- le contenu des caisses ;
+- la console de commandes.
+
+### Gestion des Stickmans
+
+La liste des Stickmans affiche maintenant :
+
+- une miniature de l’image ;
+- le nom et le slug ;
+- la rareté ;
+- les PV, l’attaque et la défense ;
+- le statut actif ou inactif ;
+- des actions nommées « Détails » et « Modifier ».
+
+Les pages de création, de modification et de détail utilisent également une présentation cohérente avec des retours explicites vers le catalogue.
+
+### Gestion des caisses
+
+La liste des caisses affiche maintenant :
+
+- le nom et le slug ;
+- la description ;
+- l’image utilisée ;
+- le prix en pièces ;
+- le nombre de contenus associés ;
+- le statut actif ou inactif ;
+- des actions nommées « Détails » et « Modifier ».
+
+La page de détail rappelle le prix, le nombre de Stickmans, le poids total et donne un accès direct à la gestion de son contenu.
+
+### Gestion du contenu des caisses
+
+Les associations caisse / Stickman sont maintenant regroupées par caisse au lieu d’être présentées dans une longue liste difficile à lire.
+
+Chaque caisse affiche :
+
+- sa description ;
+- son prix ;
+- son statut ;
+- le nombre de Stickmans associés ;
+- le poids total de tirage ;
+- un tableau contenant le Stickman, sa rareté, ses statistiques, son poids et sa probabilité réelle.
+
+Les caisses vides restent visibles afin de repérer immédiatement les collections qui doivent encore être configurées.
+
+### Formulaires et actions
+
+Les formulaires d’administration ont été harmonisés :
+
+- titres et descriptions en français ;
+- bouton d’enregistrement explicite ;
+- liens de retour visibles ;
+- confirmation de suppression adaptée à chaque type de donnée ;
+- actions de suppression clairement séparées des actions normales.
+
+### Navigation administrateur
+
+La navigation réservée aux administrateurs indique maintenant l’outil actuellement ouvert grâce à un état visuel simple.
+
+Les quatre outils restent accessibles depuis toutes les pages :
+
+- Console ;
+- Stickmans ;
+- Caisses ;
+- Contenu des caisses.
+
+### Adaptation mobile
+
+Les tableaux utilisent un défilement horizontal sur petit écran afin de conserver toutes les informations sans casser la mise en page.
+
+Les en-têtes, formulaires et cartes de détail passent automatiquement en affichage vertical lorsque la largeur est réduite.
+
+### Style
+
+La refonte reste volontairement sobre :
+
+- fond clair ;
+- bordures simples ;
+- niveaux de gris ;
+- aucun composant graphique complexe ;
+- aucun changement dans les règles métier ou les statistiques du jeu.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée.
+- Les 20 templates Twig de l’administration sont valides.
+- Conteneur Symfony validé.
+- Schéma Doctrine synchronisé.
+- Suite complète validée : 209 tests et 1 765 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+L’administration de StickVerse possède maintenant une structure uniforme et lisible pour gérer les Stickmans, les caisses et leurs probabilités.
+
+La base reste volontairement simple afin de pouvoir être redesignée plus tard sans remettre en cause les fonctionnalités déjà présentes.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

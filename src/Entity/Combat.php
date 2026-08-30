@@ -466,7 +466,7 @@ class Combat
 
     public function estEloAttribuee(): bool
     {
-        return $this->eloAttribuee;
+        return $this->eloAttribuee ?? false;
     }
 
     public function marquerEloAttribuee(): static

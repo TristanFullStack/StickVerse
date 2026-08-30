@@ -1,47 +1,60 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Stickman index{% endblock %}
+{% block title %}Stickmans - Administration{% endblock %}
 
 {% block body %}
-    <h1>Stickman index</h1>
+    <div class="admin-page-heading">
+        <div>
+            <p class="admin-kicker">Administration / Catalogue</p>
+            <h1>Stickmans</h1>
+            <p>Consulte et modifie les statistiques et la disponibilité des Stickmen.</p>
+        </div>
+        <a class="admin-primary-action" href="{{ path('app_stickman_new') }}">Créer un Stickman</a>
+    </div>
 
-    <table class="table">
+    <section class="admin-list-panel">
+        <div class="admin-list-heading">
+            <strong>{{ stickmen|length }} Stickman{% if stickmen|length != 1 %}s{% endif %}</strong>
+            <span>Les statistiques utilisées en combat sont affichées ici.</span>
+        </div>
+        <div class="admin-table-scroll">
+        <table class="admin-resource-table">
         <thead>
             <tr>
                 <th>Image</th>
                 <th>Nom</th>
-                <th>Rarete</th>
-                <th>Pv</th>
-                <th>Attaque</th>
-                <th>Defense</th>
-                <th>StatutActif</th>
-                <th>actions</th>
+                <th>Rareté</th>
+                <th>PV</th>
+                <th>ATQ</th>
+                <th>DEF</th>
+                <th>Statut</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
         {% for stickman in stickmen %}
             <tr>
                 <td>
-                    <img src="{{ asset('images/stickmen/' ~ stickman.image) }}" style="width: 40px;">
+                    <img class="admin-stickman-thumbnail" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
                 </td>
-                <td>{{ stickman.nom }}</td>
+                <td><strong>{{ stickman.nom }}</strong><small>{{ stickman.slug }}</small></td>
                 <td>{{ stickman.rarete }}</td>
                 <td>{{ stickman.pv }}</td>
                 <td>{{ stickman.attaque }}</td>
                 <td>{{ stickman.defense }}</td>
-                <td>{{ stickman.statutActif ? 'Yes' : 'No' }}</td>
-                <td>
-                    <a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">show</a>
-                    <a href="{{ path('app_stickman_edit', {'id': stickman.id}) }}">edit</a>
+                <td><span class="admin-status {{ stickman.statutActif ? 'admin-status--active' : 'admin-status--inactive' }}">{{ stickman.statutActif ? 'Actif' : 'Inactif' }}</span></td>
+                <td class="admin-table-actions">
+                    <a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">Détails</a>
+                    <a href="{{ path('app_stickman_edit', {'id': stickman.id}) }}">Modifier</a>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="8">no records found</td>
+                <td colspan="8">Aucun Stickman enregistré.</td>
             </tr>
         {% endfor %}
         </tbody>
-    </table>
-
-    <a href="{{ path('app_stickman_new') }}">Create new</a>
+        </table>
+        </div>
+    </section>
 {% endblock %}

@@ -123,7 +123,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getElo(): int
     {
-        return $this->elo;
+        return $this->elo ?? self::ELO_DEPART;
     }
 
     public function setElo(int $elo): static
@@ -141,7 +141,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function modifierElo(int $variation): static
     {
-        return $this->setElo(max(0, $this->elo + $variation));
+        return $this->setElo(max(0, $this->getElo() + $variation));
     }
 
     public function getDateDerniereRecompenseQuotidienne(): ?\DateTimeImmutable
@@ -160,18 +160,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @return list<string> */
     public function getObjectifsReclames(): array
     {
-        return $this->objectifsReclames;
+        return $this->objectifsReclames ?? [];
     }
 
     public function aReclameObjectif(string $objectif): bool
     {
-        return in_array($objectif, $this->objectifsReclames, true);
+        return in_array($objectif, $this->getObjectifsReclames(), true);
     }
 
     public function marquerObjectifReclame(string $objectif): static
     {
         if (!$this->aReclameObjectif($objectif)) {
-            $this->objectifsReclames[] = $objectif;
+            $this->objectifsReclames = [
+                ...$this->getObjectifsReclames(),
+                $objectif,
+            ];
         }
 
         return $this;

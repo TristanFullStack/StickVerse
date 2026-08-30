@@ -62,6 +62,16 @@ a {
     border-top: 1px solid #ccc;
 }
 
+.site-admin-label {
+    margin-right: 2px;
+}
+
+.site-admin-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .site-content {
     width: min(1200px, 100%);
     margin: 0 auto;
@@ -164,6 +174,251 @@ fieldset {
     border-color: #a00;
 }
 
+.admin-tool-panel,
+.admin-tool-card,
+.admin-list-panel,
+.admin-form-card,
+.admin-detail-card {
+    padding: 16px;
+    border: 1px solid #999;
+    background: #fff;
+}
+
+.admin-tool-panel {
+    margin-bottom: 18px;
+}
+
+.admin-tool-heading,
+.admin-list-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.admin-tool-heading h2,
+.admin-tool-card h2 {
+    margin: 0 0 4px;
+}
+
+.admin-tool-heading p,
+.admin-list-heading span {
+    margin: 0;
+}
+
+.admin-tool-tag,
+.admin-tool-number {
+    padding: 4px 7px;
+    border: 1px solid #999;
+    background: #eee;
+    font-size: 12px;
+}
+
+.admin-tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+}
+
+.admin-tool-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-tool-card p {
+    min-height: 38px;
+}
+
+.admin-tool-muted {
+    color: #555;
+    font-size: 14px;
+}
+
+.admin-command-help {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 13px;
+}
+
+.admin-command-help code {
+    padding: 3px 5px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+}
+
+.admin-list-panel {
+    padding: 0;
+}
+
+.admin-list-heading {
+    align-items: center;
+    margin: 0;
+    padding: 12px 14px;
+    border-bottom: 1px solid #bbb;
+    background: #f5f5f5;
+}
+
+.admin-resource-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+
+.admin-resource-table th,
+.admin-resource-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-resource-table th {
+    background: #eee;
+    font-size: 13px;
+}
+
+.admin-resource-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.admin-resource-table td small {
+    display: block;
+    margin-top: 2px;
+    color: #555;
+    font-size: 11px;
+}
+
+.admin-stickman-thumbnail {
+    display: block;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.admin-description-cell {
+    max-width: 360px;
+}
+
+.admin-status {
+    display: inline-block;
+    padding: 3px 6px;
+    border: 1px solid #777;
+    background: #eee;
+    font-size: 12px;
+}
+
+.admin-status--active {
+    background: #ddd;
+}
+
+.admin-status--inactive {
+    color: #555;
+}
+
+.admin-form-card {
+    max-width: 760px;
+}
+
+.admin-form-fields {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.admin-form-fields > div {
+    display: grid;
+    gap: 5px;
+}
+
+.admin-form-fields label {
+    font-weight: bold;
+}
+
+.admin-form-fields input,
+.admin-form-fields select,
+.admin-form-fields textarea {
+    width: 100%;
+}
+
+.admin-secondary-actions,
+.admin-back-link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.admin-delete-form {
+    margin: 0;
+}
+
+.admin-danger-action {
+    padding: 6px 8px;
+    border: 1px solid #900;
+    color: #600;
+    background: #fff;
+}
+
+.admin-detail-card {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 24px;
+    max-width: 760px;
+}
+
+.admin-detail-media {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 10px;
+}
+
+.admin-stickman-detail-image {
+    width: 160px;
+    height: 180px;
+    object-fit: contain;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+}
+
+.admin-caisse-detail-image {
+    width: 160px;
+    height: 120px;
+    object-fit: contain;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+}
+
+.admin-detail-list {
+    margin: 0;
+}
+
+.admin-detail-list div {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.admin-detail-list div:last-child {
+    border-bottom: 0;
+}
+
+.admin-detail-list dt {
+    font-weight: bold;
+}
+
+.admin-detail-list dd {
+    margin: 0;
+}
+
 .dashboard-combats li {
     margin-bottom: 8px;
 }
@@ -216,6 +471,156 @@ table {
 [data-classement-joueur] {
     background: #eee;
     font-weight: bold;
+}
+
+.admin-page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.admin-page-heading h1,
+.admin-caisse-group-heading h2 {
+    margin: 0 0 6px;
+}
+
+.admin-page-heading p,
+.admin-caisse-group-heading p {
+    margin: 0;
+}
+
+.admin-kicker {
+    margin-bottom: 4px !important;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.admin-primary-action {
+    padding: 8px 10px;
+    border: 1px solid #555;
+    background: #ddd;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.admin-caisse-groups {
+    display: grid;
+    gap: 20px;
+}
+
+.admin-caisse-group {
+    border: 1px solid #888;
+    background: #fff;
+}
+
+.admin-caisse-group-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border-bottom: 1px solid #aaa;
+    background: #f5f5f5;
+}
+
+.admin-caisse-group-actions,
+.admin-table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-caisse-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.admin-caisse-summary div {
+    min-width: 140px;
+    padding: 10px 14px;
+    border-right: 1px solid #ccc;
+}
+
+.admin-caisse-summary dt {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.admin-caisse-summary dd {
+    margin: 3px 0 0;
+}
+
+.admin-table-scroll {
+    overflow-x: auto;
+}
+
+.admin-caisse-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+
+.admin-caisse-table th,
+.admin-caisse-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-caisse-table th {
+    background: #eee;
+    font-size: 13px;
+}
+
+.admin-caisse-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.admin-caisse-table td small {
+    display: block;
+    margin-top: 2px;
+    color: #555;
+    font-size: 11px;
+}
+
+.admin-empty-state,
+.admin-empty-inline {
+    padding: 16px;
+    border: 1px solid #999;
+    background: #fff;
+}
+
+.admin-empty-state h2 {
+    margin-top: 0;
+}
+
+@media (max-width: 700px) {
+    .admin-page-heading,
+    .admin-caisse-group-heading,
+    .admin-tool-heading,
+    .admin-list-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-primary-action {
+        white-space: normal;
+    }
+
+    .admin-detail-card {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-detail-media {
+        justify-items: start;
+    }
 }
 
 @media (max-width: 650px) {

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\CaisseStickman;
 use App\Form\CaisseStickmanType;
+use App\Repository\CaisseRepository;
 use App\Repository\CaisseStickmanRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,10 +16,51 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CaisseStickmanController extends AbstractController
 {
     #[Route(name: 'app_caisse_stickman_index', methods: ['GET'])]
-    public function index(CaisseStickmanRepository $caisseStickmanRepository): Response
+    public function index(
+        CaisseRepository $caisseRepository,
+        CaisseStickmanRepository $caisseStickmanRepository,
+    ): Response
     {
+        $contenusParCaisse = [];
+
+        foreach ($caisseRepository->findBy([], ['nom' => 'ASC']) as $caisse) {
+            $contenusParCaisse[(string) $caisse->getId()] = [
+                'caisse' => $caisse,
+                'contenus' => [],
+            ];
+        }
+
+        foreach ($caisseStickmanRepository->findAll() as $contenu) {
+            $caisse = $contenu->getCaisse();
+            if ($caisse === null || $caisse->getId() === null) {
+                continue;
+            }
+
+            $identifiantCaisse = (string) $caisse->getId();
+            if (!isset($contenusParCaisse[$identifiantCaisse])) {
+                $contenusParCaisse[$identifiantCaisse] = [
+                    'caisse' => $caisse,
+                    'contenus' => [],
+                ];
+            }
+
+            $contenusParCaisse[$identifiantCaisse]['contenus'][] = $contenu;
+        }
+
+        foreach ($contenusParCaisse as &$groupe) {
+            usort(
+                $groupe['contenus'],
+                static fn (CaisseStickman $premier, CaisseStickman $second): int =>
+                    strcasecmp(
+                        $premier->getStickman()?->getNom() ?? '',
+                        $second->getStickman()?->getNom() ?? '',
+                    ),
+            );
+        }
+        unset($groupe);
+
         return $this->render('caisse_stickman/index.html.twig', [
-            'caisse_stickmen' => $caisseStickmanRepository->findAll(),
+            'groupes' => array_values($contenusParCaisse),
         ]);
     }
 

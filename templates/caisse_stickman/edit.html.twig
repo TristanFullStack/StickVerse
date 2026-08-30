@@ -1,13 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit CaisseStickman{% endblock %}
+{% block title %}Modifier un contenu de caisse - Administration{% endblock %}
 
 {% block body %}
-    <h1>Edit CaisseStickman</h1>
-
-    {{ include('caisse_stickman/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_caisse_stickman_index') }}">back to list</a>
-
-    {{ include('caisse_stickman/_delete_form.html.twig') }}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Contenu</p><h1>Modifier un contenu de caisse</h1><p>Ajuste le poids ou change le Stickman associé.</p></div>
+    </div>
+    <section class="admin-form-card">
+        {{ include('caisse_stickman/_form.html.twig', {'button_label': 'Enregistrer les modifications'}) }}
+    </section>
+    <div class="admin-secondary-actions">
+        <a href="{{ path('app_caisse_stickman_index') }}">← Retour au contenu des caisses</a>
+        {{ include('caisse_stickman/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

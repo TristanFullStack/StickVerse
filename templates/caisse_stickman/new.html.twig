@@ -1,11 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New CaisseStickman{% endblock %}
+{% block title %}Nouveau contenu de caisse - Administration{% endblock %}
 
 {% block body %}
-    <h1>Create new CaisseStickman</h1>
-
-    {{ include('caisse_stickman/_form.html.twig') }}
-
-    <a href="{{ path('app_caisse_stickman_index') }}">back to list</a>
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Contenu</p><h1>Ajouter un Stickman à une caisse</h1><p>Choisis une caisse, un Stickman et son poids de tirage.</p></div>
+    </div>
+    <section class="admin-form-card">
+        {{ include('caisse_stickman/_form.html.twig') }}
+    </section>
+    <p class="admin-back-link"><a href="{{ path('app_caisse_stickman_index') }}">← Retour au contenu des caisses</a></p>
 {% endblock %}

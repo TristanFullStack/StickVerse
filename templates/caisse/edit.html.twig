@@ -1,13 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Caisse{% endblock %}
+{% block title %}Modifier une caisse - Administration{% endblock %}
 
 {% block body %}
-    <h1>Edit Caisse</h1>
-
-    {{ include('caisse/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_caisse_index') }}">back to list</a>
-
-    {{ include('caisse/_delete_form.html.twig') }}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Économie</p><h1>Modifier {{ caisse.nom }}</h1><p>Corrige le prix, le statut ou les informations de cette caisse.</p></div>
+    </div>
+    <section class="admin-form-card">
+        {{ include('caisse/_form.html.twig', {'button_label': 'Enregistrer les modifications'}) }}
+    </section>
+    <div class="admin-secondary-actions">
+        <a href="{{ path('app_caisse_index') }}">← Retour aux caisses</a>
+        {{ include('caisse/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

@@ -1,11 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Stickman{% endblock %}
+{% block title %}Nouveau Stickman - Administration{% endblock %}
 
 {% block body %}
-    <h1>Create new Stickman</h1>
-
-    {{ include('stickman/_form.html.twig') }}
-
-    <a href="{{ path('app_stickman_index') }}">back to list</a>
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Catalogue</p><h1>Créer un Stickman</h1><p>Ajoute une nouvelle unité au catalogue.</p></div>
+    </div>
+    <section class="admin-form-card">
+        {{ include('stickman/_form.html.twig') }}
+    </section>
+    <p class="admin-back-link"><a href="{{ path('app_stickman_index') }}">← Retour au catalogue</a></p>
 {% endblock %}

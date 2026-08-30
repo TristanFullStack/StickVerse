@@ -1,41 +1,101 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}CaisseStickman index{% endblock %}
+{% block title %}Contenu des caisses - Administration{% endblock %}
 
 {% block body %}
-    <h1>CaisseStickman index</h1>
+    <div class="admin-page-heading">
+        <div>
+            <p class="admin-kicker">Administration</p>
+            <h1>Contenu des caisses</h1>
+            <p>Gère les Stickmen disponibles dans chaque caisse et leurs probabilités de tirage.</p>
+        </div>
+        <a class="admin-primary-action" href="{{ path('app_caisse_stickman_new') }}">Ajouter un Stickman à une caisse</a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Poids</th>
-                <th>Probabilité</th>
-                <th>Caisse</th>
-                <th>Stickman</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for caisse_stickman in caisse_stickmen %}
-            <tr>
-                <td>{{ caisse_stickman.id }}</td>
-                <td>{{ caisse_stickman.poids }}</td>
-                <td>{{ caisse_stickman.probabilite|round(2) }} %</td>
-                <td>{{ caisse_stickman.caisse.nom }}</td>
-                <td>{{ caisse_stickman.stickman.nom }}</td>
-                <td>
-                    <a href="{{ path('app_caisse_stickman_show', {'id': caisse_stickman.id}) }}">show</a>
-                    <a href="{{ path('app_caisse_stickman_edit', {'id': caisse_stickman.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {% if groupes is empty %}
+        <section class="admin-empty-state">
+            <h2>Aucune caisse créée</h2>
+            <p>Crée d’abord une caisse, puis ajoute ses Stickmen et leurs poids.</p>
+            <a href="{{ path('app_caisse_new') }}">Créer une caisse</a>
+        </section>
+    {% else %}
+        <div class="admin-caisse-groups">
+            {% for groupe in groupes %}
+                {% set caisse = groupe.caisse %}
+                <section class="admin-caisse-group" data-admin-caisse="{{ caisse.slug }}">
+                    <header class="admin-caisse-group-heading">
+                        <div>
+                            <h2>{{ caisse.nom }}</h2>
+                            <p>{{ caisse.description }}</p>
+                        </div>
+                        <div class="admin-caisse-group-actions">
+                            <a href="{{ path('app_caisse_show', {'id': caisse.id}) }}">Voir la caisse</a>
+                            <a href="{{ path('app_caisse_edit', {'id': caisse.id}) }}">Modifier la caisse</a>
+                        </div>
+                    </header>
 
-    <a href="{{ path('app_caisse_stickman_new') }}">Create new</a>
+                    <dl class="admin-caisse-summary">
+                        <div>
+                            <dt>Prix</dt>
+                            <dd>{{ caisse.prix }} pièces</dd>
+                        </div>
+                        <div>
+                            <dt>Contenus</dt>
+                            <dd>{{ groupe.contenus|length }} Stickman{% if groupe.contenus|length != 1 %}s{% endif %}</dd>
+                        </div>
+                        <div>
+                            <dt>Poids total</dt>
+                            <dd>{{ caisse.poidsTotal }}</dd>
+                        </div>
+                        <div>
+                            <dt>Statut</dt>
+                            <dd>{{ caisse.statutActif ? 'Active' : 'Inactive' }}</dd>
+                        </div>
+                    </dl>
+
+                    {% if groupe.contenus is empty %}
+                        <p class="admin-empty-inline">Cette caisse ne contient encore aucun Stickman.</p>
+                    {% else %}
+                        <div class="admin-table-scroll">
+                            <table class="admin-caisse-table">
+                                <thead>
+                                    <tr>
+                                        <th>Stickman</th>
+                                        <th>Rareté</th>
+                                        <th>PV</th>
+                                        <th>ATQ</th>
+                                        <th>DEF</th>
+                                        <th>Poids</th>
+                                        <th>Probabilité</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contenu in groupe.contenus %}
+                                        {% set stickman = contenu.stickman %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ stickman ? stickman.nom : 'Stickman supprimé' }}</strong>
+                                                {% if stickman %}<small>{{ stickman.slug }}</small>{% endif %}
+                                            </td>
+                                            <td>{{ stickman ? stickman.rarete : '-' }}</td>
+                                            <td>{{ stickman ? stickman.pv : '-' }}</td>
+                                            <td>{{ stickman ? stickman.attaque : '-' }}</td>
+                                            <td>{{ stickman ? stickman.defense : '-' }}</td>
+                                            <td><strong>{{ contenu.poids }}</strong></td>
+                                            <td>{{ contenu.probabilite|round(2) }} %</td>
+                                            <td class="admin-table-actions">
+                                                <a href="{{ path('app_caisse_stickman_show', {'id': contenu.id}) }}">Détails</a>
+                                                <a href="{{ path('app_caisse_stickman_edit', {'id': contenu.id}) }}">Modifier</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </section>
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}

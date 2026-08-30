@@ -1,13 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Stickman{% endblock %}
+{% block title %}Modifier un Stickman - Administration{% endblock %}
 
 {% block body %}
-    <h1>Edit Stickman</h1>
-
-    {{ include('stickman/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_stickman_index') }}">back to list</a>
-
-    {{ include('stickman/_delete_form.html.twig') }}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Catalogue</p><h1>Modifier {{ stickman.nom }}</h1><p>Mets à jour les informations et les statistiques de ce Stickman.</p></div>
+    </div>
+    <section class="admin-form-card">
+        {{ include('stickman/_form.html.twig', {'button_label': 'Enregistrer les modifications'}) }}
+    </section>
+    <div class="admin-secondary-actions">
+        <a href="{{ path('app_stickman_index') }}">← Retour au catalogue</a>
+        {{ include('stickman/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

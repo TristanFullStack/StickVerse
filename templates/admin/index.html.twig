@@ -3,14 +3,22 @@
 {% block title %}Console d’administration - StickVerse{% endblock %}
 
 {% block body %}
-    <h1>Console d’administration</h1>
+    <div class="admin-page-heading">
+        <div>
+            <p class="admin-kicker">Espace réservé</p>
+            <h1>Console d’administration</h1>
+            <p data-admin-console-introduction>Gère le catalogue et les opérations utiles au fonctionnement de StickVerse.</p>
+        </div>
+    </div>
 
-    <p data-admin-console-introduction>
-        Outil réservé à l’administration pour exécuter des commandes de gestion.
-    </p>
-
-    <section class="dashboard-section admin-console" data-admin-console>
-        <h2>Console</h2>
+    <section class="dashboard-section admin-tool-panel admin-console" data-admin-console>
+        <div class="admin-tool-heading">
+            <div>
+                <h2>Console de commandes</h2>
+                <p>Exécute une commande de gestion en tant qu’administrateur.</p>
+            </div>
+            <span class="admin-tool-tag">Admin uniquement</span>
+        </div>
         <form method="post" data-admin-console-form>
             <label for="admin-commande">Commande</label>
             <input
@@ -29,36 +37,34 @@
             <pre class="admin-console-result admin-console-result--{{ resultat.statut }}" data-admin-console-result>{{ resultat.message }}</pre>
         {% endif %}
 
-        <p>Exemples : <code>help</code>, <code>give Joueur-AB12 500</code>, <code>recherche Joueur-AB12</code>.</p>
+        <div class="admin-command-help">
+            <strong>Commandes utiles</strong>
+            <code>help</code>
+            <code>give Joueur-AB12 500</code>
+            <code>recherche Joueur-AB12</code>
+        </div>
     </section>
 
-    <div class="dashboard-grid">
-        <section class="dashboard-card">
-            <h2>Catalogue</h2>
+    <div class="dashboard-grid admin-tool-grid">
+        <section class="admin-tool-card">
+            <div class="admin-tool-card-title"><span class="admin-tool-number">01</span><h2>Stickmans</h2></div>
             <p>Stickmans enregistrés : <strong>{{ nombre_stickmen }}</strong></p>
-            <p>Caisses enregistrées : <strong>{{ nombre_caisses }}</strong></p>
-            <p>Contenus de caisses : <strong>{{ nombre_contenus_caisses }}</strong></p>
-
-            <p>
-                <a href="{{ path('app_stickman_index') }}">Gérer les Stickmans</a>
-            </p>
-            <p>
-                <a href="{{ path('app_caisse_index') }}">Gérer les caisses</a>
-            </p>
-            <p>
-                <a href="{{ path('app_caisse_stickman_index') }}">
-                    Gérer le contenu des caisses
-                </a>
-            </p>
+            <a href="{{ path('app_stickman_index') }}">Ouvrir le catalogue</a>
         </section>
-
-        <section class="dashboard-card">
-            <h2>Comptes</h2>
-            <p>Joueurs inscrits : <strong>{{ nombre_joueurs }}</strong></p>
-            <p>
-                Les comptes joueurs se consultent depuis leur profil. La gestion
-                avancée des utilisateurs sera ajoutée plus tard si nécessaire.
-            </p>
+        <section class="admin-tool-card">
+            <div class="admin-tool-card-title"><span class="admin-tool-number">02</span><h2>Caisses</h2></div>
+            <p>{{ nombre_caisses }} caisse{% if nombre_caisses != 1 %}s{% endif %} enregistrée{% if nombre_caisses != 1 %}s{% endif %}.</p>
+            <a href="{{ path('app_caisse_index') }}">Gérer les caisses</a>
+        </section>
+        <section class="admin-tool-card">
+            <div class="admin-tool-card-title"><span class="admin-tool-number">03</span><h2>Contenus</h2></div>
+            <p>{{ nombre_contenus_caisses }} association{% if nombre_contenus_caisses != 1 %}s{% endif %} caisse / Stickman.</p>
+            <a href="{{ path('app_caisse_stickman_index') }}">Gérer les contenus</a>
+        </section>
+        <section class="admin-tool-card">
+            <div class="admin-tool-card-title"><span class="admin-tool-number">04</span><h2>Comptes</h2></div>
+            <p>{{ nombre_joueurs }} joueur{% if nombre_joueurs != 1 %}s{% endif %} inscrit{% if nombre_joueurs != 1 %}s{% endif %}.</p>
+            <span class="admin-tool-muted">Consultation depuis les profils.</span>
         </section>
     </div>
 {% endblock %}

@@ -1,60 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Stickman{% endblock %}
+{% block title %}{{ stickman.nom }} - Administration{% endblock %}
 
 {% block body %}
-    <h1>Stickman</h1>
-
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ stickman.id }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ stickman.nom }}</td>
-            </tr>
-            <tr>
-                <th>Slug</th>
-                <td>{{ stickman.slug }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ stickman.description }}</td>
-            </tr>
-            <tr>
-                <th>Image</th>
-                <td>
-                    <img src="{{ asset('images/stickmen/' ~ stickman.image) }}" style="width: 40px;">
-                </td>
-            </tr>
-            <tr>
-                <th>Rarete</th>
-                <td>{{ stickman.rarete }}</td>
-            </tr>
-            <tr>
-                <th>Pv</th>
-                <td>{{ stickman.pv }}</td>
-            </tr>
-            <tr>
-                <th>Attaque</th>
-                <td>{{ stickman.attaque }}</td>
-            </tr>
-            <tr>
-                <th>Defense</th>
-                <td>{{ stickman.defense }}</td>
-            </tr>
-            <tr>
-                <th>StatutActif</th>
-                <td>{{ stickman.statutActif ? 'Yes' : 'No' }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_stickman_index') }}">back to list</a>
-
-    <a href="{{ path('app_stickman_edit', {'id': stickman.id}) }}">edit</a>
-
-    {{ include('stickman/_delete_form.html.twig') }}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Catalogue</p><h1>{{ stickman.nom }}</h1><p>{{ stickman.description }}</p></div>
+        <a class="admin-primary-action" href="{{ path('app_stickman_edit', {'id': stickman.id}) }}">Modifier ce Stickman</a>
+    </div>
+    <section class="admin-detail-card">
+        <div class="admin-detail-media">
+            <img class="admin-stickman-detail-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
+            <span class="admin-status {{ stickman.statutActif ? 'admin-status--active' : 'admin-status--inactive' }}">{{ stickman.statutActif ? 'Actif' : 'Inactif' }}</span>
+        </div>
+        <dl class="admin-detail-list">
+            <div><dt>Slug</dt><dd>{{ stickman.slug }}</dd></div>
+            <div><dt>Rareté</dt><dd>{{ stickman.rarete }}</dd></div>
+            <div><dt>PV</dt><dd>{{ stickman.pv }}</dd></div>
+            <div><dt>Attaque</dt><dd>{{ stickman.attaque }}</dd></div>
+            <div><dt>Défense</dt><dd>{{ stickman.defense }}</dd></div>
+        </dl>
+    </section>
+    <div class="admin-secondary-actions">
+        <a href="{{ path('app_stickman_index') }}">← Retour au catalogue</a>
+        {{ include('stickman/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

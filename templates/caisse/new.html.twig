@@ -1,11 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Caisse{% endblock %}
+{% block title %}Nouvelle caisse - Administration{% endblock %}
 
 {% block body %}
-    <h1>Create new Caisse</h1>
-
-    {{ include('caisse/_form.html.twig') }}
-
-    <a href="{{ path('app_caisse_index') }}">back to list</a>
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Économie</p><h1>Créer une caisse</h1><p>Définis les informations de la prochaine caisse ou collection.</p></div>
+    </div>
+    <section class="admin-form-card">
+        {{ include('caisse/_form.html.twig') }}
+    </section>
+    <p class="admin-back-link"><a href="{{ path('app_caisse_index') }}">← Retour aux caisses</a></p>
 {% endblock %}

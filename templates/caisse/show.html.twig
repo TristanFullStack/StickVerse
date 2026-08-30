@@ -1,46 +1,28 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Caisse{% endblock %}
+{% block title %}{{ caisse.nom }} - Administration{% endblock %}
 
 {% block body %}
-    <h1>Caisse</h1>
-
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ caisse.id }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ caisse.nom }}</td>
-            </tr>
-            <tr>
-                <th>Slug</th>
-                <td>{{ caisse.slug }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ caisse.description }}</td>
-            </tr>
-            <tr>
-                <th>Image</th>
-                <td>{{ caisse.image }}</td>
-            </tr>
-            <tr>
-                <th>Prix</th>
-                <td>{{ caisse.prix }}</td>
-            </tr>
-            <tr>
-                <th>StatutActif</th>
-                <td>{{ caisse.statutActif ? 'Yes' : 'No' }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_caisse_index') }}">back to list</a>
-
-    <a href="{{ path('app_caisse_edit', {'id': caisse.id}) }}">edit</a>
-
-    {{ include('caisse/_delete_form.html.twig') }}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Économie</p><h1>{{ caisse.nom }}</h1><p>{{ caisse.description }}</p></div>
+        <a class="admin-primary-action" href="{{ path('app_caisse_edit', {'id': caisse.id}) }}">Modifier cette caisse</a>
+    </div>
+    <section class="admin-detail-card">
+        <div class="admin-detail-media">
+            <img class="admin-caisse-detail-image" src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}">
+            <span class="admin-status {{ caisse.statutActif ? 'admin-status--active' : 'admin-status--inactive' }}">{{ caisse.statutActif ? 'Active' : 'Inactive' }}</span>
+        </div>
+        <dl class="admin-detail-list">
+            <div><dt>Slug</dt><dd>{{ caisse.slug }}</dd></div>
+            <div><dt>Prix</dt><dd>{{ caisse.prix }} pièces</dd></div>
+            <div><dt>Contenus</dt><dd>{{ caisse.contenus|length }} Stickman{% if caisse.contenus|length != 1 %}s{% endif %}</dd></div>
+            <div><dt>Poids total</dt><dd>{{ caisse.poidsTotal }}</dd></div>
+            <div><dt>Image</dt><dd>{{ caisse.image }}</dd></div>
+        </dl>
+    </section>
+    <div class="admin-secondary-actions">
+        <a href="{{ path('app_caisse_index') }}">← Retour aux caisses</a>
+        <a href="{{ path('app_caisse_stickman_index') }}">Gérer son contenu</a>
+        {{ include('caisse/_delete_form.html.twig') }}
+    </div>
 {% endblock %}
