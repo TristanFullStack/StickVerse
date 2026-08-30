@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Service\ProfilJoueurService;
 use App\Service\RecompenseQuotidienneService;
+use App\Service\ObjectifJoueurService;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -62,6 +64,47 @@ final class ProfilController extends AbstractController
             $this->addFlash(
                 'error',
                 'Tu as déjà récupéré ta récompense quotidienne aujourd’hui.',
+            );
+        }
+
+        return $this->redirectToRoute('app_profil');
+    }
+
+    #[Route('/profil/objectif/{objectif}/reclamer', name: 'app_objectif_reclamer', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function reclamerObjectif(
+        Request $request,
+        string $objectif,
+        ObjectifJoueurService $objectifJoueurService,
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'objectif-'.$objectif,
+            $request->getPayload()->getString('_token'),
+        )) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $joueur = $this->getUser();
+
+        if (!$joueur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        try {
+            $montant = $objectifJoueurService->reclamer($joueur, $objectif);
+        } catch (InvalidArgumentException) {
+            throw $this->createNotFoundException('Cet objectif est inconnu.');
+        }
+
+        if ($montant > 0) {
+            $this->addFlash(
+                'success',
+                sprintf('Objectif validé : +%d pièces.', $montant),
+            );
+        } else {
+            $this->addFlash(
+                'error',
+                'Cet objectif n’est pas encore disponible ou a déjà été réclamé.',
             );
         }
 

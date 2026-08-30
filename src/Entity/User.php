@@ -37,6 +37,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $dateDerniereRecompenseQuotidienne = null;
 
+    /** @var list<string> */
+    #[ORM\Column(type: 'json')]
+    private array $objectifsReclames = [];
+
     /**
      * @var list<string> The user roles
      */
@@ -122,6 +126,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         ?\DateTimeImmutable $date,
     ): static {
         $this->dateDerniereRecompenseQuotidienne = $date;
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getObjectifsReclames(): array
+    {
+        return $this->objectifsReclames;
+    }
+
+    public function aReclameObjectif(string $objectif): bool
+    {
+        return in_array($objectif, $this->objectifsReclames, true);
+    }
+
+    public function marquerObjectifReclame(string $objectif): static
+    {
+        if (!$this->aReclameObjectif($objectif)) {
+            $this->objectifsReclames[] = $objectif;
+        }
 
         return $this;
     }

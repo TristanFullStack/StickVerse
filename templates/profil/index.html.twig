@@ -120,4 +120,30 @@
             <p data-profile-recompense-indisponible>Récompense déjà récupérée aujourd’hui.</p>
         {% endif %}
     </section>
+
+    <section class="profile-section" aria-labelledby="objectifs-titre">
+        <h2 id="objectifs-titre">Objectifs</h2>
+        {% if profil.objectifs is empty %}
+            <p>Aucun objectif disponible.</p>
+        {% else %}
+            <ul data-profile-objectifs>
+                {% for objectif in profil.objectifs %}
+                    <li data-profile-objectif="{{ objectif.id }}">
+                        <strong>{{ objectif.libelle }}</strong>
+                        — {{ objectif.description }}
+                        ({{ objectif.progression }}/{{ objectif.cible }})
+                        — {{ objectif.recompense }} pièces
+                        {% if objectif.reclame %}
+                            <span data-profile-objectif-reclame>Réclamé</span>
+                        {% elseif objectif.disponible %}
+                            <form method="post" action="{{ path('app_objectif_reclamer', {objectif: objectif.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('objectif-' ~ objectif.id) }}">
+                                <button type="submit">Réclamer</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
 {% endblock %}

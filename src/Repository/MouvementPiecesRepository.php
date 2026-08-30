@@ -33,4 +33,16 @@ class MouvementPiecesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function compterPourJoueurEtType(User $joueur, string $type): int
+    {
+        return (int) $this->createQueryBuilder('mouvement')
+            ->select('COUNT(mouvement.id)')
+            ->andWhere('mouvement.utilisateur = :joueur')
+            ->andWhere('mouvement.type = :type')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('type', $type)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

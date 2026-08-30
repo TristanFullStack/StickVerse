@@ -17,6 +17,7 @@ final readonly class ProfilJoueurService
         private CombatRepository $combatRepository,
         private ?MouvementPiecesRepository $mouvementPiecesRepository = null,
         private ?RecompenseQuotidienneService $recompenseQuotidienneService = null,
+        private ?ObjectifJoueurService $objectifJoueurService = null,
     ) {
     }
 
@@ -32,6 +33,7 @@ final readonly class ProfilJoueurService
      *     },
      *     mouvementsPieces: list<\App\Entity\MouvementPieces>
      *     recompenseQuotidienneDisponible: bool
+     *     objectifs: list<array{id: string, libelle: string, description: string, progression: int, cible: int, recompense: int, reclame: bool, disponible: bool}>
      * }
      */
     public function construire(User $joueur): array
@@ -51,6 +53,7 @@ final readonly class ProfilJoueurService
             'recompenseQuotidienneDisponible' => $this->recompenseQuotidienneService?->estDisponible(
                 $joueur,
             ) ?? true,
+            'objectifs' => $this->objectifJoueurService?->construire($joueur) ?? [],
         ];
     }
 }

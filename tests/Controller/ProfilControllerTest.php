@@ -229,4 +229,40 @@ final class ProfilControllerTest extends WebTestCase
             'Récompense déjà récupérée aujourd’hui',
         );
     }
+
+    public function testReclameUnObjectifDisponible(): void
+    {
+        $joueur = (new User())
+            ->setEmail('profil-objectif@example.com')
+            ->setPassword('mot-de-passe-test');
+        $adversaire = (new User())
+            ->setEmail('profil-objectif-adversaire@example.com')
+            ->setPassword('mot-de-passe-test');
+        $combat = (new Combat($joueur))
+            ->setJoueur2($adversaire)
+            ->setStatut(Combat::STATUT_TERMINE)
+            ->setGagnant($joueur);
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->persist($adversaire);
+        $this->entityManager->persist($combat);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($joueur);
+        $crawler = $this->client->request('GET', '/profil');
+        $form = $crawler
+            ->filter('[data-profile-objectif="premier_combat"] form')
+            ->form();
+
+        $this->client->submit($form);
+        self::assertResponseRedirects('/profil');
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('[data-profile-pieces]', '1050 pièces');
+        self::assertSelectorTextContains(
+            '[data-profile-objectif="premier_combat"]',
+            'Réclamé',
+        );
+        self::assertSelectorTextContains('.alert-success', 'Objectif validé');
+    }
 }

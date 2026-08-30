@@ -6508,7 +6508,59 @@ La prochaine étape pourra ajouter des objectifs de progression donnant égaleme
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J73 — Ajouter les objectifs de progression
 
+### Objectif
+
+J73 donne au joueur des objectifs simples à réaliser afin de suivre sa progression et de gagner quelques pièces supplémentaires.
+
+### Objectifs ajoutés
+
+- Premier combat : participer à un combat, récompense de 50 pièces.
+- Habitué des combats : participer à cinq combats, récompense de 100 pièces.
+- Première ouverture : ouvrir une première caisse payante, récompense de 50 pièces.
+
+La progression est calculée à partir des combats terminés ou abandonnés et de l’historique des achats de caisses.
+
+### Réclamation
+
+- Chaque objectif ne peut être réclamé qu’une seule fois.
+- Un objectif n’est réclamable que lorsque sa cible est atteinte.
+- La réclamation est protégée par un verrou d’écriture et une transaction.
+- Les requêtes simultanées ne peuvent pas créditer deux fois la même récompense.
+- Une récompense réclamée est mémorisée sur le compte joueur.
+
+### Historique des pièces
+
+Chaque objectif validé crée un mouvement positif de type `recompense_objectif` avec un libellé explicite.
+
+### Interface
+
+Le profil affiche les objectifs, leur progression, leur récompense et leur état.
+
+Un bouton permet de réclamer directement chaque objectif disponible.
+
+### Base de données
+
+Une migration ajoute la liste JSON des objectifs déjà réclamés sur le compte joueur.
+
+### Vérifications automatiques
+
+- Calcul des progressions.
+- Réclamation d’un objectif disponible.
+- Refus d’un objectif non disponible.
+- Enregistrement du mouvement positif.
+- Affichage et réclamation depuis le profil.
+- Protection CSRF et accès réservé aux joueurs connectés.
+- Schéma Doctrine synchronisé.
+- Conteneur Symfony valide.
+- Suite complète validée : 199 tests et 1 722 assertions.
+
+### Résultat
+
+Le joueur dispose maintenant de premiers objectifs clairs et de récompenses supplémentaires liées à sa progression.
+
+La prochaine étape pourra ajouter d’autres objectifs liés à la collection, à l’équipe ou aux combats en ligne.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
