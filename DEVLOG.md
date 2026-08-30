@@ -6653,6 +6653,120 @@ La prochaine étape pourra ajouter des objectifs avancés liés aux combats en l
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J75 — Ajouter la console d’administration et centraliser les cartes
+
+### Objectif
+
+J75 ajoute une console de commandes utilisable depuis StickVerse par les administrateurs uniquement. Elle permet d’exécuter des actions de gestion simples tout en préparant l’ajout futur de commandes de recherche, de modération et d’administration avancée.
+
+J75 centralise également la structure des cartes Stickmans afin que le wiki et la collection utilisent le même rendu.
+
+### Console d’administration
+
+Une nouvelle page est disponible à l’adresse `/admin`.
+
+Cette page affiche :
+
+- les commandes disponibles ;
+- un champ de saisie ;
+- un bouton d’exécution ;
+- le résultat de la commande ;
+- les statistiques principales du catalogue ;
+- les liens vers les écrans CRUD existants.
+
+La console reste volontairement simple afin de conserver l’esprit prototype du projet.
+
+### Commandes disponibles
+
+#### `help`
+
+Affiche la liste des commandes utilisables et leur syntaxe.
+
+#### `give <pseudo> <montant>`
+
+Ajoute un nombre de pièces à un joueur identifié par son pseudo.
+
+Exemple :
+
+`give Joueur-AB12 500`
+
+La commande :
+
+- vérifie que le pseudo existe ;
+- vérifie que le montant est un nombre entier positif ;
+- crédite le portefeuille du joueur ;
+- affiche le nouveau solde ;
+- enregistre le mouvement dans l’historique des pièces.
+
+#### `recherche <pseudo>`
+
+Affiche le solde actuel d’un joueur.
+
+Exemple :
+
+`recherche Joueur-AB12`
+
+La commande `find` est également acceptée comme alias.
+
+### Historique des mouvements
+
+Un nouveau type de mouvement `admin_credit` est utilisé pour identifier les crédits effectués depuis la console d’administration.
+
+Chaque utilisation de la commande `give` laisse donc une trace dans l’historique des pièces du joueur.
+
+### Sécurité
+
+- L’accès à `/admin` reste protégé par le rôle `ROLE_ADMIN`.
+- Un joueur classique reçoit une réponse 403.
+- Les commandes sont exécutées uniquement après validation d’un jeton CSRF.
+- Les montants négatifs, nuls ou mal formés sont refusés.
+- Les pseudos inconnus provoquent un message d’erreur explicite.
+- Les commandes inconnues n’exécutent aucune action.
+
+### Centralisation des cartes Stickmans
+
+Le rendu des cartes est maintenant partagé entre le wiki et la collection grâce à un template commun.
+
+Les deux écrans utilisent désormais :
+
+- la même structure HTML ;
+- la même classe CSS ;
+- la même classe pour les images ;
+- la même hauteur d’affichage ;
+- les mêmes espacements et tailles de texte.
+
+La quantité possédée reste affichée uniquement dans la collection.
+
+La zone d’image est fixée à une hauteur intermédiaire de 170 pixels afin de conserver des cartes lisibles sans reprendre l’ancienne hauteur excessive.
+
+### Interface d’administration
+
+La navigation réservée aux administrateurs contient maintenant un lien direct vers :
+
+- la console ;
+- la gestion des Stickmans ;
+- la gestion des caisses ;
+- la gestion du contenu des caisses.
+
+### Vérifications automatiques
+
+- Accès refusé à un joueur normal.
+- Accès accepté pour un administrateur.
+- Exécution d’un crédit avec `give`.
+- Vérification du nouveau solde.
+- Enregistrement du mouvement `admin_credit`.
+- Validation des commandes inconnues.
+- Validation des templates Twig.
+- Validation du conteneur Symfony.
+- Suite complète validée : 202 tests et 1 742 assertions.
+
+### Résultat
+
+Les administrateurs disposent maintenant d’un premier outil de gestion directement intégré au site.
+
+La console pourra être étendue progressivement avec des commandes de recherche de joueurs, de consultation des combats, de gestion des récompenses et d’autres outils internes.
+
+Le wiki et la collection utilisent désormais une structure de carte commune, ce qui permet de modifier leur rendu depuis un seul template partagé.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

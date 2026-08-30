@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Console d’administration - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Console d’administration</h1>
+
+    <p data-admin-console-introduction>
+        Outil réservé à l’administration pour exécuter des commandes de gestion.
+    </p>
+
+    <section class="dashboard-section admin-console" data-admin-console>
+        <h2>Console</h2>
+        <form method="post" data-admin-console-form>
+            <label for="admin-commande">Commande</label>
+            <input
+                id="admin-commande"
+                name="commande"
+                value="{{ commande }}"
+                placeholder="help"
+                autocomplete="off"
+                required
+            >
+            <input type="hidden" name="_token" value="{{ csrf_token('console-administration') }}">
+            <button type="submit">Exécuter</button>
+        </form>
+
+        {% if resultat %}
+            <pre class="admin-console-result admin-console-result--{{ resultat.statut }}" data-admin-console-result>{{ resultat.message }}</pre>
+        {% endif %}
+
+        <p>Exemples : <code>help</code>, <code>give Joueur-AB12 500</code>, <code>recherche Joueur-AB12</code>.</p>
+    </section>
+
+    <div class="dashboard-grid">
+        <section class="dashboard-card">
+            <h2>Catalogue</h2>
+            <p>Stickmans enregistrés : <strong>{{ nombre_stickmen }}</strong></p>
+            <p>Caisses enregistrées : <strong>{{ nombre_caisses }}</strong></p>
+            <p>Contenus de caisses : <strong>{{ nombre_contenus_caisses }}</strong></p>
+
+            <p>
+                <a href="{{ path('app_stickman_index') }}">Gérer les Stickmans</a>
+            </p>
+            <p>
+                <a href="{{ path('app_caisse_index') }}">Gérer les caisses</a>
+            </p>
+            <p>
+                <a href="{{ path('app_caisse_stickman_index') }}">
+                    Gérer le contenu des caisses
+                </a>
+            </p>
+        </section>
+
+        <section class="dashboard-card">
+            <h2>Comptes</h2>
+            <p>Joueurs inscrits : <strong>{{ nombre_joueurs }}</strong></p>
+            <p>
+                Les comptes joueurs se consultent depuis leur profil. La gestion
+                avancée des utilisateurs sera ajoutée plus tard si nécessaire.
+            </p>
+        </section>
+    </div>
+{% endblock %}

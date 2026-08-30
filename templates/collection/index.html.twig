@@ -53,31 +53,7 @@
 
             {% for inventaire in inventaires %}
                 {% set stickman = inventaire.stickman %}
-
-                <article class="stickman-card">
-
-                    <h2>{{ stickman.nom }}</h2>
-
-                    <img
-                        src="{{ asset('images/stickmen/' ~ stickman.image) }}"
-                        alt="{{ stickman.nom }}"
-                        width="200"
-                    >
-
-                    <p>
-                        <strong>Quantité : {{ inventaire.quantite }}</strong>
-                    </p>
-
-                    <p>Rareté : {{ stickman.rarete }}</p>
-                    <p>PV : {{ stickman.pv }}</p>
-                    <p>Attaque : {{ stickman.attaque }}</p>
-                    <p>Défense : {{ stickman.defense }}</p>
-
-                    <a href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}">
-                        Voir la fiche
-                    </a>
-
-                </article>
+                {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: inventaire} %}
             {% endfor %}
 
         </div>
