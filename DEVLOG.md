@@ -5431,7 +5431,102 @@ Les tentatives normales restent fluides pour les joueurs, tandis que les répét
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J62 — Centraliser l’expiration des combats abandonnés
 
+### Objectif
+
+J62 permet au serveur de traiter les combats expirés même lorsque les joueurs ont fermé leur navigateur et qu’aucune actualisation automatique n’est encore effectuée.
+
+### Commande d’expiration
+
+Une nouvelle commande Symfony est disponible :
+
+`php bin/console app:combats:expirer`
+
+Elle recherche tous les combats encore actifs puis applique les règles d’expiration déjà sécurisées par les services métier.
+
+### Situations prises en charge
+
+La commande traite automatiquement :
+
+- un combat en attente qui n’a pas été rejoint après cinq minutes ;
+- une préparation abandonnée par les deux joueurs ;
+- une préparation confirmée par un seul joueur ;
+- un round pour lequel un seul joueur a envoyé son plan après cinq minutes.
+
+Selon la situation, le combat est annulé ou terminé par forfait.
+
+### Sécurité du traitement
+
+La commande récupère uniquement les identifiants des combats actifs.
+
+Chaque expiration est ensuite confiée au service métier correspondant :
+
+- `ExpirationCombatEnAttenteService` ;
+- `ExpirationPreparationCombatEnLigneService` ;
+- `ExpirationPlanCombatEnLigneService`.
+
+Ces services relisent le combat avec un verrou d’écriture et vérifient à nouveau toutes les conditions dans une transaction.
+
+La commande peut donc être relancée sans modifier un combat qui n’est pas réellement expiré.
+
+### Résumé d’exécution
+
+À la fin du nettoyage, la commande indique :
+
+- le nombre de combats examinés ;
+- le nombre d’attentes annulées ;
+- le nombre de préparations annulées ;
+- le nombre de forfaits pendant la préparation ;
+- le nombre de forfaits provoqués par un plan manquant.
+
+### Automatisation future
+
+La commande est prête à être exécutée régulièrement par le serveur.
+
+Sa programmation automatique avec une tâche planifiée sera configurée pendant la phase de déploiement.
+
+J62 ne lance donc pas encore un processus permanent en arrière-plan sur l’ordinateur de développement.
+
+### Tests ajoutés
+
+Un test d’intégration exécute réellement la commande avec cinq combats :
+
+- une attente expirée ;
+- une attente encore valide ;
+- une préparation expirée sans joueur prêt ;
+- une préparation expirée avec un seul joueur prêt ;
+- un round expiré avec un seul plan envoyé.
+
+Le test vérifie que :
+
+- les quatre combats expirés reçoivent le bon résultat ;
+- le bon gagnant est enregistré pour chaque forfait ;
+- le combat encore valide reste actif ;
+- le résumé de la commande contient les bons compteurs.
+
+### Validation
+
+- syntaxes PHP valides ;
+- conteneur Symfony valide ;
+- commande correctement enregistrée ;
+- mapping Doctrine valide ;
+- bases de développement et de test synchronisées ;
+- 140 tests réussis ;
+- 1 335 assertions réussies ;
+- aucune notice PHPUnit ;
+- aucune migration nécessaire.
+
+### Fichiers concernés
+
+- `src/Command/ExpirerCombatsEnLigneCommand.php`
+- `src/Repository/CombatRepository.php`
+- `src/Service/NettoyageCombatsExpiresService.php`
+- `tests/Command/ExpirerCombatsEnLigneCommandTest.php`
+
+### Résultat
+
+StickVerse dispose maintenant d’un point d’entrée serveur unique pour nettoyer les combats abandonnés, indépendamment des actualisations effectuées par les navigateurs des joueurs.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

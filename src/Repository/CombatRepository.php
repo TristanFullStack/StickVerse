@@ -66,6 +66,32 @@ class CombatRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return list<int>
+     */
+    public function trouverIdsActifs(): array
+    {
+        $resultats = $this->createQueryBuilder('combat')
+            ->select('combat.id')
+            ->andWhere('combat.statut IN (:statuts)')
+            ->setParameter(
+                'statuts',
+                [
+                    Combat::STATUT_EN_ATTENTE,
+                    Combat::STATUT_EN_COURS,
+                ],
+            )
+            ->orderBy('combat.id', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_map(
+            static fn (array $resultat): int =>
+                (int) $resultat['id'],
+            $resultats,
+        );
+    }
+
+    /**
      * @return list<Combat>
      */
     public function trouverDisponiblesPour(
