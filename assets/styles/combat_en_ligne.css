@@ -427,7 +427,8 @@ body:has(#rapport-combat) {
 
 #combat-en-ligne [data-combat-en-ligne-target="resultatRound"],
 #combat-en-ligne [data-combat-en-ligne-target="historiqueRounds"],
-#combat-en-ligne [data-combat-en-ligne-target="planSection"] {
+#combat-en-ligne [data-combat-en-ligne-target="planSection"],
+#combat-en-ligne .preparation-combat {
     margin: 20px 0;
     padding: 20px;
     border: 1px solid var(--combat-ligne);
@@ -440,6 +441,21 @@ body:has(#rapport-combat) {
 #combat-en-ligne [data-combat-en-ligne-target="planSection"] h3 {
     margin-top: 0;
     color: var(--combat-violet);
+}
+
+#combat-en-ligne .preparation-combat {
+    text-align: center;
+    border-color: var(--combat-violet);
+    background: rgba(89, 38, 132, 0.2);
+}
+
+#combat-en-ligne .preparation-combat h3 {
+    margin-top: 0;
+    color: #d58cff;
+}
+
+#combat-en-ligne .preparation-combat p {
+    color: var(--combat-texte-secondaire);
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="historiqueRoundsListe"] {

@@ -48,6 +48,32 @@ final class CombatTest extends KernelTestCase
         self::assertTrue($combat->estPrive());
     }
 
+    public function testLesDeuxJoueursConfirmentLeurPreparation(): void
+    {
+        $joueur1 = new User();
+        $joueur2 = new User();
+        $combat = (new Combat($joueur1))
+            ->setJoueur2($joueur2)
+            ->setStatut(Combat::STATUT_EN_COURS)
+            ->initialiserPreparation();
+
+        self::assertTrue($combat->estEnPreparation());
+        self::assertFalse($combat->estPretAJouer());
+        self::assertFalse($combat->estPret($joueur1));
+        self::assertFalse($combat->estPret($joueur2));
+
+        $combat->confirmerPret($joueur1);
+
+        self::assertTrue($combat->estPret($joueur1));
+        self::assertFalse($combat->estPret($joueur2));
+        self::assertTrue($combat->estEnPreparation());
+
+        $combat->confirmerPret($joueur2);
+
+        self::assertTrue($combat->estPretAJouer());
+        self::assertFalse($combat->estEnPreparation());
+    }
+
     public function testPasserAuRoundSuivant(): void
     {
         $combat = new Combat(new User());

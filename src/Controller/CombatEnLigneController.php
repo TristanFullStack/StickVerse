@@ -16,6 +16,7 @@ use App\Service\AbandonCombatService;
 use App\Service\AnnulationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ExpirationPlanCombatEnLigneService;
+use App\Service\PreparationCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
 use InvalidArgumentException;
@@ -147,6 +148,12 @@ final class CombatEnLigneController extends AbstractController
                     $combattantRepository,
                 )
                 : null,
+            'preparation' => [
+                'active' => $combat->estEnPreparation(),
+                'moiPret' => $combat->estPret($utilisateur),
+                'adversairePret' => $adversaire instanceof User
+                    && $combat->estPret($adversaire),
+            ],
             'planSoumis' => $planSoumis,
             'adversairePret' => $adversairePret,
             'csrf' => [
@@ -166,6 +173,14 @@ final class CombatEnLigneController extends AbstractController
                         )
                     )
                     ->getValue(),
+                'pret' => $csrfTokenManager
+                    ->getToken(
+                        $this->creerIdentifiantCsrf(
+                            'pret',
+                            $combat,
+                        )
+                    )
+                    ->getValue(),
                 'annuler' => $csrfTokenManager
                     ->getToken(
                         $this->creerIdentifiantCsrf(
@@ -175,6 +190,79 @@ final class CombatEnLigneController extends AbstractController
                     )
                     ->getValue(),
             ],
+        ]);
+    }
+
+    #[Route(
+        '/{id}/pret',
+        name: 'pret',
+        methods: ['POST']
+    )]
+    public function confirmerPret(
+        Combat $combat,
+        Request $request,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        PreparationCombatEnLigneService $preparationService,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted(
+            CombatVoter::JOUER,
+            $combat,
+        );
+
+        $utilisateur = $this->getUser();
+
+        if (!$utilisateur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (
+            !$this->csrfEstValide(
+                'pret',
+                $combat,
+                $request,
+                $csrfTokenManager,
+            )
+        ) {
+            return $this->json(
+                [
+                    'erreur' => 'Le jeton CSRF de préparation est invalide.',
+                ],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
+
+        $combatId = $combat->getId();
+
+        if ($combatId === null) {
+            return $this->json(
+                [
+                    'erreur' => 'Le combat demandé est introuvable.',
+                ],
+                Response::HTTP_NOT_FOUND,
+            );
+        }
+
+        try {
+            $combatPrepare = $preparationService->confirmer(
+                $combatId,
+                $utilisateur,
+            );
+        } catch (LogicException $exception) {
+            return $this->json(
+                [
+                    'erreur' => $exception->getMessage(),
+                ],
+                Response::HTTP_CONFLICT,
+            );
+        }
+
+        return $this->json([
+            'etat' => $combatPrepare->estPretAJouer()
+                ? 'combat_pret'
+                : 'en_attente_adversaire',
+            'combatId' => $combatId,
+            'statut' => $combatPrepare->getStatut(),
+            'numeroRound' => $combatPrepare->getNumeroRound(),
         ]);
     }
 

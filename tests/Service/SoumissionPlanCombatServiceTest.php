@@ -197,6 +197,53 @@ final class SoumissionPlanCombatServiceTest extends TestCase
         );
     }
 
+    public function testRefuseUnPlanAvantLesDeuxConfirmations(): void
+    {
+        $joueur1 = new User();
+        $joueur2 = new User();
+        $combat = (new Combat($joueur1))
+            ->setJoueur2($joueur2)
+            ->setStatut(Combat::STATUT_EN_COURS)
+            ->initialiserPreparation()
+            ->confirmerPret($joueur1);
+
+        $entityManager = $this->creerEntityManagerTransactionnel();
+        $entityManager
+            ->expects(self::never())
+            ->method('persist');
+
+        $combatRepository = $this->createStub(
+            CombatRepository::class
+        );
+        $combatRepository
+            ->method('trouverAvecVerrouEcriture')
+            ->willReturn($combat);
+
+        $planRepository = $this->createMock(
+            PlanRoundCombatRepository::class
+        );
+        $planRepository
+            ->expects(self::never())
+            ->method('trouverPourCombatEtRound');
+
+        $service = new SoumissionPlanCombatService(
+            $entityManager,
+            $combatRepository,
+            $planRepository,
+        );
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Les deux joueurs doivent être prêts avant d’envoyer un plan.'
+        );
+
+        $service->soumettre(
+            42,
+            $joueur1,
+            new PlanCombat('A', 'B', 'C', 'D'),
+        );
+    }
+
     public function testRefuseUnJoueurExterieur(): void
     {
         $joueur1 = new User();

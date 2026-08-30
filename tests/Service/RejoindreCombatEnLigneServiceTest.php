@@ -105,6 +105,11 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
             $combatRejoint->getStatut(),
         );
 
+        self::assertTrue($combatRejoint->estEnPreparation());
+        self::assertFalse($combatRejoint->estPretAJouer());
+        self::assertFalse($combatRejoint->estPret($joueur1));
+        self::assertFalse($combatRejoint->estPret($joueur2));
+
         self::assertSame(
             1,
             $combatRejoint->getNumeroRound(),

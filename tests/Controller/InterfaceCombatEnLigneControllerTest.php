@@ -210,6 +210,19 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne[data-combat-en-ligne-plan-url-modele-value="/combat-en-ligne/__combat_id__/plan"]'
         );
         self::assertSelectorExists(
+            '#combat-en-ligne[data-combat-en-ligne-pret-url-modele-value="/combat-en-ligne/__combat_id__/pret"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="preparationSection"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="preparationMessage"][role="status"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="pretButton"]'
+            .'[data-action="combat-en-ligne#confirmerPret"]'
+        );
+        self::assertSelectorExists(
             '#combat-en-ligne[data-combat-en-ligne-abandon-url-modele-value="/combat-en-ligne/__combat_id__/abandon"]'
         );
         self::assertSelectorExists(

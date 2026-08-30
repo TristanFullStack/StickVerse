@@ -26,6 +26,9 @@ export default class extends Controller {
         'invitationCode',
         'visibiliteCombat',
         'participants',
+        'preparationSection',
+        'preparationMessage',
+        'pretButton',
         'moiNom',
         'moiCombattants',
         'adversaireNom',
@@ -57,6 +60,7 @@ export default class extends Controller {
         rejoindreParCodeUrl: String,
         combatUrlModele: String,
         planUrlModele: String,
+        pretUrlModele: String,
         abandonUrlModele: String,
         annulerUrlModele: String,
         rapportUrlModele: String,
@@ -144,6 +148,29 @@ export default class extends Controller {
             );
 
             this.planFormTarget.reset();
+            await this.chargerCombat(combatId);
+        });
+    }
+
+    async confirmerPret() {
+        const combatId = this.combatActifIdCourant;
+
+        if (combatId === null) {
+            this.afficherErreur('Aucun combat actif n’est disponible.');
+
+            return;
+        }
+
+        await this.executerAction(async () => {
+            await this.envoyerJson(
+                this.remplacerCombatId(
+                    this.pretUrlModeleValue,
+                    combatId,
+                ),
+                {},
+                this.combat?.csrf?.pret,
+            );
+
             await this.chargerCombat(combatId);
         });
     }
@@ -522,6 +549,7 @@ export default class extends Controller {
             'Équipe adverse',
         );
 
+        this.afficherPreparation();
         this.afficherEtatRound();
         this.afficherFinCombat();
         this.afficherDernierRound();
@@ -529,6 +557,36 @@ export default class extends Controller {
         this.afficherFormulairePlan();
         this.afficherBoutonAbandon();
         this.afficherBoutonAnnulation();
+    }
+
+    afficherPreparation() {
+        const preparation = this.combat?.preparation;
+        const active = preparation?.active === true;
+
+        this.preparationSectionTarget.hidden = !active;
+
+        if (!active) {
+            return;
+        }
+
+        const moiPret = preparation.moiPret === true;
+        const adversairePret = preparation.adversairePret === true;
+
+        if (moiPret && !adversairePret) {
+            this.preparationMessageTarget.textContent =
+                'Tu es prêt. En attente de la confirmation adverse.';
+        } else if (!moiPret && adversairePret) {
+            this.preparationMessageTarget.textContent =
+                'Ton adversaire est prêt. Confirme quand ton équipe est prête.';
+        } else {
+            this.preparationMessageTarget.textContent =
+                'Vérifie ton équipe puis confirme ta préparation.';
+        }
+
+        this.pretButtonTarget.disabled = moiPret;
+        this.pretButtonTarget.textContent = moiPret
+            ? 'Prêt confirmé'
+            : 'Je suis prêt';
     }
 
     afficherBoutonAbandon() {
@@ -886,6 +944,7 @@ export default class extends Controller {
     afficherFormulairePlan() {
         const peutJouer = this.combat.statut === 'en_cours'
             && this.combat.adversaire !== null
+            && this.combat.preparation?.active !== true
             && this.combat.planSoumis === false;
 
         this.planSectionTarget.hidden = !peutJouer;
@@ -1027,6 +1086,13 @@ export default class extends Controller {
                 'Ton équipe est enregistrée.',
                 'Le combat commencera dès qu’un adversaire le rejoindra.',
             ].join(' ');
+
+            return;
+        }
+
+        if (this.combat.preparation?.active === true) {
+            this.etatRoundTarget.textContent =
+                'Le round commencera lorsque les deux joueurs seront prêts.';
 
             return;
         }

@@ -46,6 +46,12 @@ final class SoumissionPlanCombatService
                     );
                 }
 
+                if (!$combat->estPretAJouer()) {
+                    throw new LogicException(
+                        'Les deux joueurs doivent être prêts avant d’envoyer un plan.'
+                    );
+                }
+
                 if (!$combat->getJoueur2() instanceof User) {
                     throw new LogicException(
                         'Le combat doit posséder deux joueurs.'

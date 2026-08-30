@@ -109,6 +109,7 @@ final class RejoindreCombatEnLigneService
                 }
 
                 $combat->setJoueur2($joueur);
+                $combat->initialiserPreparation();
 
                 $this->creationCombattantsService
                     ->creerPourJoueur(

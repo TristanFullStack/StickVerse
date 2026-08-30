@@ -5027,6 +5027,70 @@ Un joueur peut désormais créer un combat public ouvert au salon ou un combat p
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J57 — Confirmer la préparation des deux joueurs
+
+### Objectif
+
+J57 ajoute une phase de préparation entre l’arrivée du second joueur et le début réel du combat. Chaque participant doit confirmer que son équipe est prête avant de pouvoir envoyer son premier plan.
+
+### Réalisations
+
+- ajout d’un état de préparation propre à chaque participant ;
+- initialisation des deux joueurs comme non prêts lorsqu’un combat est rejoint ;
+- ajout d’un bouton « Je suis prêt » dans l’interface du combat ;
+- affichage de l’état de préparation du joueur et de son adversaire ;
+- attente automatique lorsque seul un participant a confirmé ;
+- déblocage du formulaire de plan lorsque les deux joueurs sont prêts ;
+- interdiction côté serveur d’envoyer un plan avant les deux confirmations ;
+- ajout d’une route POST sécurisée pour confirmer la préparation ;
+- protection de la confirmation avec le voter du combat et un jeton CSRF ;
+- utilisation d’une transaction et d’un verrou d’écriture pour éviter les confirmations concurrentes ;
+- maintien de la compatibilité avec les anciens combats déjà enregistrés ;
+- ajout d’une migration Doctrine pour persister les deux confirmations ;
+- ajout de tests métier, HTTP et d’interface.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `migrations/Version20260830130000.php`
+- `src/Controller/CombatEnLigneController.php`
+- `src/Entity/Combat.php`
+- `src/Service/PreparationCombatEnLigneService.php`
+- `src/Service/RejoindreCombatEnLigneService.php`
+- `src/Service/SoumissionPlanCombatService.php`
+- `templates/combat_en_ligne/index.html.twig`
+- `tests/Controller/CombatEnLigneControllerTest.php`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+- `tests/Controller/SalonCombatEnLigneControllerTest.php`
+- `tests/Entity/CombatTest.php`
+- `tests/Service/PreparationCombatEnLigneServiceTest.php`
+- `tests/Service/RejoindreCombatEnLigneServiceTest.php`
+- `tests/Service/SoumissionPlanCombatServiceTest.php`
+
+### Validation
+
+- syntaxes PHP et JavaScript valides ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- route de confirmation reconnue ;
+- assets du combat reconnus ;
+- migration appliquée aux bases normale et de test ;
+- mappings Doctrine valides ;
+- bases synchronisées avec les entités ;
+- tests métier de préparation validés ;
+- parcours HTTP avec deux confirmations validé ;
+- suite PHPUnit complète validée ;
+- **123 tests réussis** ;
+- **1170 assertions réussies**.
+
+### Test manuel restant
+
+Le comportement visuel sera vérifié avec deux comptes : affichage de la préparation, confirmation séparée des joueurs, attente du second participant et apparition du formulaire de plan après les deux confirmations.
+
+### Résultat
+
+Un combat rejoint ne commence plus immédiatement. Chaque joueur dispose maintenant d’une véritable salle de préparation et doit confirmer qu’il est prêt avant le lancement du premier round.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

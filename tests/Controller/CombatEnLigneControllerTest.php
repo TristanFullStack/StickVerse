@@ -115,6 +115,9 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertSame([], $donnees['historiqueRounds']);
         self::assertFalse($donnees['planSoumis']);
         self::assertFalse($donnees['adversairePret']);
+        self::assertFalse($donnees['preparation']['active']);
+        self::assertTrue($donnees['preparation']['moiPret']);
+        self::assertTrue($donnees['preparation']['adversairePret']);
         self::assertFalse($donnees['forfaitAutomatique']);
         self::assertNull($donnees['expirationPlan']);
 
@@ -249,12 +252,21 @@ final class CombatEnLigneControllerTest extends WebTestCase
             $donnees['csrf'],
         );
 
+        self::assertArrayHasKey(
+            'pret',
+            $donnees['csrf'],
+        );
+
         self::assertIsString(
             $donnees['csrf']['plan']
         );
 
         self::assertIsString(
             $donnees['csrf']['abandon']
+        );
+
+        self::assertIsString(
+            $donnees['csrf']['pret']
         );
 
         self::assertNotSame(
@@ -479,6 +491,77 @@ final class CombatEnLigneControllerTest extends WebTestCase
             'D',
             $planEnregistre->getCibleDefenseY(),
         );
+    }
+
+    public function testDemarreLeRoundApresDeuxConfirmations(): void
+    {
+        [
+            $combat,
+            $joueur1,
+            $joueur2,
+        ] = $this->creerCombat();
+
+        $combat->initialiserPreparation();
+        $this->entityManager->flush();
+
+        $combatId = $combat->getId();
+
+        self::assertNotNull($combatId);
+
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+
+        $etatJoueur1 = $this->lireReponseJson();
+
+        self::assertTrue($etatJoueur1['preparation']['active']);
+        self::assertFalse($etatJoueur1['preparation']['moiPret']);
+        self::assertFalse($etatJoueur1['preparation']['adversairePret']);
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/pret',
+            [],
+            [
+                'HTTP_X_CSRF_TOKEN' => $etatJoueur1['csrf']['pret'],
+            ],
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            'en_attente_adversaire',
+            $this->lireReponseJson()['etat'],
+        );
+
+        $this->client->loginUser($joueur2);
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+
+        $etatJoueur2 = $this->lireReponseJson();
+
+        self::assertTrue($etatJoueur2['preparation']['active']);
+        self::assertFalse($etatJoueur2['preparation']['moiPret']);
+        self::assertTrue($etatJoueur2['preparation']['adversairePret']);
+
+        $this->client->jsonRequest(
+            'POST',
+            '/combat-en-ligne/'.$combatId.'/pret',
+            [],
+            [
+                'HTTP_X_CSRF_TOKEN' => $etatJoueur2['csrf']['pret'],
+            ],
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            'combat_pret',
+            $this->lireReponseJson()['etat'],
+        );
+
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        $etatFinal = $this->lireReponseJson();
+
+        self::assertFalse($etatFinal['preparation']['active']);
+        self::assertTrue($etatFinal['preparation']['moiPret']);
+        self::assertTrue($etatFinal['preparation']['adversairePret']);
     }
 
     public function testRefuseUnDeuxiemePlanDuMemeJoueurPourLeRound(): void

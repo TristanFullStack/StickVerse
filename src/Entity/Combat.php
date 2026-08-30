@@ -87,6 +87,12 @@ class Combat
     #[ORM\Column(options: ['default' => false])]
     private bool $prive = false;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $joueur1Pret = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $joueur2Pret = null;
+
     /**
      * @var Collection<int, CombattantCombat>
      */
@@ -289,6 +295,97 @@ class Combat
         return $this;
     }
 
+    public function initialiserPreparation(): static
+    {
+        if (!$this->joueur2 instanceof User) {
+            throw new InvalidArgumentException(
+                'Deux joueurs sont nécessaires pour préparer le combat.'
+            );
+        }
+
+        $this->joueur1Pret = false;
+        $this->joueur2Pret = false;
+        $this->actualiserDate();
+
+        return $this;
+    }
+
+    public function estPreparationInitialisee(): bool
+    {
+        return $this->joueur1Pret !== null
+            && $this->joueur2Pret !== null;
+    }
+
+    public function estPretAJouer(): bool
+    {
+        if (!$this->estPreparationInitialisee()) {
+            return true;
+        }
+
+        return $this->joueur1Pret === true
+            && $this->joueur2Pret === true;
+    }
+
+    public function estEnPreparation(): bool
+    {
+        return $this->estEnCours()
+            && $this->estPreparationInitialisee()
+            && !$this->estPretAJouer();
+    }
+
+    public function estPret(User $joueur): bool
+    {
+        if (!$this->estPreparationInitialisee()) {
+            return $this->estEnCours()
+                && $this->estParticipant($joueur);
+        }
+
+        if ($this->memeJoueur($joueur, $this->joueur1)) {
+            return $this->joueur1Pret === true;
+        }
+
+        if (
+            $this->joueur2 instanceof User
+            && $this->memeJoueur($joueur, $this->joueur2)
+        ) {
+            return $this->joueur2Pret === true;
+        }
+
+        return false;
+    }
+
+    public function confirmerPret(User $joueur): static
+    {
+        if (!$this->estEnCours()) {
+            throw new InvalidArgumentException(
+                'Seul un combat en cours peut être préparé.'
+            );
+        }
+
+        if (!$this->estPreparationInitialisee()) {
+            throw new InvalidArgumentException(
+                'La préparation de ce combat n’est pas initialisée.'
+            );
+        }
+
+        if ($this->memeJoueur($joueur, $this->joueur1)) {
+            $this->joueur1Pret = true;
+        } elseif (
+            $this->joueur2 instanceof User
+            && $this->memeJoueur($joueur, $this->joueur2)
+        ) {
+            $this->joueur2Pret = true;
+        } else {
+            throw new InvalidArgumentException(
+                'Seul un participant peut confirmer sa préparation.'
+            );
+        }
+
+        $this->actualiserDate();
+
+        return $this;
+    }
+
     public function estParticipant(User $joueur): bool
     {
         return $joueur === $this->joueur1
@@ -368,6 +465,16 @@ class Combat
     private function actualiserDate(): void
     {
         $this->dateMiseAJour = new DateTimeImmutable();
+    }
+
+    private function memeJoueur(User $premier, User $second): bool
+    {
+        if ($premier === $second) {
+            return true;
+        }
+
+        return $premier->getId() !== null
+            && $premier->getId() === $second->getId();
     }
 
     /**

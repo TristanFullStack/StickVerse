@@ -430,6 +430,9 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $combatEnCours->getStatut(),
         );
 
+        self::assertTrue($combatEnCours->estEnPreparation());
+        self::assertFalse($combatEnCours->estPretAJouer());
+
         self::assertSame(
             1,
             $combatEnCours->getNumeroRound(),

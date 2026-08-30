@@ -36,6 +36,10 @@
             'app_combat_en_ligne_plan',
             {id: '__combat_id__'}
         ) }}"
+        data-combat-en-ligne-pret-url-modele-value="{{ path(
+            'app_combat_en_ligne_pret',
+            {id: '__combat_id__'}
+        ) }}"
         data-combat-en-ligne-abandon-url-modele-value="{{ path(
             'app_combat_en_ligne_abandon',
             {id: '__combat_id__'}
@@ -213,6 +217,30 @@
                         ></div>
                     </section>
                 </div>
+
+                <section
+                    class="preparation-combat"
+                    data-combat-en-ligne-target="preparationSection"
+                    aria-labelledby="preparation-combat-titre"
+                    hidden
+                >
+                    <h3 id="preparation-combat-titre">
+                        Préparation du combat
+                    </h3>
+
+                    <p
+                        data-combat-en-ligne-target="preparationMessage"
+                        role="status"
+                    ></p>
+
+                    <button
+                        type="button"
+                        data-combat-en-ligne-target="pretButton"
+                        data-action="combat-en-ligne#confirmerPret"
+                    >
+                        Je suis prêt
+                    </button>
+                </section>
 
                 <section
                     data-combat-en-ligne-target="resultatRound"
