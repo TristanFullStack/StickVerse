@@ -15,6 +15,7 @@ export default class extends Controller {
         'finCombat',
         'finCombatTitre',
         'finCombatMessage',
+        'finCombatRecompense',
         'rapportFinalLink',
         'resultatRound',
         'resultatRoundNumero',
@@ -642,6 +643,8 @@ export default class extends Controller {
         if (!estTermine) {
             this.finCombatTarget.hidden = true;
             this.finCombatTarget.dataset.resultat = '';
+            this.finCombatRecompenseTarget.hidden = true;
+            this.finCombatRecompenseTarget.textContent = '';
             this.rapportFinalLinkTarget.hidden = true;
             this.rapportFinalLinkTarget.removeAttribute('href');
 
@@ -699,6 +702,12 @@ export default class extends Controller {
 
         this.finCombatTitreTarget.textContent = titre;
         this.finCombatMessageTarget.textContent = message;
+        const recompensePieces = Number(this.combat.recompensePieces ?? 0);
+        this.finCombatRecompenseTarget.textContent =
+            recompensePieces > 0
+                ? `Récompense : ${recompensePieces} pièce${recompensePieces > 1 ? 's' : ''}.`
+                : 'Aucune pièce gagnée.';
+        this.finCombatRecompenseTarget.hidden = false;
         this.finCombatTarget.dataset.resultat = resultat;
         this.rapportFinalLinkTarget.hidden =
             this.combat.statut === 'annule';

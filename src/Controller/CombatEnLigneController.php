@@ -18,6 +18,7 @@ use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ExpirationPlanCombatEnLigneService;
 use App\Service\ExpirationPreparationCombatEnLigneService;
 use App\Service\PreparationCombatEnLigneService;
+use App\Service\RecompenseCombatService;
 use App\Service\RecuperationRoundCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
@@ -56,6 +57,7 @@ final class CombatEnLigneController extends AbstractController
         ExpirationPreparationCombatEnLigneService $expirationPreparationService,
         RecuperationRoundCombatEnLigneService $recuperationRoundService,
         ResolutionRoundCombatEnLigneService $resolutionRoundService,
+        RecompenseCombatService $recompenseService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -146,6 +148,10 @@ final class CombatEnLigneController extends AbstractController
             'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),
+            'recompensePieces' => $recompenseService->montantPour(
+                $combat,
+                $utilisateur,
+            ),
             'dernierRound' => $combat->getDernierRoundResolu() !== null
                 ? [
                     'numero' => $combat->getDernierRoundResolu(),
@@ -359,6 +365,7 @@ final class CombatEnLigneController extends AbstractController
         SoumissionPlanCombatService $soumissionService,
         ResolutionRoundCombatEnLigneService $resolutionService,
         ExpirationPlanCombatEnLigneService $expirationPlanService,
+        RecompenseCombatService $recompenseService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::JOUER,
@@ -467,6 +474,10 @@ final class CombatEnLigneController extends AbstractController
             'statut' => $combat->getStatut(),
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),
+            'recompensePieces' => $recompenseService->montantPour(
+                $combat,
+                $utilisateur,
+            ),
             'resultats' => $resultats,
         ]);
     }
@@ -481,6 +492,7 @@ final class CombatEnLigneController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         AbandonCombatService $abandonService,
+        RecompenseCombatService $recompenseService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::JOUER,
@@ -542,6 +554,10 @@ final class CombatEnLigneController extends AbstractController
             'gagnantId' => $combatAbandonne
                 ->getGagnant()
                 ?->getId(),
+            'recompensePieces' => $recompenseService->montantPour(
+                $combatAbandonne,
+                $utilisateur,
+            ),
         ]);
     }
 

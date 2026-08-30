@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\CombattantCombatRepository;
 use App\Repository\ResultatRoundCombatRepository;
 use App\Security\Voter\CombatVoter;
+use App\Service\RecompenseCombatService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -36,6 +37,7 @@ final class InterfaceCombatEnLigneController extends AbstractController
         Combat $combat,
         CombattantCombatRepository $combattantRepository,
         ResultatRoundCombatRepository $resultatRoundRepository,
+        RecompenseCombatService $recompenseService,
     ): Response {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -80,6 +82,10 @@ final class InterfaceCombatEnLigneController extends AbstractController
                 'adversaire' => $adversaire,
                 'resultatCode' => $resultatCode,
                 'resultatLibelle' => $resultatLibelle,
+                'recompensePieces' => $recompenseService->montantPour(
+                    $combat,
+                    $utilisateur,
+                ),
                 'combattantsMoi' => $combattantRepository
                     ->trouverPourCombatEtJoueur($combat, $utilisateur),
                 'combattantsAdversaire' => $combattantRepository

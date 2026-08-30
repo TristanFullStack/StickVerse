@@ -11,6 +11,11 @@ final class DeterminationFinCombatService
 {
     public const NOMBRE_ROUNDS_SANS_DEGAT_AVANT_MATCH_NUL = 3;
 
+    public function __construct(
+        private readonly ?RecompenseCombatService $recompenseService = null,
+    ) {
+    }
+
     /**
      * @param list<CombattantCombat> $combattantsJoueur1
      * @param list<CombattantCombat> $combattantsJoueur2
@@ -119,6 +124,8 @@ final class DeterminationFinCombatService
     ): bool {
         $combat->setGagnant($gagnant);
         $combat->setStatut(Combat::STATUT_TERMINE);
+
+        $this->recompenseService?->attribuerSiNecessaire($combat);
 
         return true;
     }

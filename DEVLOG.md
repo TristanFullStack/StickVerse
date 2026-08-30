@@ -6338,7 +6338,57 @@ La prochaine étape pourra attribuer des récompenses en pièces à la fin des c
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J70 — Récompenser les joueurs après les combats
 
+### Objectif
+
+J70 introduit les récompenses en pièces virtuelles à la fin des combats en ligne.
+
+### Barème
+
+- Victoire classique : 100 pièces.
+- Défaite classique : 25 pièces de participation.
+- Match nul : 50 pièces pour chaque joueur.
+- Victoire par abandon ou forfait : 100 pièces pour le gagnant.
+- Joueur ayant abandonné ou déclaré forfait : aucune récompense.
+
+### Sécurisation
+
+- Une récompense ne peut être attribuée qu’une seule fois.
+- Le combat conserve un indicateur de distribution afin d’éviter les doubles gains après actualisation.
+- Les fins normales, abandons et forfaits utilisent le même service de récompense.
+- Les expirations traitées automatiquement par le serveur attribuent également les gains prévus.
+- Les combats annulés ne donnent aucune pièce.
+- Les états incohérents, comme un forfait sans gagnant, sont refusés.
+
+### Interface
+
+- Le gain est affiché dans la zone de fin du combat.
+- Le gain apparaît également dans le rapport définitif.
+- Les réponses JSON du combat indiquent le nombre de pièces gagnées.
+- Le portefeuille est mis à jour automatiquement après la fin du combat.
+
+### Base de données
+
+Une migration ajoute le suivi de distribution des récompenses sur chaque combat.
+
+### Vérifications automatiques
+
+- Calcul des récompenses de victoire, défaite et match nul.
+- Récompense des forfaits et abandons.
+- Protection contre une deuxième attribution.
+- Absence de gain pour un combat actif ou annulé.
+- Affichage des récompenses dans l’interface et les rapports.
+- Suite complète validée : 184 tests et 1 659 assertions.
+- Schéma Doctrine synchronisé.
+- Conteneur Symfony valide.
+- Syntaxe JavaScript et Twig validée.
+
+### Résultat
+
+Les combats en ligne alimentent maintenant l’économie du jeu. Chaque résultat donne une récompense cohérente, visible par le joueur et protégée contre les doublons.
+
+La prochaine étape pourra ajouter un historique des mouvements de pièces afin de détailler les gains et les dépenses du joueur.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

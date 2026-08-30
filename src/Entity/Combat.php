@@ -94,6 +94,9 @@ class Combat
     #[ORM\Column(nullable: true)]
     private ?bool $joueur2Pret = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $recompenseAttribuee = false;
+
     /**
      * @var Collection<int, CombattantCombat>
      */
@@ -438,6 +441,24 @@ class Combat
     public function estForfait(): bool
     {
         return $this->statut === self::STATUT_FORFAIT;
+    }
+
+    public function estAbandonne(): bool
+    {
+        return $this->statut === self::STATUT_ABANDONNE;
+    }
+
+    public function estRecompenseAttribuee(): bool
+    {
+        return $this->recompenseAttribuee;
+    }
+
+    public function marquerRecompenseAttribuee(): static
+    {
+        $this->recompenseAttribuee = true;
+        $this->actualiserDate();
+
+        return $this;
     }
 
     public function getDateExpirationAttente(): DateTimeImmutable

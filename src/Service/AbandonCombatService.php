@@ -13,6 +13,7 @@ final class AbandonCombatService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CombatRepository $combatRepository,
+        private readonly ?RecompenseCombatService $recompenseService = null,
     ) {
     }
 
@@ -63,6 +64,8 @@ final class AbandonCombatService
                 $combat->setStatut(
                     Combat::STATUT_ABANDONNE
                 );
+
+                $this->recompenseService?->attribuerSiNecessaire($combat);
 
                 return $combat;
             }

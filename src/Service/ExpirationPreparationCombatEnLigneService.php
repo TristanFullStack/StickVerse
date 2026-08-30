@@ -18,6 +18,7 @@ final class ExpirationPreparationCombatEnLigneService
         private readonly EntityManagerInterface $entityManager,
         private readonly CombatRepository $combatRepository,
         private readonly ClockInterface $clock,
+        private readonly ?RecompenseCombatService $recompenseService = null,
     ) {
     }
 
@@ -55,6 +56,8 @@ final class ExpirationPreparationCombatEnLigneService
                         $joueur1Pret ? $joueur1 : $joueur2
                     );
                     $combat->setStatut(Combat::STATUT_FORFAIT);
+
+                    $this->recompenseService?->attribuerSiNecessaire($combat);
 
                     return self::RESULTAT_FORFAIT;
                 }

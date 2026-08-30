@@ -156,6 +156,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="finCombatMessage"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="finCombatRecompense"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="rapportFinalLink"]'
         );
         self::assertSelectorExists(
@@ -378,6 +381,10 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         self::assertSelectorTextContains(
             '.rapport-resultat',
             'Victoire',
+        );
+        self::assertSelectorTextContains(
+            '#rapport-combat > header',
+            'Récompense : 100 pièces',
         );
         self::assertSelectorTextContains(
             '#rapport-combat > header',

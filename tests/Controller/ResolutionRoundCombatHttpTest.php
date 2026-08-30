@@ -710,6 +710,10 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         $this->client->request('GET', '/combats/'.$combatId.'/rapport');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.rapport-resultat', 'Match nul');
+        self::assertSelectorTextContains(
+            '#rapport-combat > header',
+            'Récompense : 50 pièces',
+        );
         self::assertSelectorCount(2, '.rapport-round');
 
         $this->client->loginUser($joueur2);

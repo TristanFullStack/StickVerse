@@ -22,6 +22,9 @@
                 {{ rounds|length }} round{{ rounds|length > 1 ? 's' : '' }} joué{{ rounds|length > 1 ? 's' : '' }} ·
                 {{ combat.dateMiseAJour|date('d/m/Y H:i') }}
             </p>
+            <p>
+                Récompense : <strong>{{ recompensePieces }} pièce{{ recompensePieces > 1 ? 's' : '' }}</strong>
+            </p>
         </header>
 
         <div class="rapport-equipes">

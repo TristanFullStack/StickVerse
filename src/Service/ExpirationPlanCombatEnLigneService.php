@@ -20,6 +20,7 @@ final class ExpirationPlanCombatEnLigneService
         private readonly CombatRepository $combatRepository,
         private readonly PlanRoundCombatRepository $planRepository,
         private readonly ClockInterface $clock,
+        private readonly ?RecompenseCombatService $recompenseService = null,
     ) {
     }
 
@@ -64,6 +65,8 @@ final class ExpirationPlanCombatEnLigneService
 
                 $combat->setGagnant($plan->getJoueur());
                 $combat->setStatut(Combat::STATUT_FORFAIT);
+
+                $this->recompenseService?->attribuerSiNecessaire($combat);
 
                 return true;
             }
