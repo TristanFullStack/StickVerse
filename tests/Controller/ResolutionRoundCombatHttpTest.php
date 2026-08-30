@@ -4,9 +4,11 @@ namespace App\Tests\Controller;
 
 use App\Entity\Combat;
 use App\Entity\CombattantCombat;
+use App\Entity\PlanRoundCombat;
 use App\Entity\ResultatRoundCombat;
 use App\Entity\Stickman;
 use App\Entity\User;
+use App\Model\PlanCombat;
 use App\Repository\CombattantCombatRepository;
 use App\Repository\ResultatRoundCombatRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -801,6 +803,95 @@ final class ResolutionRoundCombatHttpTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.rapport-resultat', 'Match nul');
         self::assertSelectorCount(3, '.rapport-round');
+    }
+
+    public function testActualisationRecupereUnRoundPretUneSeuleFois(): void
+    {
+        [
+            $combat,
+            $joueur1,
+            $joueur2,
+        ] = $this->creerCombatAvecSnapshots();
+
+        $combatId = $combat->getId();
+        self::assertNotNull($combatId);
+
+        $plan = new PlanCombat('A', 'B', 'C', 'D');
+
+        $this->entityManager->persist(
+            new PlanRoundCombat($combat, $joueur1, $plan)
+        );
+        $this->entityManager->persist(
+            new PlanRoundCombat($combat, $joueur2, $plan)
+        );
+        $this->entityManager->flush();
+
+        self::assertSame(1, $combat->getNumeroRound());
+        self::assertNull($combat->getDernierRoundResolu());
+
+        $this->client->loginUser($joueur1);
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatRecupere = $this->lireReponseJson();
+
+        self::assertTrue($etatRecupere['resolutionAutomatique']);
+        self::assertSame(2, $etatRecupere['numeroRound']);
+        self::assertSame(
+            1,
+            $etatRecupere['dernierRound']['numero'],
+        );
+        self::assertCount(1, $etatRecupere['historiqueRounds']);
+        self::assertFalse($etatRecupere['planSoumis']);
+        self::assertFalse($etatRecupere['adversairePret']);
+
+        $pvApresResolution = array_column(
+            $etatRecupere['moi']['combattants'],
+            'pvActuels',
+            'slot',
+        );
+
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $etatSecondeActualisation = $this->lireReponseJson();
+
+        self::assertFalse(
+            $etatSecondeActualisation['resolutionAutomatique']
+        );
+        self::assertSame(2, $etatSecondeActualisation['numeroRound']);
+        self::assertCount(
+            1,
+            $etatSecondeActualisation['historiqueRounds'],
+        );
+        self::assertSame(
+            $pvApresResolution,
+            array_column(
+                $etatSecondeActualisation['moi']['combattants'],
+                'pvActuels',
+                'slot',
+            ),
+        );
+
+        $resultatRepository = $this->entityManager
+            ->getRepository(ResultatRoundCombat::class);
+
+        self::assertInstanceOf(
+            ResultatRoundCombatRepository::class,
+            $resultatRepository,
+        );
+        self::assertCount(
+            1,
+            $resultatRepository->trouverPourCombat($combat),
+        );
     }
 
     /**

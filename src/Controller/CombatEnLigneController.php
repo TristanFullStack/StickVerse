@@ -18,6 +18,7 @@ use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ExpirationPlanCombatEnLigneService;
 use App\Service\ExpirationPreparationCombatEnLigneService;
 use App\Service\PreparationCombatEnLigneService;
+use App\Service\RecuperationRoundCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
 use InvalidArgumentException;
@@ -53,6 +54,8 @@ final class CombatEnLigneController extends AbstractController
         ExpirationCombatEnAttenteService $expirationService,
         ExpirationPlanCombatEnLigneService $expirationPlanService,
         ExpirationPreparationCombatEnLigneService $expirationPreparationService,
+        RecuperationRoundCombatEnLigneService $recuperationRoundService,
+        ResolutionRoundCombatEnLigneService $resolutionRoundService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -78,6 +81,16 @@ final class CombatEnLigneController extends AbstractController
             === ExpirationPreparationCombatEnLigneService::RESULTAT_FORFAIT;
         $annulationPreparationAutomatique = $expirationPreparation
             === ExpirationPreparationCombatEnLigneService::RESULTAT_ANNULE;
+        $resolutionAutomatique = false;
+
+        if ($recuperationRoundService->doitRecuperer($combat)) {
+            $combatId = $combat->getId();
+
+            if ($combatId !== null) {
+                $resolutionAutomatique = $resolutionRoundService
+                    ->resoudreSiPret($combatId) !== null;
+            }
+        }
 
         $adversaire = $combat->getJoueur1() === $utilisateur
             ? $combat->getJoueur2()
@@ -129,6 +142,7 @@ final class CombatEnLigneController extends AbstractController
                 $forfaitPreparationAutomatique,
             'annulationPreparationAutomatique' =>
                 $annulationPreparationAutomatique,
+            'resolutionAutomatique' => $resolutionAutomatique,
             'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
             'gagnantId' => $combat->getGagnant()?->getId(),

@@ -5239,7 +5239,91 @@ Un joueur ne peut plus être engagé dans deux combats actifs à cause de requê
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J60 — Rendre la résolution des rounds auto-récupérable
 
+### Objectif
+
+J60 empêche un combat de rester bloqué lorsque les deux plans d’un round ont bien été enregistrés, mais que la requête s’est interrompue avant la résolution.
+
+### Problème identifié
+
+L’enregistrement des plans et la résolution sont deux opérations successives.
+
+Une interruption exceptionnelle du serveur entre ces opérations pouvait laisser les deux plans enregistrés sans déclencher la résolution du round.
+
+Les joueurs restaient alors en attente malgré la présence de leurs deux plans.
+
+### Solution mise en place
+
+Un service dédié détecte maintenant les rounds réunissant toutes les conditions suivantes :
+
+- le combat est en cours ;
+- les deux joueurs ont confirmé leur préparation ;
+- le combat possède un identifiant valide ;
+- deux plans sont enregistrés pour le round courant.
+
+Lors de l’actualisation de l’état du combat, ce service demande automatiquement la résolution du round lorsqu’elle est nécessaire.
+
+La réponse JSON indique cette récupération avec la propriété `resolutionAutomatique`.
+
+### Sécurité et concurrence
+
+La récupération réutilise le service normal de résolution des rounds.
+
+Ce service verrouille déjà le combat en écriture avant toute modification. Plusieurs actualisations simultanées ne peuvent donc pas résoudre deux fois le même round.
+
+Après la première résolution :
+
+- le résultat est enregistré une seule fois ;
+- les points de vie sont modifiés une seule fois ;
+- le combat passe au round suivant lorsqu’il continue ;
+- les actualisations suivantes ne trouvent plus deux plans pour le round courant.
+
+La contrainte d’unicité sur l’historique des résultats reste une protection supplémentaire au niveau de MySQL.
+
+### Tests ajoutés
+
+Un test unitaire vérifie que la récupération :
+
+- détecte un round possédant deux plans ;
+- ignore un round qui attend encore le deuxième plan ;
+- ignore un combat qui n’est pas jouable.
+
+Un test HTTP reproduit l’interruption en enregistrant directement les deux plans sans appeler la résolution.
+
+Il vérifie ensuite que :
+
+- la première actualisation récupère et résout le round ;
+- le numéro du round progresse ;
+- l’historique contient exactement un résultat ;
+- les plans du nouveau round sont vides ;
+- une seconde actualisation ne résout rien ;
+- les points de vie ne sont pas modifiés une seconde fois.
+
+### Validation
+
+- syntaxe PHP valide ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- bases de développement et de test synchronisées ;
+- 135 tests réussis ;
+- 1265 assertions réussies ;
+- aucune notice PHPUnit ;
+- aucune migration nécessaire.
+
+### Fichiers concernés
+
+- `src/Controller/CombatEnLigneController.php`
+- `src/Service/RecuperationRoundCombatEnLigneService.php`
+- `tests/Controller/CombatEnLigneControllerTest.php`
+- `tests/Controller/ResolutionRoundCombatHttpTest.php`
+- `tests/Service/RecuperationRoundCombatEnLigneServiceTest.php`
+
+### Résultat
+
+Un incident temporaire entre l’enregistrement du deuxième plan et la résolution ne peut plus bloquer définitivement le combat.
+
+L’actualisation automatique remet désormais le round dans son déroulement normal sans dupliquer les dégâts ni l’historique.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

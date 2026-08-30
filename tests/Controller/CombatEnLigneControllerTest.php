@@ -122,6 +122,7 @@ final class CombatEnLigneControllerTest extends WebTestCase
         self::assertFalse($donnees['forfaitAutomatique']);
         self::assertFalse($donnees['forfaitPreparationAutomatique']);
         self::assertFalse($donnees['annulationPreparationAutomatique']);
+        self::assertFalse($donnees['resolutionAutomatique']);
         self::assertNull($donnees['expirationPlan']);
 
         self::assertSame(
