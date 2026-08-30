@@ -105,4 +105,19 @@
             </table>
         {% endif %}
     </section>
+
+    <section class="profile-section" aria-labelledby="recompense-quotidienne-titre">
+        <h2 id="recompense-quotidienne-titre">Récompense quotidienne</h2>
+        <p>Récupère {{ constant('App\\Service\\RecompenseQuotidienneService::MONTANT') }} pièces une fois par jour.</p>
+        {% if profil.recompenseQuotidienneDisponible %}
+            <form method="post" action="{{ path('app_recompense_quotidienne') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('recompense-quotidienne') }}">
+                <button type="submit" data-profile-recompense-quotidienne>
+                    Récupérer ma récompense
+                </button>
+            </form>
+        {% else %}
+            <p data-profile-recompense-indisponible>Récompense déjà récupérée aujourd’hui.</p>
+        {% endif %}
+    </section>
 {% endblock %}

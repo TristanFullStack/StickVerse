@@ -6,6 +6,7 @@ use App\Entity\Combat;
 use App\Entity\MouvementPieces;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use DateTimeImmutable;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -179,5 +180,53 @@ final class ProfilControllerTest extends WebTestCase
             'Administrateur',
         );
         self::assertSelectorExists('[data-navigation-admin]');
+    }
+
+    public function testReclameLaRecompenseQuotidienne(): void
+    {
+        $joueur = (new User())
+            ->setEmail('profil-quotidien@example.com')
+            ->setPassword('mot-de-passe-test');
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($joueur);
+        $crawler = $this->client->request('GET', '/profil');
+        $form = $crawler->filter('[data-profile-recompense-quotidienne]')->form();
+
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('/profil');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('[data-profile-pieces]', '1025 pièces');
+        self::assertSelectorTextContains(
+            '[data-profile-mouvements]',
+            'Récompense quotidienne',
+        );
+        self::assertSelectorTextContains(
+            '.alert-success',
+            'Récompense quotidienne récupérée',
+        );
+    }
+
+    public function testNaffichePasDeuxFoisLaRecompenseLeMemeJour(): void
+    {
+        $joueur = (new User())
+            ->setEmail('profil-quotidien-deja@example.com')
+            ->setPassword('mot-de-passe-test')
+            ->setDateDerniereRecompenseQuotidienne(new DateTimeImmutable());
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($joueur);
+        $this->client->request('GET', '/profil');
+
+        self::assertSelectorNotExists('[data-profile-recompense-quotidienne]');
+        self::assertSelectorTextContains(
+            '[data-profile-recompense-indisponible]',
+            'Récompense déjà récupérée aujourd’hui',
+        );
     }
 }

@@ -34,6 +34,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['unsigned' => true, 'default' => self::PIECES_DEPART])]
     private int $pieces = self::PIECES_DEPART;
 
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $dateDerniereRecompenseQuotidienne = null;
+
     /**
      * @var list<string> The user roles
      */
@@ -108,6 +111,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPieces(): int
     {
         return $this->pieces;
+    }
+
+    public function getDateDerniereRecompenseQuotidienne(): ?\DateTimeImmutable
+    {
+        return $this->dateDerniereRecompenseQuotidienne;
+    }
+
+    public function setDateDerniereRecompenseQuotidienne(
+        ?\DateTimeImmutable $date,
+    ): static {
+        $this->dateDerniereRecompenseQuotidienne = $date;
+
+        return $this;
     }
 
     public function crediterPieces(int $montant): static

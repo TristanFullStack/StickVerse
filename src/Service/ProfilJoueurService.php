@@ -16,6 +16,7 @@ final readonly class ProfilJoueurService
         private EquipeRepository $equipeRepository,
         private CombatRepository $combatRepository,
         private ?MouvementPiecesRepository $mouvementPiecesRepository = null,
+        private ?RecompenseQuotidienneService $recompenseQuotidienneService = null,
     ) {
     }
 
@@ -30,6 +31,7 @@ final readonly class ProfilJoueurService
      *         matchsNuls: int
      *     },
      *     mouvementsPieces: list<\App\Entity\MouvementPieces>
+     *     recompenseQuotidienneDisponible: bool
      * }
      */
     public function construire(User $joueur): array
@@ -46,6 +48,9 @@ final readonly class ProfilJoueurService
             'mouvementsPieces' => $this->mouvementPiecesRepository?->trouverPourJoueur(
                 $joueur,
             ) ?? [],
+            'recompenseQuotidienneDisponible' => $this->recompenseQuotidienneService?->estDisponible(
+                $joueur,
+            ) ?? true,
         ];
     }
 }

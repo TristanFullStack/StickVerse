@@ -6464,7 +6464,47 @@ La prochaine étape pourra ajouter des récompenses quotidiennes ou des objectif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J72 — Ajouter la récompense quotidienne
 
+### Objectif
+
+J72 donne au joueur une petite source régulière de pièces afin d’encourager les retours quotidiens dans StickVerse.
+
+### Fonctionnalités ajoutées
+
+- Une récompense quotidienne de 25 pièces.
+- Une seule réclamation possible par jour calendaire.
+- Une protection transactionnelle avec verrou d’écriture sur le joueur.
+- Les doubles clics et requêtes simultanées ne créditent pas deux fois la récompense.
+- Le joueur peut réclamer la récompense depuis son profil.
+- Le profil indique si la récompense du jour est déjà récupérée.
+
+### Historique des pièces
+
+Chaque récompense quotidienne crée un mouvement positif de type `recompense_quotidienne` avec le libellé « Récompense quotidienne ».
+
+L’historique distingue maintenant les achats de caisses, les récompenses de combats et les récompenses quotidiennes.
+
+### Base de données
+
+Une migration ajoute la date de dernière récompense quotidienne sur le compte joueur.
+
+### Vérifications automatiques
+
+- Réclamation une fois par jour.
+- Nouvelle réclamation autorisée le jour suivant.
+- Enregistrement du mouvement positif.
+- Affichage du formulaire sur le profil.
+- Protection CSRF et accès réservé aux joueurs connectés.
+- Schéma Doctrine synchronisé.
+- Conteneur Symfony valide.
+- Suite complète validée : 195 tests et 1 701 assertions.
+
+### Résultat
+
+Le joueur dispose maintenant d’une récompense quotidienne simple, sécurisée et visible dans son historique de pièces.
+
+La prochaine étape pourra ajouter des objectifs de progression donnant également des pièces.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

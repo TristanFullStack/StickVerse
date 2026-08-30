@@ -13,10 +13,12 @@ class MouvementPieces
 {
     public const TYPE_ACHAT_CAISSE = 'achat_caisse';
     public const TYPE_RECOMPENSE_COMBAT = 'recompense_combat';
+    public const TYPE_RECOMPENSE_QUOTIDIENNE = 'recompense_quotidienne';
 
     private const TYPES_VALIDES = [
         self::TYPE_ACHAT_CAISSE,
         self::TYPE_RECOMPENSE_COMBAT,
+        self::TYPE_RECOMPENSE_QUOTIDIENNE,
     ];
 
     #[ORM\Id]

@@ -54,4 +54,19 @@ final class MouvementPiecesTest extends TestCase
             'Test',
         );
     }
+
+    public function testAccepteLaRecompenseQuotidienne(): void
+    {
+        $mouvement = new MouvementPieces(
+            new User(),
+            25,
+            MouvementPieces::TYPE_RECOMPENSE_QUOTIDIENNE,
+            'Récompense quotidienne',
+        );
+
+        self::assertSame(
+            MouvementPieces::TYPE_RECOMPENSE_QUOTIDIENNE,
+            $mouvement->getType(),
+        );
+    }
 }
