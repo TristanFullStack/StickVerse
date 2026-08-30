@@ -279,6 +279,7 @@ final class SalonCombatEnLigneController extends AbstractController
             [
                 'etat' => 'combat_cree',
                 'combatId' => $combat->getId(),
+                'codeInvitation' => $combat->getCodeInvitation(),
                 'statut' => $combat->getStatut(),
                 'numeroRound' => $combat
                     ->getNumeroRound(),
@@ -331,6 +332,142 @@ final class SalonCombatEnLigneController extends AbstractController
             );
         }
 
+        return $this->traiterJonction(
+            $id,
+            $donnees,
+            $utilisateur,
+            $equipeRepository,
+            $rejoindreService,
+        );
+    }
+
+    #[Route(
+        '/rejoindre-par-code',
+        name: 'rejoindre_par_code',
+        methods: ['POST']
+    )]
+    public function rejoindreParCode(
+        Request $request,
+        CombatRepository $combatRepository,
+        EquipeRepository $equipeRepository,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        RejoindreCombatEnLigneService $rejoindreService,
+    ): JsonResponse {
+        $utilisateur = $this->getUser();
+
+        if (!$utilisateur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (
+            !$this->csrfEstValide(
+                'rejoindre',
+                $request,
+                $csrfTokenManager,
+            )
+        ) {
+            return $this->json(
+                [
+                    'erreur' => 'Le jeton CSRF de jonction est invalide.',
+                ],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
+
+        try {
+            $donnees = $request->toArray();
+            $code = $this->lireCodeInvitation($donnees);
+        } catch (JsonException) {
+            return $this->json(
+                [
+                    'erreur' => 'Le contenu JSON est invalide.',
+                ],
+                Response::HTTP_BAD_REQUEST,
+            );
+        } catch (InvalidArgumentException $exception) {
+            return $this->json(
+                [
+                    'erreur' => $exception->getMessage(),
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        $combat = $combatRepository->trouverParCodeInvitation($code);
+        $combatId = $combat?->getId();
+
+        if ($combatId === null) {
+            return $this->json(
+                [
+                    'erreur' => 'Aucun combat ne correspond à ce code.',
+                ],
+                Response::HTTP_NOT_FOUND,
+            );
+        }
+
+        return $this->traiterJonction(
+            $combatId,
+            $donnees,
+            $utilisateur,
+            $equipeRepository,
+            $rejoindreService,
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $donnees
+     */
+    private function lireEquipeId(
+        array $donnees,
+    ): int {
+        $equipeId = $donnees['equipeId'] ?? null;
+
+        if (
+            !is_int($equipeId)
+            || $equipeId <= 0
+        ) {
+            throw new InvalidArgumentException(
+                'L’identifiant de l’équipe est invalide.'
+            );
+        }
+
+        return $equipeId;
+    }
+
+    /**
+     * @param array<string, mixed> $donnees
+     */
+    private function lireCodeInvitation(array $donnees): string
+    {
+        $code = $donnees['code'] ?? null;
+
+        if (!is_string($code)) {
+            throw new InvalidArgumentException(
+                'Le code d’invitation est invalide.'
+            );
+        }
+
+        $code = strtoupper(trim($code));
+
+        if (preg_match('/^SV-[A-F0-9]{6}$/', $code) !== 1) {
+            throw new InvalidArgumentException(
+                'Le code d’invitation doit respecter le format SV-XXXXXX.'
+            );
+        }
+
+        return $code;
+    }
+
+    /**
+     * @param array<string, mixed> $donnees
+     */
+    private function traiterJonction(
+        int $combatId,
+        array $donnees,
+        User $utilisateur,
+        EquipeRepository $equipeRepository,
+        RejoindreCombatEnLigneService $rejoindreService,
+    ): JsonResponse {
         try {
             $equipeId = $this->lireEquipeId($donnees);
         } catch (InvalidArgumentException $exception) {
@@ -358,7 +495,7 @@ final class SalonCombatEnLigneController extends AbstractController
 
         try {
             $combat = $rejoindreService->rejoindre(
-                $id,
+                $combatId,
                 $utilisateur,
                 $equipe,
             );
@@ -377,26 +514,6 @@ final class SalonCombatEnLigneController extends AbstractController
             'statut' => $combat->getStatut(),
             'numeroRound' => $combat->getNumeroRound(),
         ]);
-    }
-
-    /**
-     * @param array<string, mixed> $donnees
-     */
-    private function lireEquipeId(
-        array $donnees,
-    ): int {
-        $equipeId = $donnees['equipeId'] ?? null;
-
-        if (
-            !is_int($equipeId)
-            || $equipeId <= 0
-        ) {
-            throw new InvalidArgumentException(
-                'L’identifiant de l’équipe est invalide.'
-            );
-        }
-
-        return $equipeId;
     }
 
     /**

@@ -22,6 +22,8 @@ export default class extends Controller {
         'historiqueRounds',
         'historiqueRoundsListe',
         'attenteAdversaire',
+        'invitationCombat',
+        'invitationCode',
         'participants',
         'moiNom',
         'moiCombattants',
@@ -41,6 +43,7 @@ export default class extends Controller {
         'creerButton',
         'aucunCombat',
         'combatsDisponibles',
+        'codeInvitationInput',
         'aucunHistoriqueCombat',
         'historiqueCombats',
     ];
@@ -49,6 +52,7 @@ export default class extends Controller {
         salonUrl: String,
         creerUrl: String,
         rejoindreUrlModele: String,
+        rejoindreParCodeUrl: String,
         combatUrlModele: String,
         planUrlModele: String,
         abandonUrlModele: String,
@@ -268,6 +272,61 @@ export default class extends Controller {
         });
     }
 
+    async rejoindreParCode(event) {
+        event.preventDefault();
+
+        const equipeId = this.equipeSelectionneeId();
+        const code = this.codeInvitationInputTarget.value
+            .trim()
+            .toUpperCase();
+
+        if (equipeId === null) {
+            this.afficherErreur(
+                'Sélectionne une équipe avant de rejoindre un combat.'
+            );
+
+            return;
+        }
+
+        if (!/^SV-[A-F0-9]{6}$/.test(code)) {
+            this.afficherErreur(
+                'Le code doit respecter le format SV-XXXXXX.'
+            );
+
+            return;
+        }
+
+        await this.executerAction(async () => {
+            await this.envoyerJson(
+                this.rejoindreParCodeUrlValue,
+                { equipeId, code },
+                this.salon?.csrf?.rejoindre,
+            );
+
+            this.codeInvitationInputTarget.value = '';
+            await this.chargerSalon();
+        });
+    }
+
+    async copierCodeInvitation() {
+        const code = this.combat?.codeInvitation;
+
+        if (typeof code !== 'string' || code === '') {
+            this.afficherErreur('Aucun code d’invitation n’est disponible.');
+
+            return;
+        }
+
+        try {
+            await window.navigator.clipboard.writeText(code);
+            this.afficherInformation(`Code ${code} copié.`);
+        } catch {
+            this.afficherErreur(
+                `Impossible de copier automatiquement. Code : ${code}`
+            );
+        }
+    }
+
     async chargerSalon() {
         this.requeteEnCours?.abort();
 
@@ -435,6 +494,17 @@ export default class extends Controller {
 
         const adversairePresent = this.combat.adversaire !== null;
         this.attenteAdversaireTarget.hidden = adversairePresent;
+        const codeInvitation = typeof this.combat.codeInvitation === 'string'
+            ? this.combat.codeInvitation
+            : '';
+        const afficherInvitation = this.combat.statut === 'en_attente'
+            && !adversairePresent
+            && codeInvitation !== '';
+
+        this.invitationCombatTarget.hidden = !afficherInvitation;
+        this.invitationCodeTarget.textContent = afficherInvitation
+            ? codeInvitation
+            : '';
 
         this.afficherParticipant(
             this.combat.adversaire,

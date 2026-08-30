@@ -246,7 +246,13 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $creation['combatId']
         );
 
+        self::assertMatchesRegularExpression(
+            '/^SV-[A-F0-9]{6}$/',
+            $creation['codeInvitation'],
+        );
+
         $combatId = $creation['combatId'];
+        $codeInvitation = $creation['codeInvitation'];
 
         $combatCree = $this->combatRepository->find(
             $combatId
@@ -266,9 +272,27 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $combatCree->getJoueur2()
         );
 
+        self::assertSame(
+            $codeInvitation,
+            $combatCree->getCodeInvitation(),
+        );
+
         self::assertCount(
             4,
             $combatCree->getCombattants(),
+        );
+
+        $this->client->request(
+            'GET',
+            '/combat-en-ligne/'.$combatId,
+        );
+        self::assertResponseIsSuccessful();
+
+        $etatCombatCree = $this->lireReponseJson();
+
+        self::assertSame(
+            $codeInvitation,
+            $etatCombatCree['codeInvitation'],
         );
 
         /*
@@ -349,11 +373,10 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
          */
         $this->client->jsonRequest(
             'POST',
-            '/salon-combat-en-ligne/'
-            .$combatId
-            .'/rejoindre',
+            '/salon-combat-en-ligne/rejoindre-par-code',
             [
                 'equipeId' => $equipeJoueur2Id,
+                'code' => strtolower($codeInvitation),
             ],
             [
                 'HTTP_X_CSRF_TOKEN' =>

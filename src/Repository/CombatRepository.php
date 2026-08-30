@@ -28,6 +28,20 @@ class CombatRepository extends ServiceEntityRepository
         );
     }
 
+    public function trouverParCodeInvitation(string $code): ?Combat
+    {
+        return $this->findOneBy([
+            'codeInvitation' => strtoupper(trim($code)),
+        ]);
+    }
+
+    public function codeInvitationExiste(string $code): bool
+    {
+        return $this->count([
+            'codeInvitation' => strtoupper(trim($code)),
+        ]) > 0;
+    }
+
     public function trouverActifPourJoueur(
         User $joueur,
     ): ?Combat {

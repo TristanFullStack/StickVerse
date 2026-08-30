@@ -25,6 +25,9 @@
             'app_salon_combat_en_ligne_rejoindre',
             {id: '__combat_id__'}
         ) }}"
+        data-combat-en-ligne-rejoindre-par-code-url-value="{{ path(
+            'app_salon_combat_en_ligne_rejoindre_par_code'
+        ) }}"
         data-combat-en-ligne-combat-url-modele-value="{{ path(
             'app_combat_en_ligne_etat',
             {id: '__combat_id__'}
@@ -155,6 +158,31 @@
                 <p data-combat-en-ligne-target="attenteAdversaire" hidden>
                     En attente d’un adversaire…
                 </p>
+
+                <section
+                    class="invitation-combat"
+                    data-combat-en-ligne-target="invitationCombat"
+                    aria-labelledby="invitation-combat-titre"
+                    hidden
+                >
+                    <h3 id="invitation-combat-titre">
+                        Invite un ami
+                    </h3>
+
+                    <p>Partage ce code pour rejoindre directement le combat.</p>
+
+                    <strong
+                        class="invitation-combat-code"
+                        data-combat-en-ligne-target="invitationCode"
+                    ></strong>
+
+                    <button
+                        type="button"
+                        data-action="combat-en-ligne#copierCodeInvitation"
+                    >
+                        Copier le code
+                    </button>
+                </section>
 
                 <div data-combat-en-ligne-target="participants">
                     <section aria-labelledby="mon-equipe-combat-titre">
@@ -376,6 +404,30 @@
                     >
                         Actualiser la liste
                     </button>
+
+                    <form
+                        class="rejoindre-par-code"
+                        data-action="submit->combat-en-ligne#rejoindreParCode"
+                    >
+                        <label for="code-invitation-combat">
+                            Rejoindre avec un code
+                        </label>
+
+                        <input
+                            id="code-invitation-combat"
+                            type="text"
+                            inputmode="text"
+                            maxlength="9"
+                            autocomplete="off"
+                            placeholder="SV-A1B2C3"
+                            data-combat-en-ligne-target="codeInvitationInput"
+                            required
+                        >
+
+                        <button type="submit">
+                            Rejoindre
+                        </button>
+                    </form>
                 </section>
 
                 <section

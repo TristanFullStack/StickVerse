@@ -65,6 +65,11 @@ final class CreationCombatEnLigneServiceTest extends TestCase
                             $entite->getNumeroRound(),
                         );
 
+                        self::assertMatchesRegularExpression(
+                            '/^SV-[A-F0-9]{6}$/',
+                            (string) $entite->getCodeInvitation(),
+                        );
+
                         self::assertCount(
                             4,
                             $entite->getCombattants(),
@@ -111,6 +116,11 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         self::assertSame(
             1,
             $combat->getNumeroRound(),
+        );
+
+        self::assertMatchesRegularExpression(
+            '/^SV-[A-F0-9]{6}$/',
+            (string) $combat->getCodeInvitation(),
         );
 
         self::assertCount(

@@ -579,6 +579,35 @@ body:has(#rapport-combat) {
     box-shadow: none;
 }
 
+#combat-en-ligne .invitation-combat,
+#combat-en-ligne .rejoindre-par-code {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid var(--combat-violet);
+    border-radius: 9px;
+    background: rgba(112, 55, 180, 0.12);
+}
+
+#combat-en-ligne .invitation-combat-code {
+    display: inline-block;
+    margin: 8px 12px 8px 0;
+    color: var(--combat-cyan);
+    font-size: clamp(22px, 4vw, 34px);
+    letter-spacing: 0.12em;
+}
+
+#combat-en-ligne .rejoindre-par-code label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 800;
+}
+
+#combat-en-ligne .rejoindre-par-code input {
+    width: min(100%, 260px);
+    margin-right: 8px;
+    text-transform: uppercase;
+}
+
 #combat-en-ligne [data-combat-en-ligne-target="salon"] {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

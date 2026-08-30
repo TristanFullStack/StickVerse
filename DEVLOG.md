@@ -4906,7 +4906,63 @@ Lorsqu’un seul joueur a envoyé son plan, son adversaire dispose désormais de
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J55 — Rejoindre un combat avec un code d’invitation
 
+### Objectif
+
+J55 facilite l’organisation d’un combat entre amis en permettant au créateur de partager un code d’invitation unique.
+
+### Réalisations
+
+- génération automatique d’un code au format `SV-XXXXXX` pour chaque nouveau combat ;
+- garantie d’unicité du code dans MySQL ;
+- affichage du code dans l’écran d’attente du créateur ;
+- bouton permettant de copier le code dans le presse-papiers ;
+- formulaire permettant de rejoindre directement un combat avec son code ;
+- acceptation des codes saisis en minuscules ou avec des espaces autour ;
+- validation stricte du format côté navigateur et côté serveur ;
+- conservation de la sélection de l’équipe avant la jonction ;
+- réutilisation des protections existantes contre les combats expirés, complets ou déjà actifs ;
+- conservation de la liste classique des combats disponibles ;
+- ajout d’une migration Doctrine ;
+- ajout de tests couvrant la génération, l’exposition et la jonction par code.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `migrations/Version20260829130000.php`
+- `src/Controller/CombatEnLigneController.php`
+- `src/Controller/SalonCombatEnLigneController.php`
+- `src/Entity/Combat.php`
+- `src/Repository/CombatRepository.php`
+- `src/Service/CreationCombatEnLigneService.php`
+- `templates/combat_en_ligne/index.html.twig`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+- `tests/Controller/SalonCombatEnLigneControllerTest.php`
+- `tests/Service/CreationCombatEnLigneServiceTest.php`
+
+### Validation
+
+- syntaxes PHP et JavaScript valides ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- route de jonction par code disponible ;
+- migration appliquée aux bases normale et de test ;
+- mappings Doctrine valides ;
+- bases synchronisées avec les entités ;
+- tests ciblés validés ;
+- suite PHPUnit complète validée ;
+- **117 tests réussis** ;
+- **1098 assertions réussies**.
+
+### Test manuel restant
+
+L’affichage, la copie du code et la jonction avec deux navigateurs seront vérifiés demain.
+
+### Résultat
+
+Un joueur peut maintenant créer un combat, copier son code d’invitation et l’envoyer directement à un ami. Celui-ci sélectionne son équipe, saisit le code et rejoint immédiatement le bon combat.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

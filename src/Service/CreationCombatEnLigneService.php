@@ -48,7 +48,10 @@ final class CreationCombatEnLigneService
                     );
                 }
 
-                $combat = new Combat($joueur);
+                $combat = (new Combat($joueur))
+                    ->setCodeInvitation(
+                        $this->genererCodeInvitation()
+                    );
 
                 $this->creationCombattantsService
                     ->creerPourJoueur(
@@ -61,6 +64,21 @@ final class CreationCombatEnLigneService
 
                 return $combat;
             }
+        );
+    }
+
+    private function genererCodeInvitation(): string
+    {
+        for ($tentative = 0; $tentative < 10; $tentative++) {
+            $code = 'SV-'.strtoupper(bin2hex(random_bytes(3)));
+
+            if (!$this->combatRepository->codeInvitationExiste($code)) {
+                return $code;
+            }
+        }
+
+        throw new LogicException(
+            'Impossible de générer un code d’invitation unique.'
         );
     }
 }

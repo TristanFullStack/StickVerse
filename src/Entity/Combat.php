@@ -81,6 +81,9 @@ class Combat
     #[ORM\Column]
     private DateTimeImmutable $dateMiseAJour;
 
+    #[ORM\Column(length: 9, unique: true, nullable: true)]
+    private ?string $codeInvitation = null;
+
     /**
      * @var Collection<int, CombattantCombat>
      */
@@ -249,6 +252,26 @@ class Combat
     public function getDateMiseAJour(): DateTimeImmutable
     {
         return $this->dateMiseAJour;
+    }
+
+    public function getCodeInvitation(): ?string
+    {
+        return $this->codeInvitation;
+    }
+
+    public function setCodeInvitation(string $codeInvitation): static
+    {
+        $codeInvitation = strtoupper(trim($codeInvitation));
+
+        if (preg_match('/^SV-[A-F0-9]{6}$/', $codeInvitation) !== 1) {
+            throw new InvalidArgumentException(
+                'Le code d’invitation du combat est invalide.'
+            );
+        }
+
+        $this->codeInvitation = $codeInvitation;
+
+        return $this;
     }
 
     public function estParticipant(User $joueur): bool

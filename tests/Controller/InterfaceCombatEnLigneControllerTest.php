@@ -112,6 +112,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne[data-combat-en-ligne-rejoindre-url-modele-value="/salon-combat-en-ligne/__combat_id__/rejoindre"]'
         );
         self::assertSelectorExists(
+            '#combat-en-ligne[data-combat-en-ligne-rejoindre-par-code-url-value="/salon-combat-en-ligne/rejoindre-par-code"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="equipeSelect"]'
         );
         self::assertSelectorExists(
@@ -156,6 +159,21 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="attenteAdversaire"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="invitationCombat"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="invitationCode"]'
+        );
+        self::assertSelectorExists(
+            '[data-action="combat-en-ligne#copierCodeInvitation"]'
+        );
+        self::assertSelectorExists(
+            'form[data-action="submit->combat-en-ligne#rejoindreParCode"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="codeInvitationInput"]'
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="moiCombattants"]'
