@@ -69,6 +69,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
 
         $this->client->submitForm('Créer mon compte', [
+            'registration_form[pseudo]' => 'NouveauJoueur',
             'registration_form[email]' => $email,
             'registration_form[plainPassword]' => 'mot-de-passe-solide',
             'registration_form[agreeTerms]' => '1',
@@ -98,6 +99,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         $utilisateur = $userRepository->findOneBy(['email' => $email]);
 
         self::assertInstanceOf(User::class, $utilisateur);
+        self::assertSame('NouveauJoueur', $utilisateur->getPseudo());
 
         $inventaires = $inventaireRepository->findBy([
             'utilisateur' => $utilisateur,
@@ -151,6 +153,41 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         $this->client->request('GET', '/combats');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Combats en ligne');
+    }
+
+    public function testInscriptionRefuseUnPseudoDejaUtilise(): void
+    {
+        $pseudo = 'PseudoInscription';
+        $utilisateurExistant = (new User())
+            ->setPseudo($pseudo)
+            ->setEmail(
+                'pseudo-existant-'.bin2hex(random_bytes(5)).'@example.com'
+            )
+            ->setPassword('mot-de-passe-test');
+
+        $this->entityManager->persist($utilisateurExistant);
+        $this->entityManager->flush();
+
+        $this->client->request('GET', '/register');
+        $this->client->submitForm('Créer mon compte', [
+            'registration_form[pseudo]' => $pseudo,
+            'registration_form[email]' =>
+                'nouvelle-adresse-'.bin2hex(random_bytes(5)).'@example.com',
+            'registration_form[plainPassword]' => 'mot-de-passe-solide',
+            'registration_form[agreeTerms]' => '1',
+        ]);
+
+        self::assertResponseIsUnprocessable();
+        self::assertSelectorTextContains(
+            'form',
+            'Ce pseudo est déjà utilisé.',
+        );
+        self::assertSame(
+            1,
+            static::getContainer()
+                ->get(UserRepository::class)
+                ->count(['pseudo' => $pseudo]),
+        );
     }
 
     private function garantirStickmansDeDepart(): void

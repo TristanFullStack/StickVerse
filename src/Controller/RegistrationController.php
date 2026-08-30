@@ -23,7 +23,7 @@ class RegistrationController extends AbstractController
         InitialisationNouveauJoueurService $initialisationNouveauJoueur,
         Security $security,
     ): Response {
-        $user = new User();
+        $user = (new User())->setPseudo('');
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 

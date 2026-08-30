@@ -18,7 +18,7 @@
                 {{ resultatLibelle }}
             </h2>
             <p>
-                {{ moi.email }} contre {{ adversaire.email }} ·
+                {{ moi.pseudo }} contre {{ adversaire.pseudo }} ·
                 {{ rounds|length }} round{{ rounds|length > 1 ? 's' : '' }} joué{{ rounds|length > 1 ? 's' : '' }} ·
                 {{ combat.dateMiseAJour|date('d/m/Y H:i') }}
             </p>
@@ -28,18 +28,18 @@
             {% for equipe in [
                 {
                     titre: 'Ton équipe',
-                    email: moi.email,
+                    pseudo: moi.pseudo,
                     combattants: combattantsMoi
                 },
                 {
                     titre: 'Équipe adverse',
-                    email: adversaire.email,
+                    pseudo: adversaire.pseudo,
                     combattants: combattantsAdversaire
                 }
             ] %}
                 <section>
                     <h2>{{ equipe.titre }}</h2>
-                    <p>{{ equipe.email }}</p>
+                    <p>{{ equipe.pseudo }}</p>
                     <div class="rapport-combattants">
                         {% for combattant in equipe.combattants %}
                             <article class="rapport-combattant">

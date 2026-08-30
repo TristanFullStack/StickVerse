@@ -132,9 +132,10 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertSame(
-            $joueur1->getEmail(),
-            $donnees['moi']['email'],
+            $joueur1->getPseudo(),
+            $donnees['moi']['pseudo'],
         );
+        self::assertArrayNotHasKey('email', $donnees['moi']);
 
         self::assertCount(
             4,
@@ -198,9 +199,10 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertSame(
-            $joueur2->getEmail(),
-            $donnees['adversaire']['email'],
+            $joueur2->getPseudo(),
+            $donnees['adversaire']['pseudo'],
         );
+        self::assertArrayNotHasKey('email', $donnees['adversaire']);
 
         self::assertCount(
             4,

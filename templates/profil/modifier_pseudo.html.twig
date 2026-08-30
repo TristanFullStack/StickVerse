@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon pseudo — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Modifier mon pseudo</h1>
+
+    <p>
+        Ce pseudo est visible par les autres joueurs. Ton adresse
+        électronique reste privée.
+    </p>
+
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {{ form_row(form.pseudo) }}
+        <button type="submit">Modifier le pseudo</button>
+    {{ form_end(form) }}
+
+    <p><a href="{{ path('app_profil') }}">Retour au profil</a></p>
+{% endblock %}

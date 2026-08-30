@@ -6117,7 +6117,167 @@ StickVerse possède également toute la base nécessaire pour envoyer de vérita
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J68 — Ajouter les pseudos publics des joueurs
 
+### Objectif
+
+J68 ajoute une identité publique distincte de l’adresse électronique afin que les joueurs puissent se reconnaître sans exposer leurs informations de connexion.
+
+### Pseudo du joueur
+
+Chaque compte possède maintenant un pseudo public unique.
+
+Le pseudo doit contenir :
+
+- entre 3 et 24 caractères ;
+- uniquement des lettres ;
+- des chiffres ;
+- des tirets ;
+- des tirets bas.
+
+Deux joueurs ne peuvent pas utiliser le même pseudo.
+
+### Comptes existants
+
+La migration attribue automatiquement un pseudo temporaire aux comptes déjà enregistrés.
+
+Le format utilisé est :
+
+`Joueur-ID`
+
+Chaque joueur peut ensuite choisir son propre pseudo depuis son profil.
+
+### Inscription
+
+Le formulaire d’inscription demande maintenant :
+
+- un pseudo public ;
+- une adresse électronique privée ;
+- un mot de passe ;
+- l’acceptation des conditions d’utilisation.
+
+L’inscription est refusée lorsque le pseudo est invalide ou déjà utilisé.
+
+### Modification depuis le profil
+
+Une nouvelle page est accessible à l’adresse :
+
+`/profil/pseudo`
+
+Le joueur peut y remplacer son pseudo actuel.
+
+La modification est refusée lorsque :
+
+- le nouveau pseudo est identique au pseudo actuel ;
+- le format est invalide ;
+- le pseudo appartient déjà à un autre joueur.
+
+Après une modification réussie, le nouveau pseudo apparaît immédiatement sur le profil et dans la navigation.
+
+### Confidentialité des adresses
+
+Les adresses électroniques ne sont plus utilisées comme noms publics.
+
+Elles ont été remplacées par les pseudos dans :
+
+- la navigation du joueur ;
+- le tableau de bord ;
+- le salon des combats ;
+- la liste des combats disponibles ;
+- le combat actif ;
+- l’historique des combats ;
+- les rapports définitifs ;
+- les noms des deux participants.
+
+L’adresse électronique reste visible uniquement par son propriétaire dans son profil et dans les pages nécessaires à la connexion ou à la récupération du mot de passe.
+
+### Données des combats
+
+Les réponses du serveur utilisent maintenant :
+
+- `pseudo` pour identifier un participant ;
+- `joueur1Pseudo` pour le créateur d’un combat disponible ;
+- `adversairePseudo` pour l’historique.
+
+Les anciennes informations publiques contenant les adresses électroniques ne sont plus envoyées au navigateur.
+
+### Migration Doctrine
+
+Une nouvelle migration ajoute le champ `pseudo` à chaque utilisateur.
+
+Elle :
+
+- attribue un pseudo temporaire aux comptes existants ;
+- rend le pseudo obligatoire ;
+- ajoute un index unique ;
+- empêche les doublons directement dans la base de données.
+
+Les bases de développement et de test ont été migrées avec succès.
+
+### Architecture
+
+La modification du pseudo est séparée entre :
+
+- `ModifierPseudoType` pour les règles du formulaire ;
+- `ModificationPseudoService` pour les règles métier ;
+- `PseudoController` pour la page et les réponses HTTP ;
+- l’entité `User` pour le stockage du pseudo.
+
+Le contrôleur reste limité à la gestion du formulaire et délègue les vérifications au service.
+
+### Apparence du prototype
+
+La nouvelle page conserve volontairement le style simple du prototype :
+
+- fond clair ;
+- formulaire classique ;
+- aucun effet complexe ;
+- aucune animation ;
+- fonctionnement adapté aux petits écrans.
+
+### Tests automatisés
+
+Les tests vérifient notamment :
+
+- la présence du pseudo à l’inscription ;
+- le refus d’un pseudo déjà utilisé ;
+- l’attribution et le stockage du pseudo ;
+- la modification depuis le profil ;
+- le refus du pseudo actuel ;
+- le refus du pseudo d’un autre joueur ;
+- la protection de la page pour les visiteurs ;
+- l’affichage du pseudo dans la navigation ;
+- l’affichage des pseudos pendant les combats ;
+- l’affichage des pseudos dans les rapports ;
+- l’absence des adresses électroniques dans les données publiques.
+
+La validation complète du projet donne :
+
+- 169 tests réussis ;
+- 1 576 assertions ;
+- JavaScript valide ;
+- aucune erreur PHP ;
+- templates Twig valides ;
+- conteneur Symfony valide ;
+- routes Symfony valides ;
+- schémas Doctrine de développement et de test synchronisés ;
+- aucun avertissement PHPUnit.
+
+### Validation manuelle
+
+Les pseudos temporaires des comptes existants ont été vérifiés.
+
+La modification depuis le profil fonctionne correctement.
+
+Un pseudo déjà utilisé par un autre compte est refusé.
+
+Les pseudos apparaissent dans les menus, les combats et les rapports à la place des adresses électroniques.
+
+### Résultat
+
+Chaque joueur possède maintenant une identité publique propre à StickVerse.
+
+Les adresses utilisées pour se connecter restent privées et ne sont plus communiquées aux adversaires.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

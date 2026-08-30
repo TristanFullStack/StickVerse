@@ -713,13 +713,22 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         $salon = $this->lireReponseJson();
         $historique = $salon['historiqueCombats'];
 
+        self::assertStringNotContainsString(
+            $adversaire->getEmail(),
+            json_encode($salon, JSON_THROW_ON_ERROR),
+        );
+
         self::assertIsArray($historique);
         self::assertCount(2, $historique);
 
         self::assertSame($abandonId, $historique[0]['id']);
         self::assertSame(
-            $adversaire->getEmail(),
-            $historique[0]['adversaireEmail'],
+            $adversaire->getPseudo(),
+            $historique[0]['adversairePseudo'],
+        );
+        self::assertArrayNotHasKey(
+            'adversaireEmail',
+            $historique[0],
         );
         self::assertSame(
             Combat::STATUT_ABANDONNE,
@@ -731,8 +740,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
 
         self::assertSame($victoireId, $historique[1]['id']);
         self::assertSame(
-            $adversaire->getEmail(),
-            $historique[1]['adversaireEmail'],
+            $adversaire->getPseudo(),
+            $historique[1]['adversairePseudo'],
         );
         self::assertSame(
             Combat::STATUT_TERMINE,

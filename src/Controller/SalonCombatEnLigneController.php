@@ -103,9 +103,9 @@ final class SalonCombatEnLigneController extends AbstractController
                     'joueur1Id' => $combat
                         ->getJoueur1()
                         ->getId(),
-                    'joueur1Email' => $combat
+                    'joueur1Pseudo' => $combat
                         ->getJoueur1()
-                        ->getEmail(),
+                        ->getPseudo(),
                     'statut' => $combat->getStatut(),
                     'prive' => $combat->estPrive(),
                     'numeroRound' => $combat
@@ -565,7 +565,7 @@ final class SalonCombatEnLigneController extends AbstractController
     /**
      * @return array{
      *     id: int|null,
-     *     adversaireEmail: string|null,
+     *     adversairePseudo: string|null,
      *     statut: string,
      *     resultat: string,
      *     nombreRounds: int,
@@ -602,7 +602,7 @@ final class SalonCombatEnLigneController extends AbstractController
 
         return [
             'id' => $combat->getId(),
-            'adversaireEmail' => $adversaire?->getEmail(),
+            'adversairePseudo' => $adversaire?->getPseudo(),
             'statut' => $combat->getStatut(),
             'resultat' => $resultat,
             'nombreRounds' => $combat->getDernierRoundResolu() ?? 0,

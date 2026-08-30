@@ -256,7 +256,14 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="annulerButton"][data-action="combat-en-ligne#annulerCombat"]'
         );
-        self::assertSelectorTextContains('.site-account', $joueur->getEmail());
+        self::assertSelectorTextContains(
+            '.site-account',
+            $joueur->getPseudo(),
+        );
+        self::assertSelectorTextNotContains(
+            '.site-account',
+            $joueur->getEmail(),
+        );
         self::assertSelectorExists('.site-name[href="/home"]');
         self::assertSelectorExists('.site-navigation a[href="/wiki"]');
         self::assertSelectorExists('.site-navigation a[href="/caisses"]');
@@ -374,6 +381,10 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         );
         self::assertSelectorTextContains(
             '#rapport-combat > header',
+            $adversaire->getPseudo(),
+        );
+        self::assertSelectorTextNotContains(
+            '#rapport-combat',
             $adversaire->getEmail(),
         );
         self::assertSelectorTextContains(

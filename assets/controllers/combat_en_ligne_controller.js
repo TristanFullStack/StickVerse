@@ -1087,7 +1087,7 @@ export default class extends Controller {
             return;
         }
 
-        nomTarget.textContent = participant.email ?? libelle;
+        nomTarget.textContent = participant.pseudo ?? libelle;
 
         const combattants = Array.isArray(participant.combattants)
             ? participant.combattants
@@ -1469,7 +1469,7 @@ export default class extends Controller {
 
             ligne.className = 'combat-disponible';
             titre.textContent = `Combat #${combatId}`;
-            details.textContent = combat.joueur1Email
+            details.textContent = combat.joueur1Pseudo
                 ?? `Joueur #${combat.joueur1Id ?? '—'}`;
             bouton.type = 'button';
             bouton.textContent = 'Rejoindre';
@@ -1532,7 +1532,7 @@ export default class extends Controller {
             resultat.textContent = libellesResultat[resultatCode];
             adversaire.textContent = [
                 'Adversaire :',
-                combat.adversaireEmail ?? 'inconnu',
+                combat.adversairePseudo ?? 'inconnu',
             ].join(' ');
             informations.textContent = [
                 `${nombreRounds} round${nombreRounds > 1 ? 's' : ''} joué${nombreRounds > 1 ? 's' : ''}`,

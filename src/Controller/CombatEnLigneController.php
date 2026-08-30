@@ -303,7 +303,7 @@ final class CombatEnLigneController extends AbstractController
     /**
      * @return array{
      *     id: int|null,
-     *     email: string|null,
+     *     pseudo: string,
      *     combattants: list<array{
      *         slot: string,
      *         stickmanIdOriginal: int,
@@ -325,7 +325,7 @@ final class CombatEnLigneController extends AbstractController
     ): array {
         return [
             'id' => $joueur->getId(),
-            'email' => $joueur->getEmail(),
+            'pseudo' => $joueur->getPseudo(),
             'combattants' => array_map(
                 static fn (CombattantCombat $combattant): array => [
                     'slot' => $combattant->getSlot(),

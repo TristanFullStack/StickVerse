@@ -111,6 +111,11 @@ final class ProfilControllerTest extends WebTestCase
             $joueur->getUserIdentifier(),
         );
         self::assertSelectorTextContains(
+            '[data-profile-pseudo]',
+            $joueur->getPseudo(),
+        );
+        self::assertSelectorExists('a[href="/profil/pseudo"]');
+        self::assertSelectorTextContains(
             '[data-profile-account-type]',
             'Joueur',
         );

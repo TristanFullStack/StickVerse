@@ -12,6 +12,9 @@
     <section class="profile-section" aria-labelledby="compte-titre">
         <h2 id="compte-titre">Compte</h2>
         <dl>
+            <dt>Pseudo public</dt>
+            <dd data-profile-pseudo>{{ app.user.pseudo }}</dd>
+
             <dt>Adresse électronique</dt>
             <dd>{{ app.user.userIdentifier }}</dd>
 
@@ -24,6 +27,7 @@
                 {% endif %}
             </dd>
         </dl>
+        <p><a href="{{ path('app_modifier_pseudo') }}">Modifier mon pseudo</a></p>
     </section>
 
     <section class="profile-section" aria-labelledby="progression-titre">
