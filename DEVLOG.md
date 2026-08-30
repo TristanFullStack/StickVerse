@@ -6564,7 +6564,92 @@ La prochaine étape pourra ajouter d’autres objectifs liés à la collection, 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J74 — Étendre les objectifs à la collection et à l’équipe
 
+### Objectif
+
+J74 complète le système d’objectifs avec des étapes liées à la collection de Stickmen et à la préparation d’une équipe.
+
+### Fonctionnalités ajoutées
+
+- Ajout de l’objectif « Collection en route ».
+- Ajout de l’objectif « Équipe prête ».
+- Conservation des objectifs du J73 :
+  - Premier combat ;
+  - Habitué des combats ;
+  - Première ouverture.
+
+### Objectifs disponibles
+
+#### Collection en route
+
+Le joueur doit obtenir cinq Stickmen différents dans sa collection.
+
+Récompense : 75 pièces.
+
+#### Équipe prête
+
+Le joueur doit créer une équipe jouable.
+
+Récompense : 75 pièces.
+
+### Calcul de la progression
+
+- Le nombre de Stickmen est calculé depuis l’inventaire du joueur.
+- L’objectif d’équipe est validé lorsqu’une équipe existe.
+- La progression est limitée à la cible de chaque objectif.
+- Les objectifs déjà réclamés restent mémorisés sur le compte.
+
+### Réclamation des récompenses
+
+- Un objectif ne peut être réclamé qu’une seule fois.
+- La récompense n’est disponible que lorsque la cible est atteinte.
+- La réclamation utilise une transaction sécurisée.
+- Un verrou d’écriture empêche les doubles réclamations simultanées.
+- Chaque récompense est ajoutée à l’historique des mouvements de pièces.
+- Les requêtes utilisent un jeton CSRF.
+- L’accès est réservé aux joueurs connectés.
+
+### Interface
+
+Le profil affiche maintenant les cinq objectifs disponibles avec :
+
+- leur nom ;
+- leur description ;
+- leur progression ;
+- leur récompense ;
+- leur état ;
+- un bouton « Réclamer » lorsqu’ils sont disponibles.
+
+L’interface reste volontairement simple afin de privilégier les fonctionnalités.
+
+### Base de données
+
+Aucune migration supplémentaire n’est nécessaire.
+
+La liste des objectifs réclamés ajoutée au compte joueur pendant le J73 est réutilisée.
+
+### Vérifications automatiques
+
+- Calcul de la progression de collection.
+- Calcul de la progression d’équipe.
+- Conservation des trois objectifs du J73.
+- Réclamation d’un objectif disponible.
+- Refus d’un objectif non disponible.
+- Protection contre les doubles réclamations.
+- Enregistrement des récompenses dans l’historique.
+- Affichage des cinq objectifs sur le profil.
+- Schéma Doctrine synchronisé.
+- Conteneur Symfony valide.
+- Suite complète validée : 199 tests et 1 724 assertions.
+
+### Résultat
+
+Le joueur peut maintenant progresser grâce à ses combats, ses ouvertures de caisses, sa collection et la création de son équipe.
+
+Les objectifs rendent la progression plus claire tout en ajoutant de nouvelles récompenses en pièces.
+
+La prochaine étape pourra ajouter des objectifs avancés liés aux combats en ligne.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

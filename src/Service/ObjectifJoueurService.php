@@ -5,6 +5,8 @@ namespace App\Service;
 use App\Entity\MouvementPieces;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\EquipeRepository;
+use App\Repository\InventaireRepository;
 use App\Repository\MouvementPiecesRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,6 +18,8 @@ final class ObjectifJoueurService
     public const OBJECTIF_PREMIER_COMBAT = 'premier_combat';
     public const OBJECTIF_CINQ_COMBATS = 'cinq_combats';
     public const OBJECTIF_PREMIERE_CAISSE = 'premiere_caisse';
+    public const OBJECTIF_COLLECTION_DEBUT = 'collection_debut';
+    public const OBJECTIF_EQUIPE_PRETE = 'equipe_prete';
 
     private const OBJECTIFS = [
         self::OBJECTIF_PREMIER_COMBAT => [
@@ -36,11 +40,25 @@ final class ObjectifJoueurService
             'cible' => 1,
             'recompense' => 50,
         ],
+        self::OBJECTIF_COLLECTION_DEBUT => [
+            'libelle' => 'Collection en route',
+            'description' => 'Obtenir cinq Stickmen différents.',
+            'cible' => 5,
+            'recompense' => 75,
+        ],
+        self::OBJECTIF_EQUIPE_PRETE => [
+            'libelle' => 'Équipe prête',
+            'description' => 'Créer une équipe jouable.',
+            'cible' => 1,
+            'recompense' => 75,
+        ],
     ];
 
     public function __construct(
         private readonly CombatRepository $combatRepository,
         private readonly MouvementPiecesRepository $mouvementPiecesRepository,
+        private readonly InventaireRepository $inventaireRepository,
+        private readonly EquipeRepository $equipeRepository,
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly ?MouvementPiecesService $mouvementPiecesService = null,
@@ -59,11 +77,19 @@ final class ObjectifJoueurService
                 $joueur,
                 MouvementPieces::TYPE_ACHAT_CAISSE,
             );
+        $collection = $this->inventaireRepository->count([
+            'utilisateur' => $joueur,
+        ]);
+        $equipe = $this->equipeRepository->findOneBy([
+            'utilisateur' => $joueur,
+        ]);
 
         $progressions = [
             self::OBJECTIF_PREMIER_COMBAT => $statistiques['total'],
             self::OBJECTIF_CINQ_COMBATS => $statistiques['total'],
             self::OBJECTIF_PREMIERE_CAISSE => $ouvertures,
+            self::OBJECTIF_COLLECTION_DEBUT => $collection,
+            self::OBJECTIF_EQUIPE_PRETE => $equipe === null ? 0 : 1,
         ];
 
         $objectifs = [];

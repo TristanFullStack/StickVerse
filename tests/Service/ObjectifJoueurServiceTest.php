@@ -5,6 +5,8 @@ namespace App\Tests\Service;
 use App\Entity\MouvementPieces;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\EquipeRepository;
+use App\Repository\InventaireRepository;
 use App\Repository\MouvementPiecesRepository;
 use App\Repository\UserRepository;
 use App\Service\MouvementPiecesService;
@@ -30,18 +32,26 @@ final class ObjectifJoueurServiceTest extends TestCase
         $mouvementRepository
             ->method('compterPourJoueurEtType')
             ->willReturn(1);
+        $inventaireRepository = $this->createStub(InventaireRepository::class);
+        $inventaireRepository->method('count')->willReturn(3);
+        $equipeRepository = $this->createStub(EquipeRepository::class);
+        $equipeRepository->method('findOneBy')->willReturn(null);
 
         $objectifs = $this->creerService(
             $joueur,
             $combatRepository,
             $mouvementRepository,
+            $inventaireRepository,
+            $equipeRepository,
         )->construire($joueur);
 
-        self::assertSame(3, count($objectifs));
+        self::assertSame(5, count($objectifs));
         self::assertSame(1, $objectifs[0]['progression']);
         self::assertTrue($objectifs[0]['disponible']);
         self::assertSame(2, $objectifs[1]['progression']);
         self::assertSame(1, $objectifs[2]['progression']);
+        self::assertSame(3, $objectifs[3]['progression']);
+        self::assertSame(0, $objectifs[4]['progression']);
     }
 
     public function testReclameUnObjectifEtEnregistreLeMouvement(): void
@@ -60,6 +70,8 @@ final class ObjectifJoueurServiceTest extends TestCase
         $mouvementRepository
             ->method('compterPourJoueurEtType')
             ->willReturn(0);
+        $inventaireRepository = $this->createStub(InventaireRepository::class);
+        $equipeRepository = $this->createStub(EquipeRepository::class);
         $mouvementEntityManager = $this->createMock(EntityManagerInterface::class);
         $mouvementEntityManager
             ->expects(self::once())
@@ -71,6 +83,8 @@ final class ObjectifJoueurServiceTest extends TestCase
             $joueur,
             $combatRepository,
             $mouvementRepository,
+            $inventaireRepository,
+            $equipeRepository,
             $mouvementService,
         );
 
@@ -97,11 +111,15 @@ final class ObjectifJoueurServiceTest extends TestCase
                 'matchsNuls' => 0,
             ]);
         $mouvementRepository = $this->createStub(MouvementPiecesRepository::class);
+        $inventaireRepository = $this->createStub(InventaireRepository::class);
+        $equipeRepository = $this->createStub(EquipeRepository::class);
 
         self::assertSame(0, $this->creerService(
             $joueur,
             $combatRepository,
             $mouvementRepository,
+            $inventaireRepository,
+            $equipeRepository,
         )->reclamer(
             $joueur,
             ObjectifJoueurService::OBJECTIF_PREMIER_COMBAT,
@@ -113,6 +131,8 @@ final class ObjectifJoueurServiceTest extends TestCase
         User $joueur,
         CombatRepository $combatRepository,
         MouvementPiecesRepository $mouvementRepository,
+        ?InventaireRepository $inventaireRepository = null,
+        ?EquipeRepository $equipeRepository = null,
         ?MouvementPiecesService $mouvementService = null,
     ): ObjectifJoueurService {
         $userRepository = $this->createStub(UserRepository::class);
@@ -129,6 +149,8 @@ final class ObjectifJoueurServiceTest extends TestCase
         return new ObjectifJoueurService(
             $combatRepository,
             $mouvementRepository,
+            $inventaireRepository ?? $this->createStub(InventaireRepository::class),
+            $equipeRepository ?? $this->createStub(EquipeRepository::class),
             $userRepository,
             $entityManager,
             $mouvementService,
