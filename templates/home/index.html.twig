@@ -3,7 +3,100 @@
 {% block title %}StickVerse{% endblock %}
 
 {% block body %}
-<h1>Bienvenue sur StickVerse</h1>
+    {% if app.user and tableau_de_bord %}
+        <h1>Tableau de bord</h1>
 
-<p>EN CONSTRUCTION</p>
+        <p>Bienvenue, {{ app.user.userIdentifier }}.</p>
+
+        <section class="dashboard-section" aria-labelledby="resume-titre">
+            <h2 id="resume-titre">Résumé du compte</h2>
+
+            <div class="dashboard-grid">
+                <article class="dashboard-card">
+                    <h3>Collection</h3>
+                    <p>
+                        {{ tableau_de_bord.nombreStickmen }} Stickman(s) différent(s)
+                    </p>
+                    <a href="{{ path('app_collection') }}">Voir ma collection</a>
+                </article>
+
+                <article class="dashboard-card">
+                    <h3>Équipe</h3>
+                    {% if tableau_de_bord.equipe %}
+                        <p>{{ tableau_de_bord.equipe.nom }}</p>
+                    {% else %}
+                        <p>Aucune équipe enregistrée.</p>
+                    {% endif %}
+                    <a href="{{ path('app_equipe') }}">Gérer mon équipe</a>
+                </article>
+
+                <article class="dashboard-card">
+                    <h3>Combat en ligne</h3>
+                    {% if tableau_de_bord.combatActif %}
+                        <p>
+                            Combat #{{ tableau_de_bord.combatActif.id }} —
+                            {{ tableau_de_bord.combatActif.statut|replace({'_': ' '}) }}
+                        </p>
+                        <a href="{{ path('app_combats_en_ligne') }}">
+                            Reprendre le combat
+                        </a>
+                    {% else %}
+                        <p>Aucun combat actif.</p>
+                        <a href="{{ path('app_combats_en_ligne') }}">
+                            Trouver un combat
+                        </a>
+                    {% endif %}
+                </article>
+            </div>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="raccourcis-titre">
+            <h2 id="raccourcis-titre">Raccourcis</h2>
+            <ul>
+                <li><a href="{{ path('app_caisse_publique') }}">Ouvrir une caisse</a></li>
+                <li><a href="{{ path('app_wiki') }}">Consulter le wiki</a></li>
+                <li><a href="{{ path('app_combats_en_ligne') }}">Accéder aux combats</a></li>
+            </ul>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="derniers-combats-titre">
+            <h2 id="derniers-combats-titre">Derniers combats</h2>
+
+            {% if tableau_de_bord.derniersCombats is empty %}
+                <p>Aucun combat terminé pour le moment.</p>
+            {% else %}
+                <ul class="dashboard-combats">
+                    {% for combat in tableau_de_bord.derniersCombats %}
+                        <li>
+                            <strong>Combat #{{ combat.id }}</strong>
+                            — {{ combat.statut|replace({'_': ' '}) }}
+                            — {{ combat.numeroRound }} round(s)
+                            <a href="{{ path('app_rapport_combat_en_ligne', {id: combat.id}) }}">
+                                Voir le rapport
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    {% else %}
+        <h1>Bienvenue sur StickVerse</h1>
+
+        <p>
+            Collectionne des Stickmans, prépare une équipe et affronte
+            d'autres joueurs en ligne.
+        </p>
+
+        <p>
+            <a href="{{ path('app_register') }}">Créer un compte</a>
+            ou
+            <a href="{{ path('app_login') }}">se connecter</a>.
+        </p>
+
+        <h2>Découvrir le jeu</h2>
+        <ul>
+            <li><a href="{{ path('app_wiki') }}">Consulter le wiki</a></li>
+            <li><a href="{{ path('app_caisse_publique') }}">Voir les caisses</a></li>
+        </ul>
+    {% endif %}
 {% endblock %}

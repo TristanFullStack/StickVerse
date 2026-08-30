@@ -5730,7 +5730,128 @@ Cette base reste volontairement rudimentaire, mais elle permettra de construire 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J65 — Créer le tableau de bord principal du joueur
 
+### Objectif
+
+J65 remplace l’ancienne page d’accueil en construction par un tableau de bord fonctionnel regroupant les informations et les raccourcis utiles au joueur.
+
+L’interface conserve volontairement l’apparence simple du prototype mise en place pendant J64.
+
+### Accueil des visiteurs
+
+Un visiteur qui n’est pas connecté voit maintenant :
+
+- une présentation courte de StickVerse ;
+- un lien pour créer un compte ;
+- un lien pour se connecter ;
+- un accès au wiki ;
+- un accès à la liste des caisses.
+
+Aucune information privée liée aux joueurs n’est chargée ou affichée.
+
+### Tableau de bord du joueur
+
+Lorsqu’un joueur est connecté, la page d’accueil devient son tableau de bord personnel.
+
+Elle affiche notamment :
+
+- l’adresse électronique du compte ;
+- le nombre de Stickmans différents présents dans sa collection ;
+- le nom de son équipe enregistrée ;
+- un message lorsqu’aucune équipe n’est encore disponible ;
+- son éventuel combat actif ;
+- un bouton permettant de reprendre ce combat ;
+- un bouton permettant de chercher un combat lorsqu’aucun combat n’est actif ;
+- ses trois derniers combats terminés ;
+- un accès au rapport détaillé de chaque ancien combat.
+
+### Raccourcis
+
+Le tableau de bord propose également des accès rapides vers :
+
+- la collection ;
+- la gestion de l’équipe ;
+- les caisses ;
+- le wiki ;
+- les combats en ligne.
+
+Le joueur peut ainsi retrouver les fonctionnalités essentielles depuis une seule page.
+
+### Service de tableau de bord
+
+La récupération des informations personnelles est centralisée dans le service `TableauDeBordJoueurService`.
+
+Ce service rassemble :
+
+- le nombre de Stickmans différents du joueur ;
+- son équipe enregistrée ;
+- son combat actuellement actif ;
+- ses trois derniers combats terminés.
+
+Le contrôleur de la page d’accueil reste ainsi limité à l’identification de l’utilisateur et à l’affichage du résultat.
+
+### Apparence du prototype
+
+Le tableau de bord utilise uniquement :
+
+- des sections blanches ;
+- des bordures grises simples ;
+- une grille adaptable ;
+- des titres et des liens standards ;
+- aucun effet graphique complexe ;
+- aucune animation.
+
+Cette présentation reste volontairement rudimentaire afin de terminer les fonctionnalités et les différents menus avant la future phase de design.
+
+### Adaptation aux écrans
+
+Les blocs du tableau de bord utilisent une grille simple qui s’adapte automatiquement à la largeur disponible.
+
+Les différentes cartes peuvent passer sur plusieurs lignes lorsque l’écran devient plus petit, ce qui permet déjà de consulter la page sur téléphone sans créer un design définitif.
+
+### Tests automatisés
+
+Les tests vérifient notamment :
+
+- l’affichage de la présentation publique pour un visiteur ;
+- l’absence du tableau de bord personnel pour un visiteur ;
+- l’affichage du tableau de bord pour un joueur connecté ;
+- le nombre de Stickmans possédés ;
+- l’état de l’équipe ;
+- l’absence ou la présence d’un combat actif ;
+- l’historique récent des combats ;
+- les raccourcis vers les principales fonctionnalités ;
+- la construction des données par le service dédié.
+
+La validation complète du projet donne :
+
+- 150 tests réussis ;
+- 1 435 assertions ;
+- aucune erreur PHP ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- schémas Doctrine de développement et de test synchronisés ;
+- aucun avertissement PHPUnit.
+
+### Validation manuelle
+
+Le tableau de bord a été testé avec trois comptes différents, dont un compte administrateur.
+
+Pour chaque compte :
+
+- le nombre de Stickmans affiché correspond à la collection ;
+- l’équipe affichée correspond aux données enregistrées ;
+- l’état du combat actif est correct ;
+- l’historique correspond aux combats du joueur ;
+- les différents liens fonctionnent ;
+- le menu d’administration reste réservé au compte administrateur.
+
+### Résultat
+
+Chaque joueur dispose maintenant d’une page d’accueil personnelle et fonctionnelle.
+
+Le tableau de bord rassemble les informations essentielles du compte sans introduire prématurément le futur design définitif de StickVerse.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

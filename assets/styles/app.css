@@ -81,10 +81,30 @@ img {
 
 .stickman-card,
 .caisse-card,
+.dashboard-card,
+.dashboard-section,
 fieldset {
     padding: 12px;
     border: 1px solid #999;
     background: #fff;
+}
+
+.dashboard-section {
+    margin-bottom: 16px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.dashboard-card h3 {
+    margin-top: 0;
+}
+
+.dashboard-combats li {
+    margin-bottom: 8px;
 }
 
 input,
