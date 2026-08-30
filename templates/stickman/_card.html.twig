@@ -7,12 +7,15 @@
         alt="{{ stickman.nom }}"
     >
 
-    {% if inventaire is defined %}
+    {% if inventaire is defined and inventaire is not null %}
         <p>
             <strong>Quantité : {{ inventaire.quantite }}</strong>
         </p>
     {% endif %}
 
+    {% if stickman.collectionJeu is defined and stickman.collectionJeu is not null %}
+        <p>Collection : {{ stickman.collectionJeu.nom }}</p>
+    {% endif %}
     <p>Rareté : {{ stickman.rarete }}</p>
     <p>PV : {{ stickman.pv }}</p>
     <p>Attaque : {{ stickman.attaque }}</p>

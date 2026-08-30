@@ -445,6 +445,41 @@ fieldset {
     margin-left: 0;
 }
 
+.collection-group {
+    margin-bottom: 20px;
+    border: 1px solid #999;
+    background: #fff;
+}
+
+.collection-group-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px;
+    border-bottom: 1px solid #ccc;
+    background: #f5f5f5;
+}
+
+.collection-group-heading h3,
+.collection-group-heading p {
+    margin: 0;
+}
+
+.collection-group-heading p {
+    margin-top: 4px;
+}
+
+.collection-group .stickmen-list {
+    padding: 12px;
+}
+
+@media (max-width: 700px) {
+    .collection-group-heading {
+        flex-direction: column;
+    }
+}
+
 input,
 select,
 button {

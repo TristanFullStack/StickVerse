@@ -72,10 +72,14 @@ final class CaisseStickmanController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($caisseStickman);
-            $entityManager->flush();
+            if (!$this->collectionsCompatibles($caisseStickman)) {
+                $this->addFlash('error', 'La caisse et le Stickman doivent appartenir à la même collection.');
+            } else {
+                $entityManager->persist($caisseStickman);
+                $entityManager->flush();
 
-            return $this->redirectToRoute('app_caisse_stickman_index', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_caisse_stickman_index', [], Response::HTTP_SEE_OTHER);
+            }
         }
 
         return $this->render('caisse_stickman/new.html.twig', [
@@ -99,9 +103,13 @@ final class CaisseStickmanController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            if (!$this->collectionsCompatibles($caisseStickman)) {
+                $this->addFlash('error', 'La caisse et le Stickman doivent appartenir à la même collection.');
+            } else {
+                $entityManager->flush();
 
-            return $this->redirectToRoute('app_caisse_stickman_index', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_caisse_stickman_index', [], Response::HTTP_SEE_OTHER);
+            }
         }
 
         return $this->render('caisse_stickman/edit.html.twig', [
@@ -119,5 +127,18 @@ final class CaisseStickmanController extends AbstractController
         }
 
         return $this->redirectToRoute('app_caisse_stickman_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    private function collectionsCompatibles(CaisseStickman $contenu): bool
+    {
+        $collectionCaisse = $contenu->getCaisse()?->getCollectionJeu();
+        $collectionStickman = $contenu->getStickman()?->getCollectionJeu();
+
+        if ($collectionCaisse === null || $collectionStickman === null) {
+            return true;
+        }
+
+        return $collectionCaisse === $collectionStickman
+            || $collectionCaisse->getId() !== null && $collectionCaisse->getId() === $collectionStickman->getId();
     }
 }

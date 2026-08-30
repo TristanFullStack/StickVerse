@@ -1,0 +1,4 @@
+<form class="admin-delete-form" method="post" action="{{ path('app_collection_jeu_delete', {'id': collection.id}) }}" onsubmit="return confirm('Supprimer cette collection ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ collection.id) }}">
+    <button class="admin-danger-action" type="submit">Supprimer</button>
+</form>

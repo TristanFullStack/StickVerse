@@ -51,6 +51,10 @@
                             <dt>Statut</dt>
                             <dd>{{ caisse.statutActif ? 'Active' : 'Inactive' }}</dd>
                         </div>
+                        <div>
+                            <dt>Collection</dt>
+                            <dd>{{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Non classée' }}</dd>
+                        </div>
                     </dl>
 
                     {% if groupe.contenus is empty %}

@@ -51,6 +51,10 @@ class Stickman
     #[ORM\Column]
     private ?bool $statutActif = null;
 
+    #[ORM\ManyToOne(inversedBy: 'stickmen')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CollectionJeu $collectionJeu = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -160,6 +164,18 @@ class Stickman
     public function setStatutActif(bool $statutActif): static
     {
         $this->statutActif = $statutActif;
+
+        return $this;
+    }
+
+    public function getCollectionJeu(): ?CollectionJeu
+    {
+        return $this->collectionJeu;
+    }
+
+    public function setCollectionJeu(?CollectionJeu $collectionJeu): static
+    {
+        $this->collectionJeu = $collectionJeu;
 
         return $this;
     }

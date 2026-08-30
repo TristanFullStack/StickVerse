@@ -14,6 +14,7 @@
         </div>
         <dl class="admin-detail-list">
             <div><dt>Slug</dt><dd>{{ caisse.slug }}</dd></div>
+            <div><dt>Collection</dt><dd>{{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Non classée' }}</dd></div>
             <div><dt>Prix</dt><dd>{{ caisse.prix }} pièces</dd></div>
             <div><dt>Contenus</dt><dd>{{ caisse.contenus|length }} Stickman{% if caisse.contenus|length != 1 %}s{% endif %}</dd></div>
             <div><dt>Poids total</dt><dd>{{ caisse.poidsTotal }}</dd></div>

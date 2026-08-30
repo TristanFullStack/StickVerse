@@ -23,6 +23,7 @@
             <tr>
                 <th>Nom</th>
                 <th>Description</th>
+                <th>Collection</th>
                 <th>Image</th>
                 <th>Prix</th>
                 <th>Contenus</th>
@@ -35,6 +36,7 @@
             <tr>
                 <td><strong>{{ caisse.nom }}</strong><small>{{ caisse.slug }}</small></td>
                 <td class="admin-description-cell">{{ caisse.description }}</td>
+                <td>{{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Non classée' }}</td>
                 <td><small>{{ caisse.image }}</small></td>
                 <td><strong>{{ caisse.prix }} pièces</strong></td>
                 <td>{{ caisse.contenus|length }}</td>
@@ -46,7 +48,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="7">Aucune caisse enregistrée.</td>
+                <td colspan="8">Aucune caisse enregistrée.</td>
             </tr>
         {% endfor %}
         </tbody>

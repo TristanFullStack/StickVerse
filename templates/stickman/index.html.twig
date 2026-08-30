@@ -23,6 +23,7 @@
             <tr>
                 <th>Image</th>
                 <th>Nom</th>
+                <th>Collection</th>
                 <th>Rareté</th>
                 <th>PV</th>
                 <th>ATQ</th>
@@ -38,6 +39,7 @@
                     <img class="admin-stickman-thumbnail" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
                 </td>
                 <td><strong>{{ stickman.nom }}</strong><small>{{ stickman.slug }}</small></td>
+                <td>{{ stickman.collectionJeu ? stickman.collectionJeu.nom : 'Non classé' }}</td>
                 <td>{{ stickman.rarete }}</td>
                 <td>{{ stickman.pv }}</td>
                 <td>{{ stickman.attaque }}</td>
@@ -50,7 +52,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="8">Aucun Stickman enregistré.</td>
+                <td colspan="9">Aucun Stickman enregistré.</td>
             </tr>
         {% endfor %}
         </tbody>

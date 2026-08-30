@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle collection - Administration{% endblock %}
+{% block body %}
+    <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Catalogue</p><h1>Créer une collection</h1><p>Prépare une nouvelle saison de StickVerse.</p></div></div>
+    <section class="admin-form-card">{{ include('collection_jeu/_form.html.twig') }}</section>
+    <p class="admin-back-link"><a href="{{ path('app_collection_jeu_index') }}">← Retour aux collections</a></p>
+{% endblock %}

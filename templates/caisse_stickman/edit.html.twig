@@ -9,6 +9,7 @@
     <section class="admin-form-card">
         {{ include('caisse_stickman/_form.html.twig', {'button_label': 'Enregistrer les modifications'}) }}
     </section>
+    {% for message in app.flashes('error') %}<p class="flash-error" role="alert">{{ message }}</p>{% endfor %}
     <div class="admin-secondary-actions">
         <a href="{{ path('app_caisse_stickman_index') }}">← Retour au contenu des caisses</a>
         {{ include('caisse_stickman/_delete_form.html.twig') }}

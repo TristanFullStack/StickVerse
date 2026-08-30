@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Stickman;
+use App\Entity\CollectionJeu;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -54,6 +55,17 @@ class StickmanType extends AbstractType
             ->add('statutActif', CheckboxType::class, [
                 'label' => 'Actif ?',
                 'required' => false,
+            ])
+            ->add('collectionJeu', EntityType::class, [
+                'class' => CollectionJeu::class,
+                'choice_label' => static fn (CollectionJeu $collection): string => sprintf(
+                    'Saison %d — %s',
+                    $collection->getSaison(),
+                    $collection->getNom(),
+                ),
+                'label' => 'Collection',
+                'required' => false,
+                'placeholder' => 'Aucune collection',
             ])
         ;
     }

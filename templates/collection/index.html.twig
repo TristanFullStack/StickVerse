@@ -42,20 +42,53 @@
         </ol>
     </section>
 
-    {% if inventaires is empty %}
+    {% if collections is not empty %}
+        <section aria-labelledby="collections-titre">
+            <h2 id="collections-titre">Collections</h2>
+
+            {% for groupe in collections %}
+                <section class="collection-group" aria-labelledby="collection-{{ groupe.collection.id }}-titre">
+                    <div class="collection-group-heading">
+                        <div>
+                            <h3 id="collection-{{ groupe.collection.id }}-titre">{{ groupe.collection.nom }}</h3>
+                            <p>{{ groupe.collection.description }}</p>
+                        </div>
+                        <strong>{{ groupe.possedes }} / {{ groupe.total }} Stickman(s) ({{ groupe.pourcentage }} %)</strong>
+                    </div>
+
+                    {% if groupe.stickmen is not empty %}
+                        <div class="stickmen-list">
+                            {% for stickman in groupe.stickmen %}
+                                {% if groupe.inventaires[stickman.id] is defined %}
+                                    {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: groupe.inventaires[stickman.id]} only %}
+                                {% else %}
+                                    {% include 'stickman/_card.html.twig' with {stickman: stickman} only %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>Aucun Stickman dans cette collection.</p>
+                    {% endif %}
+                </section>
+            {% endfor %}
+        </section>
+    {% elseif inventaires is empty %}
         <p>Tu ne possèdes encore aucun Stickman.</p>
 
         <a href="{{ path('app_caisse_publique') }}">
             Voir les caisses
         </a>
     {% else %}
-        <div class="stickmen-list">
+        <section aria-labelledby="stickmen-possedes-titre">
+            <h2 id="stickmen-possedes-titre">Mes Stickmans</h2>
+            <div class="stickmen-list">
 
             {% for inventaire in inventaires %}
                 {% set stickman = inventaire.stickman %}
                 {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: inventaire} %}
             {% endfor %}
 
-        </div>
+            </div>
+        </section>
     {% endif %}
 {% endblock %}

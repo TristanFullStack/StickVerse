@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier une collection - Administration{% endblock %}
+{% block body %}
+    <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Catalogue</p><h1>Modifier {{ collection.nom }}</h1><p>Change les informations ou le statut de cette collection.</p></div></div>
+    <section class="admin-form-card">{{ include('collection_jeu/_form.html.twig', {'button_label': 'Enregistrer les modifications'}) }}</section>
+    <div class="admin-secondary-actions"><a href="{{ path('app_collection_jeu_index') }}">← Retour aux collections</a>{{ include('collection_jeu/_delete_form.html.twig') }}</div>
+{% endblock %}

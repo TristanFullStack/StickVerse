@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ collection.nom }} - Administration{% endblock %}
+{% block body %}
+    <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Catalogue</p><h1>{{ collection.nom }}</h1><p>{{ collection.description }}</p></div><a class="admin-primary-action" href="{{ path('app_collection_jeu_edit', {'id': collection.id}) }}">Modifier la collection</a></div>
+    <section class="admin-detail-card"><dl class="admin-detail-list"><div><dt>Saison</dt><dd>{{ collection.saison }}</dd></div><div><dt>Slug</dt><dd>{{ collection.slug }}</dd></div><div><dt>Stickmans</dt><dd>{{ collection.stickmen|length }}</dd></div><div><dt>Caisses</dt><dd>{{ collection.caisses|length }}</dd></div><div><dt>Statut</dt><dd>{{ collection.statutActif ? 'Active' : 'Inactive' }}</dd></div></dl></section>
+    <section class="admin-list-panel">
+        <div class="admin-list-heading"><strong>Catalogue de la collection</strong><span>{{ collection.stickmen|length }} Stickman(s), {{ collection.caisses|length }} caisse(s)</span></div>
+        <div class="admin-caisse-groups">
+            <div class="admin-empty-inline"><strong>Stickmans :</strong> {% for stickman in collection.stickmen %}<a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">{{ stickman.nom }}</a>{% if not loop.last %}, {% endif %}{% else %}Aucun{% endfor %}</div>
+            <div class="admin-empty-inline"><strong>Caisses :</strong> {% for caisse in collection.caisses %}<a href="{{ path('app_caisse_show', {'id': caisse.id}) }}">{{ caisse.nom }}</a>{% if not loop.last %}, {% endif %}{% else %}Aucune{% endfor %}</div>
+        </div>
+    </section>
+    <div class="admin-secondary-actions"><a href="{{ path('app_collection_jeu_index') }}">← Retour aux collections</a>{{ include('collection_jeu/_delete_form.html.twig') }}</div>
+{% endblock %}

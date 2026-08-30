@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\EquipeRepository;
 use App\Repository\InventaireRepository;
+use App\Service\CollectionJoueurService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,6 +18,7 @@ final class CollectionController extends AbstractController
     public function index(
         InventaireRepository $inventaireRepository,
         EquipeRepository $equipeRepository,
+        CollectionJoueurService $collectionJoueurService,
     ): Response {
         $utilisateur = $this->getUser();
 
@@ -34,6 +36,7 @@ final class CollectionController extends AbstractController
             'equipe_prete' => $equipeRepository->findOneBy([
                 'utilisateur' => $utilisateur,
             ]) !== null,
+            'collections' => $collectionJoueurService->construire($utilisateur),
         ]);
     }
 }

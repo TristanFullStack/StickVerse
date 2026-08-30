@@ -7026,7 +7026,94 @@ La base reste volontairement simple afin de pouvoir être redesignée plus tard 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J78 — Créer un vrai système de saisons et de collections
 
+### Objectif
+
+J78 relie réellement les Stickmans, les caisses et la progression du joueur à des collections organisées par saison.
+
+### Collections et saisons
+
+Une nouvelle entité `CollectionJeu` permet maintenant de définir :
+
+- le nom de la collection ;
+- son slug ;
+- sa description ;
+- son numéro de saison ;
+- son statut actif ou inactif ;
+- les Stickmans associés ;
+- les caisses associées.
+
+Deux collections initiales sont créées automatiquement :
+
+- Collection Origine ;
+- Saison 1 - Premiers Renforts.
+
+Les données existantes sont automatiquement rattachées à la collection correspondante lors de la migration.
+
+### Administration des collections
+
+Un nouvel outil d’administration permet de :
+
+- consulter toutes les collections ;
+- créer une collection ;
+- modifier ses informations ;
+- activer ou désactiver une collection ;
+- consulter ses Stickmans et ses caisses ;
+- supprimer une collection.
+
+L’accès est disponible depuis la navigation d’administration et depuis la console administrateur.
+
+### Association des Stickmans et des caisses
+
+Les formulaires administrateur des Stickmans et des caisses permettent maintenant de choisir une collection.
+
+Les listes et pages de détail affichent également la collection associée.
+
+Une vérification empêche d’ajouter dans une caisse un Stickman appartenant à une collection différente.
+
+### Progression du joueur
+
+La page « Ma collection » est maintenant organisée par collection.
+
+Pour chaque collection, le joueur voit :
+
+- le nombre de Stickmans obtenus ;
+- le nombre total de Stickmans ;
+- le pourcentage de progression ;
+- les cartes de tous les Stickmans de la collection ;
+- la quantité possédée lorsqu’il en possède un.
+
+Les collections sont affichées par saison, de la plus récente à la plus ancienne.
+
+### Boutique
+
+Les caisses visibles dans la boutique indiquent maintenant la collection à laquelle elles appartiennent.
+
+Cela permet d’identifier clairement la caisse correspondant à chaque saison.
+
+### Interface
+
+Le rendu reste volontairement simple et adapté au prototype :
+
+- fond clair ;
+- bordures sobres ;
+- niveaux de gris ;
+- aucune animation complexe ;
+- affichage lisible sur petit écran.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée.
+- Templates Twig vérifiés.
+- Conteneur Symfony validé.
+- Schéma Doctrine synchronisé après migration.
+- Suite complète validée : 211 tests et 1 778 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse possède maintenant une base solide pour gérer plusieurs saisons et collections sans devoir modifier manuellement chaque page du jeu.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Collections et saisons - Administration{% endblock %}
+
+{% block body %}
+    <div class="admin-page-heading">
+        <div><p class="admin-kicker">Administration / Catalogue</p><h1>Collections et saisons</h1><p>Organise les Stickmans et les caisses par saison.</p></div>
+        <a class="admin-primary-action" href="{{ path('app_collection_jeu_new') }}">Créer une collection</a>
+    </div>
+
+    <section class="admin-list-panel">
+        <div class="admin-list-heading">
+            <strong>{{ collections|length }} collection{% if collections|length != 1 %}s{% endif %}</strong>
+            <span>Une caisse et ses Stickmans doivent partager la même collection.</span>
+        </div>
+        <div class="admin-table-scroll">
+            <table class="admin-resource-table">
+                <thead><tr><th>Saison</th><th>Collection</th><th>Description</th><th>Stickmans</th><th>Caisses</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for collection in collections %}
+                        <tr>
+                            <td><strong>{{ collection.saison }}</strong></td>
+                            <td><strong>{{ collection.nom }}</strong><small>{{ collection.slug }}</small></td>
+                            <td class="admin-description-cell">{{ collection.description }}</td>
+                            <td>{{ collection.stickmen|length }}</td>
+                            <td>{{ collection.caisses|length }}</td>
+                            <td><span class="admin-status {{ collection.statutActif ? 'admin-status--active' : 'admin-status--inactive' }}">{{ collection.statutActif ? 'Active' : 'Inactive' }}</span></td>
+                            <td class="admin-table-actions"><a href="{{ path('app_collection_jeu_show', {'id': collection.id}) }}">Détails</a><a href="{{ path('app_collection_jeu_edit', {'id': collection.id}) }}">Modifier</a></td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7">Aucune collection enregistrée.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}
