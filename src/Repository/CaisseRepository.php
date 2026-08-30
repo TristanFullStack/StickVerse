@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Caisse;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,26 @@ class CaisseRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Caisse::class);
+    }
+
+    /**
+     * @return list<Caisse>
+     */
+    public function trouverDisponibles(?DateTimeImmutable $date = null): array
+    {
+        $date ??= new DateTimeImmutable();
+
+        return $this->createQueryBuilder('caisse')
+            ->leftJoin('caisse.collectionJeu', 'collection')
+            ->andWhere('caisse.statutActif = :actif')
+            ->andWhere('collection.id IS NULL OR collection.statutActif = :actif')
+            ->andWhere('collection.id IS NULL OR collection.dateDebut IS NULL OR collection.dateDebut <= :date')
+            ->andWhere('collection.id IS NULL OR collection.dateFin IS NULL OR collection.dateFin >= :date')
+            ->setParameter('actif', true)
+            ->setParameter('date', $date)
+            ->orderBy('caisse.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**

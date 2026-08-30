@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\CollectionJeuRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -35,6 +36,13 @@ class CollectionJeu
 
     #[ORM\Column]
     private ?bool $statutActif = true;
+
+    #[ORM\Column(nullable: true)]
+    private ?DateTimeImmutable $dateDebut = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\GreaterThan(propertyPath: 'dateDebut', message: 'La date de fin doit être postérieure à la date de début.')]
+    private ?DateTimeImmutable $dateFin = null;
 
     /**
      * @var Collection<int, Stickman>
@@ -117,6 +125,43 @@ class CollectionJeu
         $this->statutActif = $statutActif;
 
         return $this;
+    }
+
+    public function getDateDebut(): ?DateTimeImmutable
+    {
+        return $this->dateDebut;
+    }
+
+    public function setDateDebut(?DateTimeImmutable $dateDebut): static
+    {
+        $this->dateDebut = $dateDebut;
+
+        return $this;
+    }
+
+    public function getDateFin(): ?DateTimeImmutable
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(?DateTimeImmutable $dateFin): static
+    {
+        $this->dateFin = $dateFin;
+
+        return $this;
+    }
+
+    public function estDisponibleA(DateTimeImmutable $date): bool
+    {
+        if (!$this->statutActif) {
+            return false;
+        }
+
+        if ($this->dateDebut !== null && $date < $this->dateDebut) {
+            return false;
+        }
+
+        return $this->dateFin === null || $date <= $this->dateFin;
     }
 
     /**

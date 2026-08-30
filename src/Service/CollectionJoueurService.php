@@ -30,10 +30,7 @@ final class CollectionJoueurService
         }
 
         $resultat = [];
-        foreach ($this->collectionRepository->findBy(
-            ['statutActif' => true],
-            ['saison' => 'DESC', 'nom' => 'ASC'],
-        ) as $collection) {
+        foreach ($this->collectionRepository->trouverDisponibles() as $collection) {
             $stickmen = $collection->getStickmen()->toArray();
             usort($stickmen, static fn ($premier, $second): int => strcasecmp(
                 $premier->getNom() ?? '',

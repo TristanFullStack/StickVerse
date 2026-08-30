@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Stickman;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,26 @@ class StickmanRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Stickman::class);
+    }
+
+    /**
+     * @return list<Stickman>
+     */
+    public function trouverDisponibles(?DateTimeImmutable $date = null): array
+    {
+        $date ??= new DateTimeImmutable();
+
+        return $this->createQueryBuilder('stickman')
+            ->leftJoin('stickman.collectionJeu', 'collection')
+            ->andWhere('stickman.statutActif = :actif')
+            ->andWhere('collection.id IS NULL OR collection.statutActif = :actif')
+            ->andWhere('collection.id IS NULL OR collection.dateDebut IS NULL OR collection.dateDebut <= :date')
+            ->andWhere('collection.id IS NULL OR collection.dateFin IS NULL OR collection.dateFin >= :date')
+            ->setParameter('actif', true)
+            ->setParameter('date', $date)
+            ->orderBy('stickman.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

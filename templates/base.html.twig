@@ -51,6 +51,10 @@
                         {% if navigation_route == 'app_collection' %}aria-current="page"{% endif %}
                     >Collection</a>
                     <a
+                        href="{{ path('app_saison') }}"
+                        {% if navigation_route == 'app_saison' %}aria-current="page"{% endif %}
+                    >Saison</a>
+                    <a
                         href="{{ path('app_equipe') }}"
                         {% if navigation_route == 'app_equipe' %}aria-current="page"{% endif %}
                     >Équipe</a>

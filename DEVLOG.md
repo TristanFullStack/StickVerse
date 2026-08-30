@@ -7117,7 +7117,128 @@ StickVerse possède maintenant une base solide pour gérer plusieurs saisons et 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J79 — Planifier et afficher la saison active
 
+### Objectif
+
+J79 transforme les collections saisonnières en véritables saisons programmables et ajoute une page permettant au joueur de consulter la saison actuellement disponible.
+
+### Planification des saisons
+
+Chaque collection peut maintenant définir :
+
+- une date de début ;
+- une date de fin facultative ;
+- un statut actif ou inactif ;
+- un numéro de saison.
+
+Une collection devient disponible uniquement lorsque :
+
+- son statut est actif ;
+- sa date de début est atteinte ;
+- sa date de fin n’est pas dépassée.
+
+Une collection sans date de début ou de fin reste disponible sans limite correspondante.
+
+### Saison active
+
+StickVerse détermine automatiquement la saison active.
+
+Lorsqu’il existe plusieurs collections disponibles, la collection possédant le numéro de saison le plus élevé est utilisée comme saison actuelle.
+
+La Collection Origine reste disponible dans le catalogue, mais elle n’est pas considérée comme une saison temporaire.
+
+### Page de saison
+
+Une nouvelle page `/saison` permet au joueur connecté de consulter :
+
+- le numéro de la saison ;
+- le nom de la collection ;
+- sa description ;
+- sa période de disponibilité ;
+- sa progression personnelle ;
+- le nombre de Stickmans obtenus ;
+- le nombre total de Stickmans ;
+- le pourcentage de complétion ;
+- les caisses disponibles pendant la saison ;
+- tous les Stickmans de la saison.
+
+Les cartes Stickmans utilisent toujours le template partagé avec le wiki et la collection.
+
+### Progression du joueur
+
+La progression de saison est calculée à partir de l’inventaire réel du joueur.
+
+Pour chaque Stickman de la saison, la page indique également la quantité possédée lorsque le joueur l’a déjà obtenu.
+
+Une barre de progression simple permet de visualiser l’avancement sans ajouter de design complexe.
+
+### Tableau de bord
+
+Le tableau de bord principal contient maintenant un résumé de la saison active avec :
+
+- son numéro ;
+- son nom ;
+- le nombre de Stickmans obtenus ;
+- le nombre total de Stickmans ;
+- un accès direct à la page de saison.
+
+### Navigation
+
+Un lien « Saison » a été ajouté à la navigation des joueurs connectés.
+
+Le lien indique visuellement lorsque la page de saison est actuellement ouverte.
+
+### Disponibilité automatique du catalogue
+
+Les périodes configurées sont appliquées dans l’ensemble du jeu.
+
+Une collection future, terminée ou inactive est automatiquement masquée dans :
+
+- le wiki ;
+- la boutique de caisses ;
+- la page « Ma collection ».
+
+Il n’est donc pas nécessaire de modifier manuellement plusieurs pages lors du lancement ou de la fin d’une saison.
+
+Les Stickmans et caisses qui ne sont associés à aucune collection restent disponibles afin de conserver la compatibilité avec les anciennes données.
+
+### Administration
+
+Les pages d’administration des collections affichent maintenant :
+
+- la date de début ;
+- la date de fin ;
+- la période complète de disponibilité.
+
+Les formulaires permettent de préparer une future saison à l’avance sans la rendre immédiatement visible aux joueurs.
+
+### Migration
+
+Une nouvelle migration ajoute les dates de début et de fin aux collections.
+
+La Saison 1 - Premiers Renforts reçoit automatiquement le 30 août 2026 comme date de début.
+
+La migration a été appliquée aux bases locale et de test.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée.
+- Templates Twig validés.
+- Conteneur Symfony validé.
+- Nouvelle route `/saison` vérifiée.
+- Schéma Doctrine synchronisé.
+- Tests de disponibilité temporelle ajoutés.
+- Tests du service de saison ajoutés.
+- Tests HTTP de la page de saison ajoutés.
+- Suite complète validée : 217 tests et 1 804 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse possède maintenant un fonctionnement saisonnier automatisé.
+
+Une nouvelle saison peut être créée et programmée depuis l’administration, puis apparaître automatiquement dans le jeu à la date prévue sans révéler son contenu trop tôt.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

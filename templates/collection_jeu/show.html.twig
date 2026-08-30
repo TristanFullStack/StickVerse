@@ -2,7 +2,7 @@
 {% block title %}{{ collection.nom }} - Administration{% endblock %}
 {% block body %}
     <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Catalogue</p><h1>{{ collection.nom }}</h1><p>{{ collection.description }}</p></div><a class="admin-primary-action" href="{{ path('app_collection_jeu_edit', {'id': collection.id}) }}">Modifier la collection</a></div>
-    <section class="admin-detail-card"><dl class="admin-detail-list"><div><dt>Saison</dt><dd>{{ collection.saison }}</dd></div><div><dt>Slug</dt><dd>{{ collection.slug }}</dd></div><div><dt>Stickmans</dt><dd>{{ collection.stickmen|length }}</dd></div><div><dt>Caisses</dt><dd>{{ collection.caisses|length }}</dd></div><div><dt>Statut</dt><dd>{{ collection.statutActif ? 'Active' : 'Inactive' }}</dd></div></dl></section>
+    <section class="admin-detail-card"><dl class="admin-detail-list"><div><dt>Saison</dt><dd>{{ collection.saison }}</dd></div><div><dt>Slug</dt><dd>{{ collection.slug }}</dd></div><div><dt>Début</dt><dd>{{ collection.dateDebut ? collection.dateDebut|date('d/m/Y H:i') : 'Non défini' }}</dd></div><div><dt>Fin</dt><dd>{{ collection.dateFin ? collection.dateFin|date('d/m/Y H:i') : 'Non définie' }}</dd></div><div><dt>Stickmans</dt><dd>{{ collection.stickmen|length }}</dd></div><div><dt>Caisses</dt><dd>{{ collection.caisses|length }}</dd></div><div><dt>Statut</dt><dd>{{ collection.statutActif ? 'Active' : 'Inactive' }}</dd></div></dl></section>
     <section class="admin-list-panel">
         <div class="admin-list-heading"><strong>Catalogue de la collection</strong><span>{{ collection.stickmen|length }} Stickman(s), {{ collection.caisses|length }} caisse(s)</span></div>
         <div class="admin-caisse-groups">

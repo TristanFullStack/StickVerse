@@ -12,9 +12,7 @@ final class WikiController extends AbstractController
     #[Route('/wiki', name: 'app_wiki')]
     public function index(StickmanRepository $stickmanRepository): Response
     {
-        $stickmen = $stickmanRepository->findBy([
-            'statutActif' => true,
-        ]);
+        $stickmen = $stickmanRepository->trouverDisponibles();
 
         return $this->render('wiki/index.html.twig', [
             'stickmen' => $stickmen,
@@ -31,7 +29,9 @@ final class WikiController extends AbstractController
             'statutActif' => true,
         ]);
 
-        if (!$stickman) {
+        if (!$stickman
+            || $stickman->getCollectionJeu() !== null
+            && !$stickman->getCollectionJeu()->estDisponibleA(new \DateTimeImmutable())) {
             throw $this->createNotFoundException('Stickman introuvable.');
         }
 

@@ -37,6 +37,17 @@
                 </article>
 
                 <article class="dashboard-card">
+                    <h3>Saison</h3>
+                    {% if saison %}
+                        <p>Saison {{ saison.collection.saison }} — {{ saison.collection.nom }}</p>
+                        <p>{{ saison.possedes }} / {{ saison.total }} Stickman(s)</p>
+                    {% else %}
+                        <p>Aucune saison active.</p>
+                    {% endif %}
+                    <a href="{{ path('app_saison') }}">Voir la saison</a>
+                </article>
+
+                <article class="dashboard-card">
                     <h3>Combat en ligne</h3>
                     {% if tableau_de_bord.combatActif %}
                         <p>

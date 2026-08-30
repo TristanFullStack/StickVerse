@@ -15,12 +15,13 @@
         </div>
         <div class="admin-table-scroll">
             <table class="admin-resource-table">
-                <thead><tr><th>Saison</th><th>Collection</th><th>Description</th><th>Stickmans</th><th>Caisses</th><th>Statut</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Saison</th><th>Collection</th><th>Période</th><th>Description</th><th>Stickmans</th><th>Caisses</th><th>Statut</th><th>Actions</th></tr></thead>
                 <tbody>
                     {% for collection in collections %}
                         <tr>
                             <td><strong>{{ collection.saison }}</strong></td>
                             <td><strong>{{ collection.nom }}</strong><small>{{ collection.slug }}</small></td>
+                            <td><small>{{ collection.dateDebut ? collection.dateDebut|date('d/m/Y H:i') : 'Sans début' }}</small><small>{{ collection.dateFin ? collection.dateFin|date('d/m/Y H:i') : 'Sans fin' }}</small></td>
                             <td class="admin-description-cell">{{ collection.description }}</td>
                             <td>{{ collection.stickmen|length }}</td>
                             <td>{{ collection.caisses|length }}</td>
@@ -28,7 +29,7 @@
                             <td class="admin-table-actions"><a href="{{ path('app_collection_jeu_show', {'id': collection.id}) }}">Détails</a><a href="{{ path('app_collection_jeu_edit', {'id': collection.id}) }}">Modifier</a></td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7">Aucune collection enregistrée.</td></tr>
+                        <tr><td colspan="8">Aucune collection enregistrée.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

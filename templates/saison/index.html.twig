@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Saison en cours - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Saison en cours</h1>
+
+    {% if saison is null %}
+        <section class="dashboard-section">
+            <h2>Aucune saison active</h2>
+            <p>La prochaine saison sera annoncée ici.</p>
+            <a href="{{ path('app_collection') }}">Voir ma collection</a>
+        </section>
+    {% else %}
+        {% set collection = saison.collection %}
+        <section class="dashboard-section saison-summary">
+            <p><strong>Saison {{ collection.saison }}</strong></p>
+            <h2>{{ collection.nom }}</h2>
+            <p>{{ collection.description }}</p>
+            <p>
+                Disponible depuis :
+                {{ collection.dateDebut ? collection.dateDebut|date('d/m/Y H:i') : 'sans date de début' }}
+                {% if collection.dateFin %}— jusqu’au {{ collection.dateFin|date('d/m/Y H:i') }}{% endif %}
+            </p>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="progression-saison-titre">
+            <h2 id="progression-saison-titre">Ma progression</h2>
+            <p><strong>{{ saison.possedes }} / {{ saison.total }} Stickman(s) — {{ saison.pourcentage }} %</strong></p>
+            <progress value="{{ saison.possedes }}" max="{{ saison.total > 0 ? saison.total : 1 }}">{{ saison.pourcentage }} %</progress>
+            <p><a href="{{ path('app_collection') }}">Voir toutes mes collections</a></p>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="caisses-saison-titre">
+            <h2 id="caisses-saison-titre">Caisses de la saison</h2>
+            {% if saison.caisses is empty %}
+                <p>Aucune caisse disponible pour cette saison.</p>
+            {% else %}
+                <ul>
+                    {% for caisse in saison.caisses %}
+                        <li><a href="{{ path('app_caisse_publique') }}#caisse-{{ caisse.slug }}">{{ caisse.nom }}</a> — {{ caisse.prix }} pièces</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+
+        <section aria-labelledby="stickmen-saison-titre">
+            <h2 id="stickmen-saison-titre">Stickmans de la saison</h2>
+            {% if saison.stickmen is empty %}
+                <p>Aucun Stickman disponible dans cette saison.</p>
+            {% else %}
+                <div class="stickmen-list">
+                    {% for stickman in saison.stickmen %}
+                        {% if saison.inventaires[stickman.id] is defined %}
+                            {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: saison.inventaires[stickman.id]} only %}
+                        {% else %}
+                            {% include 'stickman/_card.html.twig' with {stickman: stickman} only %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    {% endif %}
+{% endblock %}

@@ -35,10 +35,7 @@ final class CollectionJoueurServiceTest extends TestCase
 
         $collections = $this->createMock(CollectionJeuRepository::class);
         $inventaires = $this->createMock(InventaireRepository::class);
-        $collections->expects(self::once())->method('findBy')->with(
-            ['statutActif' => true],
-            ['saison' => 'DESC', 'nom' => 'ASC'],
-        )->willReturn([$collection]);
+        $collections->expects(self::once())->method('trouverDisponibles')->willReturn([$collection]);
         $inventaires->expects(self::once())->method('findBy')->with(['utilisateur' => $joueur])->willReturn([]);
 
         $resultat = (new CollectionJoueurService($collections, $inventaires))->construire($joueur);
@@ -64,7 +61,7 @@ final class CollectionJoueurServiceTest extends TestCase
 
         $collections = $this->createMock(CollectionJeuRepository::class);
         $inventaires = $this->createMock(InventaireRepository::class);
-        $collections->expects(self::once())->method('findBy')->willReturn([$collection]);
+        $collections->expects(self::once())->method('trouverDisponibles')->willReturn([$collection]);
         $inventaires->expects(self::once())->method('findBy')->willReturn([]);
 
         $resultat = (new CollectionJoueurService($collections, $inventaires))->construire($joueur);

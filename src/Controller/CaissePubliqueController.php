@@ -18,9 +18,7 @@ final class CaissePubliqueController extends AbstractController
     #[Route('/caisses', name: 'app_caisse_publique', methods: ['GET'])]
     public function index(CaisseRepository $caisseRepository): Response
     {
-        $caisses = $caisseRepository->findBy([
-            'statutActif' => true,
-        ]);
+        $caisses = $caisseRepository->trouverDisponibles();
 
         return $this->render('caisse_publique/index.html.twig', [
             'caisses' => $caisses,
@@ -34,7 +32,9 @@ final class CaissePubliqueController extends AbstractController
         Caisse $caisse,
         OuvertureCaisseService $ouvertureCaisseService
     ): Response {
-        if (!$caisse->isStatutActif()) {
+        if (!$caisse->isStatutActif()
+            || $caisse->getCollectionJeu() !== null
+            && !$caisse->getCollectionJeu()->estDisponibleA(new \DateTimeImmutable())) {
             throw $this->createNotFoundException(
                 'Cette caisse est indisponible.'
             );

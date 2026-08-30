@@ -29,7 +29,7 @@
         <div class="caisses-list">
 
             {% for caisse in caisses %}
-                <article class="caisse-card">
+                <article class="caisse-card" id="caisse-{{ caisse.slug }}">
 
                     <h2>{{ caisse.nom }}</h2>
 
