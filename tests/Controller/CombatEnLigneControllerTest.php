@@ -92,6 +92,7 @@ final class CombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertResponseIsSuccessful();
+        $this->assertReponseNonMiseEnCache();
 
         $donnees = $this->lireReponseJson();
 
@@ -495,6 +496,22 @@ final class CombatEnLigneControllerTest extends WebTestCase
             'D',
             $planEnregistre->getCibleDefenseY(),
         );
+    }
+
+    private function assertReponseNonMiseEnCache(): void
+    {
+        $reponse = $this->client->getResponse();
+
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('private'),
+        );
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('no-store'),
+        );
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('no-cache'),
+        );
+        self::assertSame('no-cache', $reponse->headers->get('Pragma'));
     }
 
     public function testDemarreLeRoundApresDeuxConfirmations(): void

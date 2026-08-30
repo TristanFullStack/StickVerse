@@ -119,6 +119,7 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertResponseIsSuccessful();
+        $this->assertReponseNonMiseEnCache();
 
         $salonJoueur1 = $this->lireReponseJson();
 
@@ -517,6 +518,22 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonApresJonction
                 ['combatsDisponibles'],
         );
+    }
+
+    private function assertReponseNonMiseEnCache(): void
+    {
+        $reponse = $this->client->getResponse();
+
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('private'),
+        );
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('no-store'),
+        );
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('no-cache'),
+        );
+        self::assertSame('no-cache', $reponse->headers->get('Pragma'));
     }
 
     public function testExposeLesPublicsMaisCacheLesPrivesDuSalon(): void

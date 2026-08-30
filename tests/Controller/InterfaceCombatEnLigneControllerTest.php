@@ -85,6 +85,7 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         $this->client->request('GET', '/combats');
 
         self::assertResponseIsSuccessful();
+        $this->assertReponseNonMiseEnCache();
         self::assertSelectorTextContains(
             'h1',
             'Combats en ligne',
@@ -259,6 +260,22 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne header p',
             $joueur->getEmail(),
         );
+    }
+
+    private function assertReponseNonMiseEnCache(): void
+    {
+        $reponse = $this->client->getResponse();
+
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('private'),
+        );
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('no-store'),
+        );
+        self::assertTrue(
+            $reponse->headers->hasCacheControlDirective('no-cache'),
+        );
+        self::assertSame('no-cache', $reponse->headers->get('Pragma'));
     }
 
     public function testAfficheLeRapportSeulementAuxParticipants(): void

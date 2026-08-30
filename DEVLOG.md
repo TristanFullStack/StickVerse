@@ -5530,7 +5530,94 @@ StickVerse dispose maintenant d’un point d’entrée serveur unique pour netto
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J63 — Empêcher la mise en cache des combats en ligne
 
+### Objectif
+
+J63 empêche le navigateur ou un intermédiaire réseau de conserver puis de renvoyer une ancienne réponse du salon ou d’un combat en ligne.
+
+Les réponses concernées contiennent des informations qui évoluent rapidement :
+
+- le statut du combat ;
+- le numéro du round ;
+- les points de vie ;
+- la préparation des joueurs ;
+- la soumission des plans ;
+- les jetons CSRF.
+
+### Architecture choisie
+
+Un abonné aux événements Symfony intervient après le contrôleur et avant l’envoi de la réponse au navigateur.
+
+Cette protection reste centralisée et évite de répéter les mêmes en-têtes dans chaque contrôleur.
+
+Le moteur de combat et les règles métier ne sont pas modifiés.
+
+### Routes protégées
+
+La protection concerne :
+
+- l’API du salon ;
+- l’API des combats ;
+- l’interface principale des combats ;
+- les rapports définitifs.
+
+Les autres pages et les sous-requêtes internes de Symfony restent inchangées.
+
+### En-têtes appliqués
+
+Les réponses sont déclarées privées et non stockables avec :
+
+- `private` ;
+- `no-store` ;
+- `no-cache` ;
+- `must-revalidate` ;
+- une durée maximale de zéro ;
+- une date d’expiration passée ;
+- `Pragma: no-cache`.
+
+Chaque polling doit ainsi récupérer l’état actuel fourni par le serveur.
+
+### Sécurité
+
+Cette protection empêche également la conservation des jetons CSRF contenus dans les réponses JSON.
+
+Une réponse appartenant à un joueur connecté ne doit pas être réutilisée depuis un cache partagé ou pour un autre utilisateur.
+
+### Tests ajoutés
+
+Les tests vérifient :
+
+- les en-têtes des routes du combat ;
+- les en-têtes du salon ;
+- les en-têtes de l’interface ;
+- les en-têtes des rapports ;
+- l’absence de modification des autres routes ;
+- l’absence de modification des sous-requêtes ;
+- le branchement réel dans les contrôleurs HTTP existants.
+
+### Validation
+
+- syntaxes PHP valides ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- bases de développement et de test synchronisées ;
+- 146 tests réussis ;
+- 1 379 assertions réussies ;
+- aucune notice PHPUnit ;
+- aucune migration nécessaire.
+
+### Fichiers concernés
+
+- `src/EventSubscriber/EntetesCacheCombatEnLigneSubscriber.php`
+- `tests/EventSubscriber/EntetesCacheCombatEnLigneSubscriberTest.php`
+- `tests/Controller/CombatEnLigneControllerTest.php`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+- `tests/Controller/SalonCombatEnLigneControllerTest.php`
+
+### Résultat
+
+Le salon, les combats et leurs rapports utilisent maintenant des réponses explicitement non stockables. Les joueurs ne risquent plus de recevoir un ancien état conservé dans un cache.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
