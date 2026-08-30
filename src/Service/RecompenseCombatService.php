@@ -3,7 +3,9 @@
 namespace App\Service;
 
 use App\Entity\Combat;
+use App\Entity\MouvementPieces;
 use App\Entity\User;
+use App\Service\MouvementPiecesService;
 use LogicException;
 
 final class RecompenseCombatService
@@ -11,6 +13,11 @@ final class RecompenseCombatService
     public const RECOMPENSE_VICTOIRE = 100;
     public const RECOMPENSE_DEFAITE = 25;
     public const RECOMPENSE_MATCH_NUL = 50;
+
+    public function __construct(
+        private readonly ?MouvementPiecesService $mouvementPiecesService = null,
+    ) {
+    }
 
     /**
      * @return array{joueur1: int, joueur2: int}
@@ -78,10 +85,20 @@ final class RecompenseCombatService
 
         if ($recompenses['joueur1'] > 0) {
             $joueur1->crediterPieces($recompenses['joueur1']);
+            $this->enregistrerMouvement(
+                $joueur1,
+                $recompenses['joueur1'],
+                $combat,
+            );
         }
 
         if ($recompenses['joueur2'] > 0) {
             $joueur2->crediterPieces($recompenses['joueur2']);
+            $this->enregistrerMouvement(
+                $joueur2,
+                $recompenses['joueur2'],
+                $combat,
+            );
         }
 
         $combat->marquerRecompenseAttribuee();
@@ -164,5 +181,23 @@ final class RecompenseCombatService
 
         return $premier->getId() !== null
             && $premier->getId() === $second->getId();
+    }
+
+    private function enregistrerMouvement(
+        User $joueur,
+        int $montant,
+        Combat $combat,
+    ): void {
+        $combatId = $combat->getId();
+        $libelle = $combatId === null
+            ? 'Récompense de combat'
+            : 'Récompense du combat #'.$combatId;
+
+        $this->mouvementPiecesService?->enregistrer(
+            $joueur,
+            $montant,
+            MouvementPieces::TYPE_RECOMPENSE_COMBAT,
+            $libelle,
+        );
     }
 }

@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\CombatRepository;
 use App\Repository\EquipeRepository;
 use App\Repository\InventaireRepository;
+use App\Repository\MouvementPiecesRepository;
 
 final readonly class ProfilJoueurService
 {
@@ -14,6 +15,7 @@ final readonly class ProfilJoueurService
         private InventaireRepository $inventaireRepository,
         private EquipeRepository $equipeRepository,
         private CombatRepository $combatRepository,
+        private ?MouvementPiecesRepository $mouvementPiecesRepository = null,
     ) {
     }
 
@@ -26,7 +28,8 @@ final readonly class ProfilJoueurService
      *         victoires: int,
      *         defaites: int,
      *         matchsNuls: int
-     *     }
+     *     },
+     *     mouvementsPieces: list<\App\Entity\MouvementPieces>
      * }
      */
     public function construire(User $joueur): array
@@ -40,6 +43,9 @@ final readonly class ProfilJoueurService
             ]),
             'statistiques' => $this->combatRepository
                 ->calculerStatistiquesPourJoueur($joueur),
+            'mouvementsPieces' => $this->mouvementPiecesRepository?->trouverPourJoueur(
+                $joueur,
+            ) ?? [],
         ];
     }
 }

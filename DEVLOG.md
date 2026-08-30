@@ -6392,7 +6392,75 @@ La prochaine étape pourra ajouter un historique des mouvements de pièces afin 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J71 — Ajouter l’historique des mouvements de pièces
 
+### Objectif
+
+J71 permet au joueur de consulter l’origine et l’utilisation de ses pièces virtuelles.
+
+### Fonctionnalités ajoutées
+
+- Création d’une entité dédiée aux mouvements de pièces.
+- Chaque mouvement conserve :
+  - le joueur concerné ;
+  - le montant signé ;
+  - le type d’opération ;
+  - un libellé lisible ;
+  - la date de création.
+- Les dépenses sont enregistrées avec un montant négatif.
+- Les récompenses sont enregistrées avec un montant positif.
+- Les mouvements nuls sont refusés.
+- Les types d’opération inconnus sont refusés.
+- Les mouvements sont automatiquement supprimés avec le compte du joueur.
+
+### Opérations enregistrées
+
+- Ouverture d’une caisse :
+  - montant négatif ;
+  - nom de la caisse indiqué dans le libellé.
+- Récompense de combat :
+  - montant positif ;
+  - numéro du combat indiqué lorsque celui-ci est disponible.
+
+### Profil du joueur
+
+Une nouvelle section affiche les derniers mouvements de pièces :
+
+- date ;
+- libellé de l’opération ;
+- montant gagné ou dépensé.
+
+Les mouvements sont triés du plus récent au plus ancien et limités aux dernières opérations utiles.
+
+### Sécurisation
+
+L’écriture du mouvement est réalisée dans la même transaction que la dépense ou la récompense.
+
+Une ouverture de caisse échouée ne crée aucun mouvement.
+
+Une récompense déjà distribuée ne crée aucun mouvement supplémentaire.
+
+### Base de données
+
+Une migration crée la table `mouvement_pieces` avec une relation obligatoire vers le joueur et une suppression automatique des mouvements lors de la suppression du compte.
+
+### Vérifications automatiques
+
+- Entité et validation des types de mouvements.
+- Enregistrement Doctrine d’un mouvement.
+- Historique d’achat d’une caisse.
+- Historique de récompense de combat.
+- Affichage des mouvements sur le profil.
+- Vérification des montants signés.
+- Schéma Doctrine synchronisé.
+- Conteneur Symfony valide.
+- Suite complète validée : 189 tests et 1 679 assertions.
+
+### Résultat
+
+Le joueur peut maintenant comprendre précisément comment son solde évolue. Les achats de caisses et les récompenses de combats sont conservés dans un historique simple et vérifiable.
+
+La prochaine étape pourra ajouter des récompenses quotidiennes ou des objectifs donnant des pièces supplémentaires.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

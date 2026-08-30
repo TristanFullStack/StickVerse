@@ -3,6 +3,7 @@
 namespace App\Tests\Controller;
 
 use App\Entity\Combat;
+use App\Entity\MouvementPieces;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
@@ -99,6 +100,13 @@ final class ProfilControllerTest extends WebTestCase
             $this->entityManager->persist($combat);
         }
 
+        $this->entityManager->persist(new MouvementPieces(
+            $joueur,
+            -120,
+            MouvementPieces::TYPE_ACHAT_CAISSE,
+            'Ouverture de la caisse Origine',
+        ));
+
         $this->entityManager->flush();
 
         $this->client->loginUser($joueur);
@@ -117,6 +125,14 @@ final class ProfilControllerTest extends WebTestCase
         self::assertSelectorTextContains(
             '[data-profile-pieces]',
             '1000 pièces',
+        );
+        self::assertSelectorTextContains(
+            '[data-profile-mouvements]',
+            'Ouverture de la caisse Origine',
+        );
+        self::assertSelectorTextContains(
+            '[data-profile-mouvements]',
+            '-120 pièces',
         );
         self::assertSelectorExists('a[href="/profil/pseudo"]');
         self::assertSelectorTextContains(

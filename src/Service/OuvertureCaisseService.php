@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Caisse;
 use App\Entity\Inventaire;
+use App\Entity\MouvementPieces;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Exception\SoldePiecesInsuffisantException;
@@ -18,6 +19,7 @@ final class OuvertureCaisseService
         private readonly InventaireRepository $inventaireRepository,
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ?MouvementPiecesService $mouvementPiecesService = null,
     ) {
     }
 
@@ -100,6 +102,15 @@ final class OuvertureCaisseService
                     $joueurVerrouille,
                     $stickman,
                 );
+
+                if ($prix > 0) {
+                    $this->mouvementPiecesService?->enregistrer(
+                        $joueurVerrouille,
+                        -$prix,
+                        MouvementPieces::TYPE_ACHAT_CAISSE,
+                        'Ouverture de la caisse '.($caisse->getNom() ?? ''),
+                    );
+                }
 
                 return $stickman;
             }

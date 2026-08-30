@@ -58,10 +58,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Equipe::class, mappedBy: 'utilisateur', orphanRemoval: true)]
     private Collection $equipes;
 
+    /**
+     * @var Collection<int, MouvementPieces>
+     */
+    #[ORM\OneToMany(
+        targetEntity: MouvementPieces::class,
+        mappedBy: 'utilisateur',
+        orphanRemoval: true,
+    )]
+    private Collection $mouvementsPieces;
+
     public function __construct()
     {
         $this->inventaires = new ArrayCollection();
         $this->equipes = new ArrayCollection();
+        $this->mouvementsPieces = new ArrayCollection();
         $this->pseudo = 'Joueur-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
@@ -243,6 +254,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $equipe->setUtilisateur(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MouvementPieces>
+     */
+    public function getMouvementsPieces(): Collection
+    {
+        return $this->mouvementsPieces;
+    }
+
+    public function addMouvementPieces(
+        MouvementPieces $mouvement,
+    ): static {
+        if (!$this->mouvementsPieces->contains($mouvement)) {
+            $this->mouvementsPieces->add($mouvement);
+        }
+
+        return $this;
+    }
+
+    public function removeMouvementPieces(
+        MouvementPieces $mouvement,
+    ): static {
+        $this->mouvementsPieces->removeElement($mouvement);
 
         return $this;
     }

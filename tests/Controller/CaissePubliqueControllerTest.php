@@ -5,9 +5,11 @@ namespace App\Tests\Controller;
 use App\Entity\Caisse;
 use App\Entity\CaisseStickman;
 use App\Entity\Inventaire;
+use App\Entity\MouvementPieces;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\InventaireRepository;
+use App\Repository\MouvementPiecesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -91,6 +93,16 @@ final class CaissePubliqueControllerTest extends WebTestCase
             '880 pièces',
         );
         self::assertSame(880, $this->lireSolde($joueur));
+
+        $mouvements = static::getContainer()
+            ->get(MouvementPiecesRepository::class)
+            ->findBy(['utilisateur' => $joueur]);
+        self::assertCount(1, $mouvements);
+        self::assertSame(-120, $mouvements[0]->getMontant());
+        self::assertSame(
+            MouvementPieces::TYPE_ACHAT_CAISSE,
+            $mouvements[0]->getType(),
+        );
 
         $inventaire = $this->trouverInventaire($joueur, $caisse);
         self::assertInstanceOf(Inventaire::class, $inventaire);

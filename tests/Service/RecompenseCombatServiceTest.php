@@ -3,8 +3,11 @@
 namespace App\Tests\Service;
 
 use App\Entity\Combat;
+use App\Entity\MouvementPieces;
 use App\Entity\User;
+use App\Service\MouvementPiecesService;
 use App\Service\RecompenseCombatService;
+use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 
@@ -27,6 +30,24 @@ final class RecompenseCombatServiceTest extends TestCase
         self::assertSame(1100, $joueur1->getPieces());
         self::assertSame(1025, $joueur2->getPieces());
         self::assertTrue($combat->estRecompenseAttribuee());
+    }
+
+    public function testEnregistreLesMouvementsDesDeuxJoueurs(): void
+    {
+        [$combat, $joueur1, $joueur2] = $this->creerCombat();
+        $combat
+            ->setGagnant($joueur1)
+            ->setStatut(Combat::STATUT_TERMINE);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager
+            ->expects(self::exactly(2))
+            ->method('persist')
+            ->with(self::isInstanceOf(MouvementPieces::class));
+        $mouvementService = new MouvementPiecesService($entityManager);
+
+        (new RecompenseCombatService($mouvementService))
+            ->attribuerSiNecessaire($combat);
     }
 
     public function testRecompenseLesDeuxJoueursEnCasDeMatchNul(): void

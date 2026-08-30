@@ -79,4 +79,30 @@
         <h2 id="securite-titre">Sécurité du compte</h2>
         <p><a href="{{ path('app_modifier_mot_de_passe') }}">Modifier mon mot de passe</a></p>
     </section>
+
+    <section class="profile-section" aria-labelledby="mouvements-pieces-titre">
+        <h2 id="mouvements-pieces-titre">Mouvements de pièces</h2>
+        {% if profil.mouvementsPieces is empty %}
+            <p data-profile-mouvements-vides>Aucun mouvement enregistré.</p>
+        {% else %}
+            <table data-profile-mouvements>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Opération</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mouvement in profil.mouvementsPieces %}
+                        <tr data-profile-mouvement>
+                            <td>{{ mouvement.dateCreation|date('d/m/Y H:i') }}</td>
+                            <td>{{ mouvement.libelle }}</td>
+                            <td>{{ mouvement.montant > 0 ? '+' : '' }}{{ mouvement.montant }} pièces</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
 {% endblock %}
