@@ -256,9 +256,45 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="annulerButton"][data-action="combat-en-ligne#annulerCombat"]'
         );
-        self::assertSelectorTextContains(
-            '#combat-en-ligne header p',
-            $joueur->getEmail(),
+        self::assertSelectorTextContains('.site-account', $joueur->getEmail());
+        self::assertSelectorExists('.site-name[href="/home"]');
+        self::assertSelectorExists('.site-navigation a[href="/wiki"]');
+        self::assertSelectorExists('.site-navigation a[href="/caisses"]');
+        self::assertSelectorExists('.site-navigation a[href="/ma-collection"]');
+        self::assertSelectorExists('.site-navigation a[href="/equipe"]');
+        self::assertSelectorExists(
+            '.site-navigation a[href="/combats"][aria-current="page"]',
+        );
+        self::assertSelectorExists('.site-account a[href="/logout"]');
+        self::assertSelectorNotExists('[data-navigation-admin]');
+    }
+
+    public function testAfficheLesLiensAdministrationUniquementALAdministrateur(): void
+    {
+        $administrateur = (new User())
+            ->setEmail(
+                'navigation-admin-'
+                .bin2hex(random_bytes(6))
+                .'@example.com'
+            )
+            ->setPassword('mot-de-passe-test')
+            ->setRoles(['ROLE_ADMIN']);
+
+        $this->entityManager->persist($administrateur);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($administrateur);
+        $this->client->request('GET', '/combats');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(
+            '[data-navigation-admin] a[href="/admin/stickman"]',
+        );
+        self::assertSelectorExists(
+            '[data-navigation-admin] a[href="/admin/caisse"]',
+        );
+        self::assertSelectorExists(
+            '[data-navigation-admin] a[href="/admin/caisse-stickman"]',
         );
     }
 

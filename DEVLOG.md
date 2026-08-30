@@ -5621,7 +5621,112 @@ Le salon, les combats et leurs rapports utilisent maintenant des réponses expli
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J64 — Créer la navigation principale de StickVerse
 
+### Objectif
+
+J64 met en place une navigation globale simple permettant d’accéder aux principales fonctionnalités déjà présentes dans StickVerse.
+
+Cette première version assume volontairement une apparence de prototype : fond clair, très peu de couleurs, presque aucune décoration et une structure facile à modifier lors de la future phase de design.
+
+### Navigation publique
+
+Un visiteur non connecté peut maintenant accéder directement aux pages suivantes :
+
+- accueil ;
+- wiki ;
+- caisses ;
+- connexion ;
+- inscription.
+
+Les fonctionnalités réservées aux joueurs et à l’administration ne sont pas affichées.
+
+### Navigation du joueur
+
+Après connexion, le menu principal donne accès aux fonctionnalités essentielles du jeu :
+
+- accueil ;
+- wiki ;
+- caisses ;
+- collection ;
+- équipe ;
+- combats en ligne ;
+- déconnexion.
+
+L’adresse électronique du compte connecté est également affichée dans l’en-tête.
+
+La page actuellement consultée est indiquée simplement dans le menu.
+
+### Navigation de l’administration
+
+Les comptes possédant le rôle administrateur disposent de liens supplémentaires vers :
+
+- la gestion des Stickmans ;
+- la gestion des caisses ;
+- la gestion des associations entre les caisses et les Stickmans.
+
+Ces liens ne sont pas affichés aux visiteurs ni aux joueurs ordinaires.
+
+### Structure commune
+
+La navigation est intégrée au gabarit principal de l’application.
+
+Toutes les pages qui utilisent ce gabarit bénéficient donc automatiquement du même menu sans devoir recopier sa structure dans chaque template.
+
+L’ancien en-tête spécifique à l’interface des combats en ligne a été retiré afin d’éviter l’affichage de deux navigations différentes.
+
+### Apparence volontairement simple
+
+Le style global utilise uniquement :
+
+- un fond gris clair ;
+- un en-tête blanc ;
+- des bordures grises simples ;
+- une police standard ;
+- des liens présentés comme de petits boutons basiques ;
+- une mise en page sans animation ni effet graphique complexe.
+
+Cette apparence minimale permet de conserver l’esprit d’un prototype fonctionnel avant la future création de l’identité visuelle définitive de StickVerse.
+
+### Adaptation aux petits écrans
+
+Le menu peut revenir automatiquement sur plusieurs lignes lorsque la largeur disponible diminue.
+
+Sur téléphone, les différentes parties de l’en-tête occupent toute la largeur afin que les liens restent accessibles, sans introduire pour le moment de menu hamburger ou de JavaScript supplémentaire.
+
+### Tests automatisés
+
+Les tests vérifient notamment :
+
+- la navigation visible pour un visiteur anonyme ;
+- l’absence des pages privées pour un visiteur ;
+- les liens disponibles pour un joueur connecté ;
+- l’indication de la page active ;
+- l’absence du menu d’administration pour un joueur normal ;
+- l’apparition des outils d’administration pour un administrateur ;
+- la présence du lien de déconnexion ;
+- l’absence de duplication de l’ancien en-tête des combats.
+
+La validation complète du projet donne :
+
+- 148 tests réussis ;
+- 1 402 assertions ;
+- aucune erreur de syntaxe Twig ;
+- conteneur Symfony valide ;
+- schémas Doctrine de développement et de test synchronisés ;
+- ressources CSS correctement enregistrées.
+
+### Validation manuelle
+
+La navigation a été vérifiée dans le navigateur avec le serveur local.
+
+Les menus s’affichent correctement et les liens permettent d’accéder aux différentes parties déjà disponibles dans StickVerse.
+
+### Résultat
+
+StickVerse possède maintenant une navigation centrale cohérente reliant ses principales fonctionnalités.
+
+Cette base reste volontairement rudimentaire, mais elle permettra de construire progressivement tous les menus du jeu avant de travailler sur leur design définitif pour ordinateur et téléphone.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
