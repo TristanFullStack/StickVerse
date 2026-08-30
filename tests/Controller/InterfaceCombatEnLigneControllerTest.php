@@ -121,6 +121,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-action="combat-en-ligne#creerCombat"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="combatPrive"][type="checkbox"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="combatsDisponibles"]'
         );
         self::assertSelectorExists(
@@ -165,6 +168,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="invitationCode"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="visibiliteCombat"]'
         );
         self::assertSelectorExists(
             '[data-action="combat-en-ligne#copierCodeInvitation"]'

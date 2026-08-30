@@ -106,6 +106,7 @@ final class SalonCombatEnLigneController extends AbstractController
                         ->getJoueur1()
                         ->getEmail(),
                     'statut' => $combat->getStatut(),
+                    'prive' => $combat->estPrive(),
                     'numeroRound' => $combat
                         ->getNumeroRound(),
                     'dateCreation' => $combat
@@ -265,6 +266,7 @@ final class SalonCombatEnLigneController extends AbstractController
             $combat = $creationService->creer(
                 $utilisateur,
                 $equipe,
+                $this->lireCombatPrive($donnees),
             );
         } catch (LogicException $exception) {
             return $this->json(
@@ -280,6 +282,7 @@ final class SalonCombatEnLigneController extends AbstractController
                 'etat' => 'combat_cree',
                 'combatId' => $combat->getId(),
                 'codeInvitation' => $combat->getCodeInvitation(),
+                'prive' => $combat->estPrive(),
                 'statut' => $combat->getStatut(),
                 'numeroRound' => $combat
                     ->getNumeroRound(),
@@ -411,6 +414,7 @@ final class SalonCombatEnLigneController extends AbstractController
             $utilisateur,
             $equipeRepository,
             $rejoindreService,
+            true,
         );
     }
 
@@ -461,12 +465,21 @@ final class SalonCombatEnLigneController extends AbstractController
     /**
      * @param array<string, mixed> $donnees
      */
+    private function lireCombatPrive(array $donnees): bool
+    {
+        return ($donnees['prive'] ?? false) === true;
+    }
+
+    /**
+     * @param array<string, mixed> $donnees
+     */
     private function traiterJonction(
         int $combatId,
         array $donnees,
         User $utilisateur,
         EquipeRepository $equipeRepository,
         RejoindreCombatEnLigneService $rejoindreService,
+        bool $avecCodeInvitation = false,
     ): JsonResponse {
         try {
             $equipeId = $this->lireEquipeId($donnees);
@@ -498,6 +511,7 @@ final class SalonCombatEnLigneController extends AbstractController
                 $combatId,
                 $utilisateur,
                 $equipe,
+                $avecCodeInvitation,
             );
         } catch (LogicException $exception) {
             return $this->json(

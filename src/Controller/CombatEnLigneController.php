@@ -109,6 +109,7 @@ final class CombatEnLigneController extends AbstractController
         return $this->json([
             'combatId' => $combat->getId(),
             'codeInvitation' => $combat->getCodeInvitation(),
+            'prive' => $combat->estPrive(),
             'statut' => $combat->getStatut(),
             'expirationAutomatique' => $expirationAutomatique,
             'forfaitAutomatique' => $forfaitAutomatique,

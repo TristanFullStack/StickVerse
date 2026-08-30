@@ -23,6 +23,7 @@ final class CombatTest extends KernelTestCase
 
         self::assertNull($combat->getJoueur2());
         self::assertNull($combat->getGagnant());
+        self::assertFalse($combat->estPrive());
 
         self::assertSame(
             Combat::STATUT_EN_ATTENTE,
@@ -37,6 +38,14 @@ final class CombatTest extends KernelTestCase
 
         self::assertNotNull($combat->getDateCreation());
         self::assertNotNull($combat->getDateMiseAJour());
+    }
+
+    public function testPeutRendreUnCombatPrive(): void
+    {
+        $combat = (new Combat(new User()))
+            ->setPrive(true);
+
+        self::assertTrue($combat->estPrive());
     }
 
     public function testPasserAuRoundSuivant(): void

@@ -4966,7 +4966,64 @@ Un joueur peut maintenant créer un combat, copier son code d’invitation et l�
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J56 — Distinguer les combats publics et privés
 
+### Objectif
+
+J56 permet au joueur de choisir si son nouveau combat doit être visible publiquement dans le salon ou accessible uniquement aux amis possédant son code d’invitation.
+
+### Réalisations
+
+- ajout d’une visibilité publique ou privée à chaque combat ;
+- conservation du mode public par défaut pour les anciens parcours ;
+- ajout d’une case « Combat privé » dans le salon ;
+- transmission de la visibilité choisie au serveur lors de la création ;
+- affichage de la visibilité dans l’écran d’attente ;
+- exclusion des combats privés de la liste publique ;
+- maintien des combats publics dans la liste des combats disponibles ;
+- interdiction de rejoindre un combat privé directement avec son identifiant ;
+- autorisation de rejoindre un combat privé uniquement avec son code d’invitation ;
+- maintien des protections existantes contre les combats expirés, complets ou déjà actifs ;
+- ajout d’une migration Doctrine pour persister la visibilité ;
+- ajout de tests couvrant la création, le filtrage et la jonction sécurisée.
+
+### Fichiers modifiés
+
+- `assets/controllers/combat_en_ligne_controller.js`
+- `assets/styles/combat_en_ligne.css`
+- `migrations/Version20260830120000.php`
+- `src/Controller/CombatEnLigneController.php`
+- `src/Controller/SalonCombatEnLigneController.php`
+- `src/Entity/Combat.php`
+- `src/Repository/CombatRepository.php`
+- `src/Service/CreationCombatEnLigneService.php`
+- `src/Service/RejoindreCombatEnLigneService.php`
+- `templates/combat_en_ligne/index.html.twig`
+- `tests/Controller/InterfaceCombatEnLigneControllerTest.php`
+- `tests/Controller/SalonCombatEnLigneControllerTest.php`
+- `tests/Entity/CombatTest.php`
+- `tests/Service/CreationCombatEnLigneServiceTest.php`
+
+### Validation
+
+- syntaxes PHP et JavaScript valides ;
+- template Twig valide ;
+- conteneur Symfony valide ;
+- migration appliquée aux bases normale et de test ;
+- mappings Doctrine valides ;
+- bases synchronisées avec les entités ;
+- scénario HTTP public et privé validé ;
+- suite PHPUnit complète validée ;
+- **119 tests réussis** ;
+- **1115 assertions réussies**.
+
+### Test manuel restant
+
+La création d’un combat public puis privé, leur visibilité avec un second compte et la jonction par code seront vérifiées demain avec deux navigateurs.
+
+### Résultat
+
+Un joueur peut désormais créer un combat public ouvert au salon ou un combat privé réservé aux amis possédant son code. Le serveur empêche également de contourner cette protection avec l’identifiant du combat.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

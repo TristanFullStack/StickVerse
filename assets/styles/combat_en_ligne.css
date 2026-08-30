@@ -608,6 +608,36 @@ body:has(#rapport-combat) {
     text-transform: uppercase;
 }
 
+#combat-en-ligne .visibilite-combat {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 14px;
+    border: 1px solid #315b7d;
+    border-radius: 9px;
+    background: rgba(7, 21, 34, 0.82);
+    cursor: pointer;
+}
+
+#combat-en-ligne .visibilite-combat input {
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    accent-color: var(--combat-violet);
+}
+
+#combat-en-ligne .visibilite-combat span,
+#combat-en-ligne .visibilite-combat small {
+    display: block;
+}
+
+#combat-en-ligne .visibilite-combat small {
+    margin-top: 4px;
+    color: var(--combat-texte-secondaire);
+    line-height: 1.4;
+}
+
 #combat-en-ligne [data-combat-en-ligne-target="salon"] {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

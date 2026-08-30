@@ -89,7 +89,7 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testCreePuisRejointUnCombatDepuisLeSalon(): void
+    public function testCreePuisRejointUnCombatPriveParCode(): void
     {
         [
             $joueur1,
@@ -214,6 +214,7 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             '/salon-combat-en-ligne/creer',
             [
                 'equipeId' => $equipeJoueur1Id,
+                'prive' => true,
             ],
             [
                 'HTTP_X_CSRF_TOKEN' =>
@@ -251,6 +252,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $creation['codeInvitation'],
         );
 
+        self::assertTrue($creation['prive']);
+
         $combatId = $creation['combatId'];
         $codeInvitation = $creation['codeInvitation'];
 
@@ -277,6 +280,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $combatCree->getCodeInvitation(),
         );
 
+        self::assertTrue($combatCree->estPrive());
+
         self::assertCount(
             4,
             $combatCree->getCombattants(),
@@ -294,6 +299,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $codeInvitation,
             $etatCombatCree['codeInvitation'],
         );
+
+        self::assertTrue($etatCombatCree['prive']);
 
         /*
          * Le joueur 2 consulte ensuite le salon.
@@ -324,40 +331,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         );
 
         self::assertCount(
-            1,
+            0,
             $salonJoueur2['combatsDisponibles'],
-        );
-
-        self::assertSame(
-            $combatId,
-            $salonJoueur2
-                ['combatsDisponibles']
-                [0]
-                ['id'],
-        );
-
-        self::assertSame(
-            $joueur1Id,
-            $salonJoueur2
-                ['combatsDisponibles']
-                [0]
-                ['joueur1Id'],
-        );
-
-        self::assertSame(
-            $joueur1->getEmail(),
-            $salonJoueur2
-                ['combatsDisponibles']
-                [0]
-                ['joueur1Email'],
-        );
-
-        self::assertSame(
-            Combat::STATUT_EN_ATTENTE,
-            $salonJoueur2
-                ['combatsDisponibles']
-                [0]
-                ['statut'],
         );
 
         self::assertIsArray(
@@ -369,7 +344,32 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         );
 
         /*
-         * Le joueur 2 rejoint le combat.
+         * Le joueur 2 ne peut pas contourner le code en utilisant
+         * directement l’identifiant du combat privé.
+         */
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/'.$combatId.'/rejoindre',
+            [
+                'equipeId' => $equipeJoueur2Id,
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' =>
+                    $salonJoueur2['csrf']['rejoindre'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(
+            Response::HTTP_CONFLICT
+        );
+
+        self::assertSame(
+            'Ce combat privé doit être rejoint avec son code d’invitation.',
+            $this->lireReponseJson()['erreur'],
+        );
+
+        /*
+         * Le joueur 2 rejoint finalement le combat avec son code.
          */
         $this->client->jsonRequest(
             'POST',
@@ -514,6 +514,41 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonApresJonction
                 ['combatsDisponibles'],
         );
+    }
+
+    public function testExposeLesPublicsMaisCacheLesPrivesDuSalon(): void
+    {
+        [
+            $joueur1,
+            $joueur2,
+        ] = $this->creerDonneesDuSalon();
+
+        $combatPublic = new Combat($joueur1);
+        $combatPrive = (new Combat($joueur1))
+            ->setPrive(true);
+
+        $this->entityManager->persist($combatPublic);
+        $this->entityManager->persist($combatPrive);
+        $this->entityManager->flush();
+
+        $combatPublicId = $combatPublic->getId();
+
+        self::assertNotNull($combatPublicId);
+
+        $this->client->loginUser($joueur2);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+
+        self::assertResponseIsSuccessful();
+
+        $combatsDisponibles = $this->lireReponseJson()
+            ['combatsDisponibles'];
+
+        self::assertCount(1, $combatsDisponibles);
+        self::assertSame(
+            $combatPublicId,
+            $combatsDisponibles[0]['id'],
+        );
+        self::assertFalse($combatsDisponibles[0]['prive']);
     }
 
     public function testExposeUniquementHistoriqueJoueDuJoueur(): void

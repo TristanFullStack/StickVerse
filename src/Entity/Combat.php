@@ -84,6 +84,9 @@ class Combat
     #[ORM\Column(length: 9, unique: true, nullable: true)]
     private ?string $codeInvitation = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $prive = false;
+
     /**
      * @var Collection<int, CombattantCombat>
      */
@@ -270,6 +273,18 @@ class Combat
         }
 
         $this->codeInvitation = $codeInvitation;
+
+        return $this;
+    }
+
+    public function estPrive(): bool
+    {
+        return $this->prive;
+    }
+
+    public function setPrive(bool $prive): static
+    {
+        $this->prive = $prive;
 
         return $this;
     }

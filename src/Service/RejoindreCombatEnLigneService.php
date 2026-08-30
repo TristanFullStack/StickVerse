@@ -25,6 +25,7 @@ final class RejoindreCombatEnLigneService
         int $combatId,
         User $joueur,
         Equipe $equipe,
+        bool $avecCodeInvitation = false,
     ): Combat {
         $combatExpire = false;
 
@@ -33,6 +34,7 @@ final class RejoindreCombatEnLigneService
                 $combatId,
                 $joueur,
                 $equipe,
+                $avecCodeInvitation,
                 &$combatExpire,
             ): Combat {
                 if ($joueur->getId() === null) {
@@ -74,6 +76,15 @@ final class RejoindreCombatEnLigneService
                 ) {
                     throw new LogicException(
                         'Ce combat n’est plus disponible.'
+                    );
+                }
+
+                if (
+                    $combat->estPrive()
+                    && !$avecCodeInvitation
+                ) {
+                    throw new LogicException(
+                        'Ce combat privé doit être rejoint avec son code d’invitation.'
                     );
                 }
 

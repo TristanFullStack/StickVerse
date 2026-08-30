@@ -70,6 +70,8 @@ final class CreationCombatEnLigneServiceTest extends TestCase
                             (string) $entite->getCodeInvitation(),
                         );
 
+                        self::assertFalse($entite->estPrive());
+
                         self::assertCount(
                             4,
                             $entite->getCombattants(),
@@ -122,6 +124,8 @@ final class CreationCombatEnLigneServiceTest extends TestCase
             '/^SV-[A-F0-9]{6}$/',
             (string) $combat->getCodeInvitation(),
         );
+
+        self::assertFalse($combat->estPrive());
 
         self::assertCount(
             4,

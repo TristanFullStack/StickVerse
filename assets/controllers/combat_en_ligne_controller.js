@@ -24,6 +24,7 @@ export default class extends Controller {
         'attenteAdversaire',
         'invitationCombat',
         'invitationCode',
+        'visibiliteCombat',
         'participants',
         'moiNom',
         'moiCombattants',
@@ -41,6 +42,7 @@ export default class extends Controller {
         'equipeSelect',
         'equipeApercu',
         'creerButton',
+        'combatPrive',
         'aucunCombat',
         'combatsDisponibles',
         'codeInvitationInput',
@@ -229,7 +231,10 @@ export default class extends Controller {
         await this.executerAction(async () => {
             await this.envoyerJson(
                 this.creerUrlValue,
-                { equipeId },
+                {
+                    equipeId,
+                    prive: this.combatPriveTarget.checked,
+                },
                 this.salon?.csrf?.creer,
             );
 
@@ -505,6 +510,10 @@ export default class extends Controller {
         this.invitationCodeTarget.textContent = afficherInvitation
             ? codeInvitation
             : '';
+
+        this.visibiliteCombatTarget.textContent = this.combat?.prive === true
+            ? 'Combat privé : seul un joueur possédant ce code peut le rejoindre.'
+            : 'Combat public : il est également visible dans la liste du salon.';
 
         this.afficherParticipant(
             this.combat.adversaire,

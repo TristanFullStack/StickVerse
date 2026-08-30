@@ -75,11 +75,13 @@ class CombatRepository extends ServiceEntityRepository
             ->andWhere('combat.statut = :statut')
             ->andWhere('combat.joueur2 IS NULL')
             ->andWhere('combat.joueur1 != :joueur')
+            ->andWhere('combat.prive = :prive')
             ->setParameter(
                 'statut',
                 Combat::STATUT_EN_ATTENTE,
             )
             ->setParameter('joueur', $joueur)
+            ->setParameter('prive', false)
             ->orderBy('combat.dateCreation', 'ASC')
             ->addOrderBy('combat.id', 'ASC')
             ->getQuery()

@@ -169,6 +169,8 @@
                         Invite un ami
                     </h3>
 
+                    <p data-combat-en-ligne-target="visibiliteCombat"></p>
+
                     <p>Partage ce code pour rejoindre directement le combat.</p>
 
                     <strong
@@ -374,6 +376,20 @@
                         data-combat-en-ligne-target="equipeApercu"
                         aria-live="polite"
                     ></div>
+
+                    <label class="visibilite-combat">
+                        <input
+                            type="checkbox"
+                            data-combat-en-ligne-target="combatPrive"
+                        >
+
+                        <span>
+                            <strong>Combat privé</strong>
+                            <small>
+                                Il sera invisible dans la liste et accessible uniquement avec son code.
+                            </small>
+                        </span>
+                    </label>
 
                     <button
                         type="button"

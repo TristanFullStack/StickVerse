@@ -21,11 +21,13 @@ final class CreationCombatEnLigneService
     public function creer(
         User $joueur,
         Equipe $equipe,
+        bool $prive = false,
     ): Combat {
         return $this->entityManager->wrapInTransaction(
             function () use (
                 $joueur,
                 $equipe,
+                $prive,
             ): Combat {
                 if ($joueur->getId() === null) {
                     throw new LogicException(
@@ -49,6 +51,7 @@ final class CreationCombatEnLigneService
                 }
 
                 $combat = (new Combat($joueur))
+                    ->setPrive($prive)
                     ->setCodeInvitation(
                         $this->genererCodeInvitation()
                     );
