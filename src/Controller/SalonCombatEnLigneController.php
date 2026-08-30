@@ -10,6 +10,7 @@ use App\Repository\CombatRepository;
 use App\Repository\EquipeRepository;
 use App\Service\CreationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
+use App\Service\LimitationTentativesInvitationCombatService;
 use App\Service\RejoindreCombatEnLigneService;
 use InvalidArgumentException;
 use JsonException;
@@ -354,6 +355,7 @@ final class SalonCombatEnLigneController extends AbstractController
         CombatRepository $combatRepository,
         EquipeRepository $equipeRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
+        LimitationTentativesInvitationCombatService $limitationService,
         RejoindreCombatEnLigneService $rejoindreService,
     ): JsonResponse {
         $utilisateur = $this->getUser();
@@ -394,6 +396,36 @@ final class SalonCombatEnLigneController extends AbstractController
                 ],
                 Response::HTTP_UNPROCESSABLE_ENTITY,
             );
+        }
+
+        $dateReessai = $limitationService->consommer(
+            $utilisateur,
+            $request->getClientIp(),
+        );
+
+        if ($dateReessai !== null) {
+            $attenteSecondes = max(
+                1,
+                $dateReessai->getTimestamp() - time(),
+            );
+
+            $reponse = $this->json(
+                [
+                    'erreur' => sprintf(
+                        'Trop de codes ont été essayés. Réessaie dans %d seconde%s.',
+                        $attenteSecondes,
+                        $attenteSecondes > 1 ? 's' : '',
+                    ),
+                    'reessaiDans' => $attenteSecondes,
+                ],
+                Response::HTTP_TOO_MANY_REQUESTS,
+            );
+            $reponse->headers->set(
+                'Retry-After',
+                (string) $attenteSecondes,
+            );
+
+            return $reponse;
         }
 
         $combat = $combatRepository->trouverParCodeInvitation($code);

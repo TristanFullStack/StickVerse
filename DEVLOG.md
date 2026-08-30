@@ -5327,7 +5327,107 @@ L’actualisation automatique remet désormais le round dans son déroulement no
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J61 — Limiter les tentatives abusives
 
+### Objectif
+
+J61 protège StickVerse contre les tentatives répétées de connexion et contre l’essai automatisé de nombreux codes d’invitation.
+
+### Protection de la connexion
+
+La limitation native de Symfony est maintenant activée sur le formulaire de connexion.
+
+Pour une même combinaison d’identifiant et d’adresse réseau :
+
+- cinq échecs sont autorisés pendant une minute ;
+- la tentative suivante est temporairement refusée ;
+- Symfony indique au joueur qu’il doit attendre avant de recommencer ;
+- une connexion réussie réinitialise normalement la limitation concernée.
+
+Une limite globale protège également le serveur contre les tentatives réparties sur plusieurs identifiants.
+
+### Protection des codes d’invitation
+
+Un limiteur spécifique protège la route permettant de rejoindre un combat privé avec un code.
+
+Chaque joueur et adresse réseau peuvent essayer dix codes valides dans leur format pendant une minute.
+
+Après dépassement, l’API répond avec :
+
+- le statut HTTP `429 Too Many Requests` ;
+- un message JSON compréhensible ;
+- le nombre de secondes avant le prochain essai ;
+- l’en-tête HTTP standard `Retry-After`.
+
+Les rafraîchissements du salon et des combats ne consomment pas cette limite.
+
+Les créations de combats et les jonctions publiques ne sont pas concernées.
+
+### Confidentialité
+
+L’adresse électronique du joueur et son adresse réseau ne sont pas enregistrées directement comme clé dans le cache.
+
+Une empreinte SHA-256 est utilisée pour identifier la limitation sans exposer ces informations dans le stockage technique.
+
+### Dépendance Symfony
+
+Le composant officiel `symfony/rate-limiter` en version `8.1.*` a été ajouté.
+
+Composer a également normalisé le classement des dépendances de développement dans `composer.lock`.
+
+Cela explique la taille importante du diff du fichier de verrouillage. Les autres dépendances n’ont pas été mises à jour par cette opération.
+
+### Tests ajoutés
+
+Un test unitaire vérifie que le service :
+
+- autorise une tentative lorsqu’un jeton reste disponible ;
+- retourne la date du prochain essai après dépassement ;
+- utilise une clé anonymisée.
+
+Un test HTTP du salon effectue onze essais de code :
+
+- les dix premiers atteignent normalement la recherche du combat ;
+- le onzième reçoit le statut HTTP 429 ;
+- le message JSON est présent ;
+- le délai est positif ;
+- l’en-tête `Retry-After` correspond au délai annoncé.
+
+Un test HTTP de sécurité effectue six connexions incorrectes :
+
+- les cinq premiers échecs suivent le parcours normal ;
+- la sixième tentative déclenche la protection Symfony.
+
+### Validation
+
+- syntaxes PHP et YAML valides ;
+- conteneur Symfony valide ;
+- mapping Doctrine valide ;
+- bases de développement et de test synchronisées ;
+- fichier Composer valide ;
+- installation reproductible depuis `composer.lock` ;
+- aucune vulnérabilité Composer signalée ;
+- 139 tests réussis ;
+- 1321 assertions réussies ;
+- aucune notice PHPUnit ;
+- aucune migration nécessaire.
+
+### Fichiers concernés
+
+- `composer.json`
+- `composer.lock`
+- `config/packages/rate_limiter.yaml`
+- `config/packages/security.yaml`
+- `config/reference.php`
+- `src/Controller/SalonCombatEnLigneController.php`
+- `src/Service/LimitationTentativesInvitationCombatService.php`
+- `tests/Controller/SalonCombatEnLigneControllerTest.php`
+- `tests/Controller/SecurityControllerTest.php`
+- `tests/Service/LimitationTentativesInvitationCombatServiceTest.php`
+
+### Résultat
+
+Les tentatives normales restent fluides pour les joueurs, tandis que les répétitions anormales de mots de passe ou de codes d’invitation sont maintenant ralenties directement par le serveur.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

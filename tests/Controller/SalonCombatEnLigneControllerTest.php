@@ -554,6 +554,81 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         self::assertFalse($combatsDisponibles[0]['prive']);
     }
 
+    public function testLimiteLesEssaisDeCodesInvitation(): void
+    {
+        [
+            ,
+            $joueur,
+            ,
+            $equipe,
+        ] = $this->creerDonneesDuSalon();
+
+        $equipeId = $equipe->getId();
+        self::assertNotNull($equipeId);
+
+        $adresseIp = '2001:db8::'.bin2hex(random_bytes(2));
+
+        $this->client->loginUser($joueur);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+        self::assertResponseIsSuccessful();
+
+        $jetonCsrf = $this->lireReponseJson()
+            ['csrf']['rejoindre'];
+
+        self::assertIsString($jetonCsrf);
+
+        for ($tentative = 1; $tentative <= 10; $tentative++) {
+            $this->client->jsonRequest(
+                'POST',
+                '/salon-combat-en-ligne/rejoindre-par-code',
+                [
+                    'equipeId' => $equipeId,
+                    'code' => 'SV-FFFFFF',
+                ],
+                [
+                    'HTTP_X_CSRF_TOKEN' => $jetonCsrf,
+                    'REMOTE_ADDR' => $adresseIp,
+                ],
+            );
+
+            self::assertResponseStatusCodeSame(
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/rejoindre-par-code',
+            [
+                'equipeId' => $equipeId,
+                'code' => 'SV-FFFFFF',
+            ],
+            [
+                'HTTP_X_CSRF_TOKEN' => $jetonCsrf,
+                'REMOTE_ADDR' => $adresseIp,
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(
+            Response::HTTP_TOO_MANY_REQUESTS
+        );
+
+        $reponse = $this->lireReponseJson();
+
+        self::assertStringContainsString(
+            'Trop de codes ont été essayés.',
+            $reponse['erreur'],
+        );
+        self::assertGreaterThanOrEqual(1, $reponse['reessaiDans']);
+        self::assertSame(
+            (string) $reponse['reessaiDans'],
+            $this->client
+                ->getResponse()
+                ->headers
+                ->get('Retry-After'),
+        );
+    }
+
     public function testExposeUniquementHistoriqueJoueDuJoueur(): void
     {
         $suffixe = bin2hex(random_bytes(6));
