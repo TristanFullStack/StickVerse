@@ -6,6 +6,7 @@ use App\Entity\Combat;
 use App\Entity\Equipe;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 
@@ -14,6 +15,7 @@ final class CreationCombatEnLigneService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CombatRepository $combatRepository,
+        private readonly UserRepository $userRepository,
         private readonly CreationCombattantsCombatService $creationCombattantsService,
     ) {
     }
@@ -41,8 +43,17 @@ final class CreationCombatEnLigneService
                     );
                 }
 
+                $joueurVerrouille = $this->userRepository
+                    ->trouverAvecVerrouEcriture($joueur->getId());
+
+                if (!$joueurVerrouille instanceof User) {
+                    throw new LogicException(
+                        'Le joueur demandé est introuvable.'
+                    );
+                }
+
                 $combatActif = $this->combatRepository
-                    ->trouverActifPourJoueur($joueur);
+                    ->trouverActifPourJoueur($joueurVerrouille);
 
                 if ($combatActif instanceof Combat) {
                     throw new LogicException(
@@ -50,7 +61,7 @@ final class CreationCombatEnLigneService
                     );
                 }
 
-                $combat = (new Combat($joueur))
+                $combat = (new Combat($joueurVerrouille))
                     ->setPrive($prive)
                     ->setCodeInvitation(
                         $this->genererCodeInvitation()
@@ -59,7 +70,7 @@ final class CreationCombatEnLigneService
                 $this->creationCombattantsService
                     ->creerPourJoueur(
                         $combat,
-                        $joueur,
+                        $joueurVerrouille,
                         $equipe,
                     );
 

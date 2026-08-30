@@ -9,6 +9,7 @@ use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombatRepository;
 use App\Repository\CombattantCombatRepository;
+use App\Repository\UserRepository;
 use App\Service\CreationCombatEnLigneService;
 use App\Service\CreationCombattantsCombatService;
 use App\Service\RejoindreCombatEnLigneService;
@@ -21,6 +22,7 @@ final class CreationEtJonctionCombatMySqlTest extends KernelTestCase
     private EntityManagerInterface $entityManager;
     private CombatRepository $combatRepository;
     private CombattantCombatRepository $combattantRepository;
+    private UserRepository $userRepository;
 
     protected function setUp(): void
     {
@@ -43,6 +45,8 @@ final class CreationEtJonctionCombatMySqlTest extends KernelTestCase
             CombattantCombat::class
         );
 
+        $userRepository = $entityManager->getRepository(User::class);
+
         self::assertInstanceOf(
             CombatRepository::class,
             $combatRepository,
@@ -53,10 +57,16 @@ final class CreationEtJonctionCombatMySqlTest extends KernelTestCase
             $combattantRepository,
         );
 
+        self::assertInstanceOf(
+            UserRepository::class,
+            $userRepository,
+        );
+
         $this->entityManager = $entityManager;
         $this->combatRepository = $combatRepository;
         $this->combattantRepository =
             $combattantRepository;
+        $this->userRepository = $userRepository;
 
         $connexion = $this->entityManager->getConnection();
         $nomBase = $connexion->fetchOne('SELECT DATABASE()');
@@ -179,6 +189,7 @@ final class CreationEtJonctionCombatMySqlTest extends KernelTestCase
             new CreationCombatEnLigneService(
                 $this->entityManager,
                 $this->combatRepository,
+                $this->userRepository,
                 $creationCombattantsService,
             );
 
@@ -186,6 +197,7 @@ final class CreationEtJonctionCombatMySqlTest extends KernelTestCase
             new RejoindreCombatEnLigneService(
                 $this->entityManager,
                 $this->combatRepository,
+                $this->userRepository,
                 $creationCombattantsService,
             );
 

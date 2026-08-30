@@ -7,6 +7,7 @@ use App\Entity\Equipe;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\UserRepository;
 use App\Service\CreationCombatEnLigneService;
 use App\Service\CreationCombattantsCombatService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -93,6 +94,7 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         $service = new CreationCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur, true),
             new CreationCombattantsCombatService(),
         );
 
@@ -180,6 +182,7 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         $service = new CreationCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur, true),
             new CreationCombattantsCombatService(),
         );
 
@@ -218,6 +221,7 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         $service = new CreationCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur, false),
             new CreationCombattantsCombatService(),
         );
 
@@ -260,6 +264,7 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         $service = new CreationCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur, false),
             new CreationCombattantsCombatService(),
         );
 
@@ -292,6 +297,26 @@ final class CreationCombatEnLigneServiceTest extends TestCase
             );
 
         return $entityManager;
+    }
+
+    private function creerUserRepository(
+        User $joueur,
+        bool $verrouAttendu,
+    ): UserRepository {
+        $userRepository = $this->createMock(UserRepository::class);
+        $attente = $verrouAttendu ? self::once() : self::never();
+
+        $invocation = $userRepository
+            ->expects($attente)
+            ->method('trouverAvecVerrouEcriture');
+
+        if ($verrouAttendu) {
+            $invocation
+                ->with($joueur->getId())
+                ->willReturn($joueur);
+        }
+
+        return $userRepository;
     }
 
     private function creerJoueurEnregistre(

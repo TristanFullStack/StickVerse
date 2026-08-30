@@ -8,6 +8,7 @@ use App\Entity\Equipe;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\UserRepository;
 use App\Service\CreationCombattantsCombatService;
 use App\Service\RejoindreCombatEnLigneService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -76,6 +77,7 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
         $service = new RejoindreCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur2, true),
             $creationCombattantsService,
         );
 
@@ -181,6 +183,7 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
         $service = new RejoindreCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur, false),
             new CreationCombattantsCombatService(),
         );
 
@@ -241,6 +244,7 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
         $service = new RejoindreCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur3, false),
             new CreationCombattantsCombatService(),
         );
 
@@ -295,6 +299,7 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
         $service = new RejoindreCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur2, true),
             new CreationCombattantsCombatService(),
         );
 
@@ -341,6 +346,7 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
         $service = new RejoindreCombatEnLigneService(
             $entityManager,
             $combatRepository,
+            $this->creerUserRepository($joueur, false),
             new CreationCombattantsCombatService(),
         );
 
@@ -388,6 +394,7 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
         $service = new RejoindreCombatEnLigneService(
             $this->creerEntityManagerTransactionnel(),
             $combatRepository,
+            $this->creerUserRepository($joueur2, false),
             new CreationCombattantsCombatService(),
             $horloge,
         );
@@ -431,6 +438,26 @@ final class RejoindreCombatEnLigneServiceTest extends TestCase
             );
 
         return $entityManager;
+    }
+
+    private function creerUserRepository(
+        User $joueur,
+        bool $verrouAttendu,
+    ): UserRepository {
+        $userRepository = $this->createMock(UserRepository::class);
+        $attente = $verrouAttendu ? self::once() : self::never();
+
+        $invocation = $userRepository
+            ->expects($attente)
+            ->method('trouverAvecVerrouEcriture');
+
+        if ($verrouAttendu) {
+            $invocation
+                ->with($joueur->getId())
+                ->willReturn($joueur);
+        }
+
+        return $userRepository;
     }
 
     private function creerJoueurEnregistre(

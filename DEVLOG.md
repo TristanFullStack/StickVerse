@@ -5163,7 +5163,79 @@ La salle de préparation ne peut plus bloquer un combat indéfiniment. Après 5 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J59 — Garantir un seul combat actif par joueur
 
+### Objectif
+
+J59 renforce la règle interdisant à un joueur de participer simultanément à plusieurs combats actifs, y compris lorsque plusieurs requêtes de création ou de jonction arrivent presque au même moment.
+
+### Problème corrigé
+
+La vérification d’un combat actif existait déjà, mais deux requêtes concurrentes pouvaient théoriquement effectuer cette vérification avant que la première transaction soit terminée.
+
+La protection JavaScript contre les doubles actions ne suffisait pas, car les requêtes pouvaient également provenir de plusieurs onglets, navigateurs ou appareils.
+
+### Réalisations
+
+- ajout d’un verrou pessimiste en écriture sur le joueur ;
+- verrouillage de la ligne MySQL du joueur pendant toute la transaction ;
+- application du verrou avant la recherche d’un combat actif ;
+- utilisation du même mécanisme pendant la création d’un combat ;
+- utilisation du même mécanisme pendant la jonction d’un combat ;
+- sérialisation des créations concurrentes effectuées par un même joueur ;
+- sérialisation des jonctions concurrentes effectuées par un même joueur ;
+- conservation du verrou existant sur le combat rejoint ;
+- relecture du combat actif après l’obtention du verrou joueur ;
+- refus de la seconde opération si la première a déjà engagé le joueur ;
+- maintien des validations existantes concernant l’équipe, le combat et les participants ;
+- aucun changement du contrat HTTP ou de l’interface ;
+- aucune modification du schéma de base de données.
+
+### Architecture
+
+Le trajet sécurisé est désormais :
+
+requête HTTP → contrôleur → service transactionnel → verrou du joueur → recherche du combat actif → création ou jonction → validation Doctrine → commit MySQL
+
+Lors d’une jonction, le combat ciblé est également verrouillé avant sa modification.
+
+### Fichiers modifiés
+
+- `src/Repository/UserRepository.php`
+- `src/Service/CreationCombatEnLigneService.php`
+- `src/Service/RejoindreCombatEnLigneService.php`
+- `tests/Integration/Service/CreationEtJonctionCombatMySqlTest.php`
+- `tests/Service/CreationCombatEnLigneServiceTest.php`
+- `tests/Service/RejoindreCombatEnLigneServiceTest.php`
+
+### Sécurité
+
+Le navigateur reste uniquement responsable de l’interface. Même si la protection JavaScript est contournée, le serveur et MySQL empêchent désormais le même joueur de créer ou rejoindre plusieurs combats actifs en parallèle.
+
+### Validation
+
+- syntaxes PHP valides ;
+- conteneur Symfony valide ;
+- mappings Doctrine valides ;
+- bases normale et de test synchronisées ;
+- aucune migration nécessaire ;
+- verrou joueur vérifié dans les tests des services ;
+- création transactionnelle validée ;
+- jonction transactionnelle validée ;
+- parcours réel MySQL sous verrou validé ;
+- contrôleur du salon validé ;
+- suite PHPUnit exécutée avec affichage et échec sur les notices ;
+- **131 tests réussis** ;
+- **1234 assertions réussies** ;
+- aucune notice PHPUnit.
+
+### Limite restante
+
+Le fonctionnement transactionnel réel est couvert par le test d’intégration MySQL. Un test de charge utilisant plusieurs processus simultanés pourra être ajouté plus tard avant une ouverture publique plus large, mais il n’est pas indispensable pour la bêta fermée actuelle.
+
+### Résultat
+
+Un joueur ne peut plus être engagé dans deux combats actifs à cause de requêtes simultanées. La règle est maintenant garantie par le serveur et le verrouillage transactionnel MySQL, indépendamment de l’interface utilisée.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

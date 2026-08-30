@@ -6,6 +6,7 @@ use App\Entity\Combat;
 use App\Entity\Equipe;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Component\Clock\Clock;
@@ -16,6 +17,7 @@ final class RejoindreCombatEnLigneService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CombatRepository $combatRepository,
+        private readonly UserRepository $userRepository,
         private readonly CreationCombattantsCombatService $creationCombattantsService,
         private readonly ?ClockInterface $clock = null,
     ) {
@@ -99,8 +101,17 @@ final class RejoindreCombatEnLigneService
                     );
                 }
 
+                $joueurVerrouille = $this->userRepository
+                    ->trouverAvecVerrouEcriture($joueur->getId());
+
+                if (!$joueurVerrouille instanceof User) {
+                    throw new LogicException(
+                        'Le joueur demandé est introuvable.'
+                    );
+                }
+
                 $combatActif = $this->combatRepository
-                    ->trouverActifPourJoueur($joueur);
+                    ->trouverActifPourJoueur($joueurVerrouille);
 
                 if ($combatActif instanceof Combat) {
                     throw new LogicException(
@@ -108,13 +119,13 @@ final class RejoindreCombatEnLigneService
                     );
                 }
 
-                $combat->setJoueur2($joueur);
+                $combat->setJoueur2($joueurVerrouille);
                 $combat->initialiserPreparation();
 
                 $this->creationCombattantsService
                     ->creerPourJoueur(
                         $combat,
-                        $joueur,
+                        $joueurVerrouille,
                         $equipe,
                     );
 
