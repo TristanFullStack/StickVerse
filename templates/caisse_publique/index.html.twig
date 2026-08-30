@@ -5,6 +5,12 @@
 {% block body %}
     <h1>Les caisses StickVerse</h1>
 
+    {% if app.user %}
+        <p data-solde-pieces-page>
+            Ton solde : <strong>{{ app.user.pieces }} pièces</strong>
+        </p>
+    {% endif %}
+
     {% for message in app.flashes('success') %}
         <div class="flash-success">
             {{ message }}
@@ -34,7 +40,7 @@
                     >
 
                     <p>{{ caisse.description }}</p>
-                    <p>Prix : {{ caisse.prix }}</p>
+                    <p>Prix : {{ caisse.prix }} pièces</p>
 
                     {% if app.user %}
                         <form
@@ -47,8 +53,15 @@
                                 value="{{ csrf_token('ouvrir' ~ caisse.id) }}"
                             >
 
-                            <button type="submit">
-                                Ouvrir la caisse
+                            <button
+                                type="submit"
+                                {% if app.user.pieces < caisse.prix %}disabled{% endif %}
+                            >
+                                {% if app.user.pieces < caisse.prix %}
+                                    Solde insuffisant
+                                {% else %}
+                                    Ouvrir la caisse
+                                {% endif %}
                             </button>
                         </form>
                     {% else %}

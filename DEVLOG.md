@@ -6281,7 +6281,60 @@ Les adresses utilisées pour se connecter restent privées et ne sont plus commu
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J69 — Ajouter le portefeuille de pièces et le paiement des caisses
 
+### Objectif
+
+J69 introduit une monnaie virtuelle permettant aux joueurs d’acheter réellement les caisses disponibles dans la boutique.
+
+### Fonctionnalités ajoutées
+
+- Chaque joueur possède désormais un portefeuille de pièces.
+- Les nouveaux joueurs commencent avec 1 000 pièces.
+- Les comptes existants reçoivent également 1 000 pièces grâce à la migration.
+- Le solde est visible dans la navigation, le tableau de bord, le profil et la page des caisses.
+- Le prix enregistré dans l’administration est maintenant réellement prélevé lors de l’ouverture d’une caisse.
+- Le bouton d’ouverture est désactivé lorsque le joueur ne possède pas assez de pièces.
+- Le serveur vérifie également le solde afin d’empêcher tout contournement depuis le navigateur.
+- Une caisse vide ou invalide ne prélève aucune pièce.
+- Après une ouverture réussie, le Stickman obtenu est ajouté à la collection ou augmente la quantité déjà possédée.
+- Le nouveau solde est affiché après l’achat.
+
+### Sécurisation
+
+Le paiement et l’ajout du Stickman sont effectués dans une seule opération protégée.
+
+Le joueur est verrouillé pendant l’achat afin d’empêcher deux ouvertures simultanées de dépenser les mêmes pièces.
+
+Si le paiement ou l’ajout du Stickman échoue, aucune modification partielle n’est conservée.
+
+### Vérifications automatiques
+
+- Syntaxe PHP valide.
+- Templates Twig valides.
+- Conteneur Symfony valide.
+- Schémas des bases de développement et de test synchronisés.
+- Migration appliquée correctement.
+- Ouverture d’une caisse avec un solde suffisant testée.
+- Refus d’ouverture avec un solde insuffisant testé.
+- Absence de prélèvement pour une caisse vide testée.
+- Ouvertures successives et augmentation de quantité testées.
+- Gestion du portefeuille testée au niveau de l’entité.
+- Suite complète validée : 178 tests et 1 638 assertions.
+
+### Vérification manuelle
+
+Le solde apparaît correctement sur les différentes pages.
+
+L’ouverture de la Caisse Origine prélève bien son prix et fait passer le solde de 1 000 à 880 pièces.
+
+Le Stickman obtenu est correctement ajouté à la collection ou augmente la quantité déjà possédée.
+
+### Résultat
+
+StickVerse possède maintenant une première économie fonctionnelle. Les prix des caisses ne sont plus seulement décoratifs et les achats sont protégés contre les doubles dépenses.
+
+La prochaine étape pourra attribuer des récompenses en pièces à la fin des combats.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

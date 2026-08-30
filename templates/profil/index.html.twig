@@ -18,6 +18,9 @@
             <dt>Adresse électronique</dt>
             <dd>{{ app.user.userIdentifier }}</dd>
 
+            <dt>Solde</dt>
+            <dd data-profile-pieces>{{ app.user.pieces }} pièces</dd>
+
             <dt>Type de compte</dt>
             <dd data-profile-account-type>
                 {% if is_granted('ROLE_ADMIN') %}

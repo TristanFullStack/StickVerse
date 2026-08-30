@@ -60,6 +60,7 @@
             <div class="site-account">
                 {% if app.user %}
                     <span>{{ app.user.pseudo }}</span>
+                    <span data-solde-pieces>{{ app.user.pieces }} pièces</span>
                     <a
                         href="{{ path('app_profil') }}"
                         {% if navigation_route == 'app_profil' %}aria-current="page"{% endif %}

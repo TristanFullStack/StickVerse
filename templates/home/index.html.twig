@@ -31,6 +31,12 @@
                 </article>
 
                 <article class="dashboard-card">
+                    <h3>Pièces</h3>
+                    <p data-dashboard-pieces>{{ app.user.pieces }} pièces disponibles</p>
+                    <a href="{{ path('app_caisse_publique') }}">Voir les caisses</a>
+                </article>
+
+                <article class="dashboard-card">
                     <h3>Combat en ligne</h3>
                     {% if tableau_de_bord.combatActif %}
                         <p>

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Caisse;
 use App\Entity\User;
+use App\Exception\SoldePiecesInsuffisantException;
 use App\Repository\CaisseRepository;
 use App\Service\OuvertureCaisseService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,10 +55,16 @@ final class CaissePubliqueController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $stickman = $ouvertureCaisseService->ouvrir(
-            $caisse,
-            $utilisateur
-        );
+        try {
+            $stickman = $ouvertureCaisseService->ouvrir(
+                $caisse,
+                $utilisateur
+            );
+        } catch (SoldePiecesInsuffisantException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_caisse_publique');
+        }
 
         if ($stickman === null) {
             $this->addFlash(
@@ -67,7 +74,11 @@ final class CaissePubliqueController extends AbstractController
         } else {
             $this->addFlash(
                 'success',
-                'Vous avez obtenu : '.$stickman->getNom()
+                sprintf(
+                    'Tu as obtenu : %s. Solde restant : %d pièces.',
+                    $stickman->getNom(),
+                    $utilisateur->getPieces(),
+                )
             );
         }
 

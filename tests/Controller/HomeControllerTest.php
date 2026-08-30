@@ -97,6 +97,14 @@ final class HomeControllerTest extends WebTestCase
             '.site-content',
             'Aucun combat terminé pour le moment.',
         );
+        self::assertSelectorTextContains(
+            '[data-dashboard-pieces]',
+            '1000 pièces disponibles',
+        );
+        self::assertSelectorTextContains(
+            '[data-solde-pieces]',
+            '1000 pièces',
+        );
         self::assertSelectorExists('a[href="/ma-collection"]');
         self::assertSelectorExists('a[href="/equipe"]');
         self::assertSelectorExists('a[href="/combats"]');

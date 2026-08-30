@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use InvalidArgumentException;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -17,6 +18,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est déjà utilisé.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const PIECES_DEPART = 1000;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -27,6 +30,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 24)]
     private string $pseudo;
+
+    #[ORM\Column(options: ['unsigned' => true, 'default' => self::PIECES_DEPART])]
+    private int $pieces = self::PIECES_DEPART;
 
     /**
      * @var list<string> The user roles
@@ -86,6 +92,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->pseudo = trim($pseudo);
 
         return $this;
+    }
+
+    public function getPieces(): int
+    {
+        return $this->pieces;
+    }
+
+    public function crediterPieces(int $montant): static
+    {
+        if ($montant <= 0) {
+            throw new InvalidArgumentException(
+                'Le nombre de pièces crédité doit être positif.'
+            );
+        }
+
+        $this->pieces += $montant;
+
+        return $this;
+    }
+
+    public function debiterPieces(int $montant): bool
+    {
+        if ($montant < 0) {
+            throw new InvalidArgumentException(
+                'Le nombre de pièces débité ne peut pas être négatif.'
+            );
+        }
+
+        if ($this->pieces < $montant) {
+            return false;
+        }
+
+        $this->pieces -= $montant;
+
+        return true;
     }
 
     /**
