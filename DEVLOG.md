@@ -5985,7 +5985,135 @@ Cette base pourra accueillir pendant J67 les fonctionnalités de modification et
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J67 — Gérer la modification et la récupération du mot de passe
 
+### Objectif
+
+J67 permet au joueur de modifier son mot de passe depuis son profil et prépare une procédure complète de récupération lorsqu’il ne peut plus se connecter.
+
+### Modification du mot de passe
+
+Une nouvelle page est accessible depuis le profil à l’adresse :
+
+`/profil/mot-de-passe`
+
+Le joueur doit fournir :
+
+- son mot de passe actuel ;
+- son nouveau mot de passe ;
+- la confirmation du nouveau mot de passe.
+
+Le changement est refusé lorsque le mot de passe actuel est incorrect ou lorsque le nouveau mot de passe est identique à l’ancien.
+
+Après une modification réussie, le joueur peut se reconnecter avec son nouveau mot de passe.
+
+### Mot de passe oublié
+
+La page de connexion contient maintenant un lien `Mot de passe oublié ?`.
+
+La page de récupération est accessible à l’adresse :
+
+`/mot-de-passe/oublie`
+
+Le formulaire affiche toujours le même message de confirmation, que l’adresse saisie existe ou non. Un visiteur ne peut donc pas utiliser cette page pour découvrir les comptes enregistrés.
+
+### Liens de réinitialisation
+
+Lorsqu’un compte correspond à l’adresse saisie :
+
+- un jeton aléatoire unique est créé ;
+- seule son empreinte sécurisée est enregistrée dans la base ;
+- les anciennes demandes du joueur sont supprimées ;
+- un lien personnel de réinitialisation est préparé ;
+- le lien expire après une heure ;
+- le lien ne peut être utilisé qu’une seule fois.
+
+Un lien expiré, inconnu ou déjà utilisé affiche une page d’erreur et ne permet aucune modification.
+
+### Envoi des e-mails
+
+Le service de récupération prépare un e-mail contenant le lien personnel de réinitialisation.
+
+L’envoi réel reste désactivé dans l’environnement local grâce au transport nul. Les paramètres `MAILER_DSN` et `MAILER_FROM` permettront de brancher le véritable service d’envoi pendant l’hébergement.
+
+La réception, le dossier spam et la configuration du domaine expéditeur seront vérifiés avec de vraies adresses avant l’ouverture de la bêta fermée.
+
+### Stockage des demandes
+
+Une nouvelle entité `ReinitialisationMotDePasse` conserve :
+
+- le joueur concerné ;
+- l’empreinte du jeton ;
+- la date de création ;
+- la date d’expiration ;
+- la date d’utilisation éventuelle.
+
+Une migration Doctrine crée la table correspondante et sa relation avec les utilisateurs.
+
+### Architecture
+
+La logique est séparée entre :
+
+- `ModificationMotDePasseService` pour le changement depuis le profil ;
+- `RecuperationMotDePasseService` pour les demandes et les réinitialisations ;
+- `ReinitialisationMotDePasseRepository` pour retrouver un jeton encore valide ;
+- `MotDePasseController` pour les formulaires et les réponses HTTP.
+
+Les contrôleurs restent ainsi limités à la gestion des pages et délèguent les règles sensibles aux services.
+
+### Sécurité
+
+J67 garantit notamment :
+
+- la vérification du mot de passe actuel ;
+- un minimum de huit caractères pour le nouveau mot de passe ;
+- le hachage des mots de passe ;
+- le stockage exclusif de l’empreinte des jetons ;
+- une durée de validité limitée ;
+- une seule utilisation par lien ;
+- l’absence de révélation des adresses enregistrées ;
+- la protection CSRF des formulaires.
+
+### Tests automatisés
+
+Les tests vérifient notamment :
+
+- la modification avec le bon mot de passe actuel ;
+- le refus d’un mot de passe actuel incorrect ;
+- la création d’une demande de récupération ;
+- la préparation et le contenu de l’e-mail ;
+- l’absence d’e-mail pour une adresse inconnue ;
+- le message identique pour une adresse connue ou inconnue ;
+- le hachage du jeton ;
+- l’expiration après une heure ;
+- la réinitialisation effective du mot de passe ;
+- l’impossibilité de réutiliser un lien.
+
+La validation complète du projet donne :
+
+- 162 tests réussis ;
+- 1 529 assertions ;
+- aucune erreur PHP ;
+- templates Twig valides ;
+- conteneur Symfony valide ;
+- schémas Doctrine de développement et de test synchronisés ;
+- aucun avertissement PHPUnit.
+
+### Validation manuelle
+
+La modification du mot de passe a été testée depuis le profil.
+
+Le joueur peut se déconnecter puis se reconnecter avec son nouveau mot de passe.
+
+La page de demande de récupération et son message de confirmation fonctionnent correctement.
+
+La réception d’un véritable e-mail sera validée pendant la préparation de l’hébergement.
+
+### Résultat
+
+Le joueur peut maintenant gérer son mot de passe sans intervention d’un administrateur.
+
+StickVerse possède également toute la base nécessaire pour envoyer de véritables liens de récupération sécurisés dès que le service de messagerie de production sera configuré.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

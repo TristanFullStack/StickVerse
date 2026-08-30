@@ -5,6 +5,10 @@
 {% block body %}
     <h1>Mon profil</h1>
 
+    {% for message in app.flashes('success') %}
+        <p class="alert-success" role="status">{{ message }}</p>
+    {% endfor %}
+
     <section class="profile-section" aria-labelledby="compte-titre">
         <h2 id="compte-titre">Compte</h2>
         <dl>
@@ -66,9 +70,6 @@
 
     <section class="profile-section" aria-labelledby="securite-titre">
         <h2 id="securite-titre">Sécurité du compte</h2>
-        <p>
-            La modification et la récupération du mot de passe seront ajoutées
-            pendant la prochaine étape du développement.
-        </p>
+        <p><a href="{{ path('app_modifier_mot_de_passe') }}">Modifier mon mot de passe</a></p>
     </section>
 {% endblock %}

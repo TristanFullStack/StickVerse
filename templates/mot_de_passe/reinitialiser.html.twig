@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réinitialiser mon mot de passe — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Réinitialiser mon mot de passe</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.nouveauMotDePasse) }}
+        <button type="submit">Enregistrer le nouveau mot de passe</button>
+    {{ form_end(form) }}
+{% endblock %}

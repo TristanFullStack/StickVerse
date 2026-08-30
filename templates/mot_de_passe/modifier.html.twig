@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon mot de passe — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Modifier mon mot de passe</h1>
+
+    <p><a href="{{ path('app_profil') }}">Retour au profil</a></p>
+
+    {{ form_start(form) }}
+        {{ form_row(form.motDePasseActuel) }}
+        {{ form_row(form.nouveauMotDePasse) }}
+        <button type="submit">Modifier le mot de passe</button>
+    {{ form_end(form) }}
+{% endblock %}

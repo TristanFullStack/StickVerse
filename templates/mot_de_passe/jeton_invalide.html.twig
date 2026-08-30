@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lien invalide — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Lien invalide ou expiré</h1>
+    <p>Ce lien ne peut plus être utilisé.</p>
+    <p>
+        <a href="{{ path('app_demande_reinitialisation_mot_de_passe') }}">
+            Demander un nouveau lien
+        </a>
+    </p>
+{% endblock %}
