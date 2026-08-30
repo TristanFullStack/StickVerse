@@ -24,6 +24,7 @@ final class CombatTest extends KernelTestCase
         self::assertNull($combat->getJoueur2());
         self::assertNull($combat->getGagnant());
         self::assertFalse($combat->estPrive());
+        self::assertFalse($combat->estEloAttribuee());
 
         self::assertSame(
             Combat::STATUT_EN_ATTENTE,

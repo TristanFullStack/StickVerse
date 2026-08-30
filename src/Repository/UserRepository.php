@@ -30,6 +30,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * @return list<User>
+     */
+    public function trouverClassementElo(): array
+    {
+        return $this->createQueryBuilder('joueur')
+            ->orderBy('joueur.elo', 'DESC')
+            ->addOrderBy('joueur.pseudo', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Used to upgrade (rehash) the user's password automatically over time.
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void

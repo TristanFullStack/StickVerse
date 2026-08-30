@@ -6770,7 +6770,142 @@ Le wiki et la collection utilisent désormais une structure de carte commune, ce
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J76 — Ajouter le système ELO et le classement global
 
+### Objectif
+
+J76 ajoute une cote ELO à chaque joueur afin de mesurer son niveau dans les combats en ligne.
+
+Un classement global permet maintenant de consulter la liste des joueurs et leur position selon leur cote.
+
+### Cote initiale
+
+Chaque nouveau joueur commence avec :
+
+- une cote ELO de 1000 ;
+- une position calculée automatiquement dans le classement ;
+- une cote modifiable uniquement par le système de résultats des combats.
+
+La cote ne peut jamais devenir négative.
+
+### Calcul ELO
+
+Le calcul utilise un facteur K de 32.
+
+La variation dépend :
+
+- de la cote du joueur ;
+- de la cote de son adversaire ;
+- du résultat du combat ;
+- de la différence de niveau attendue entre les deux joueurs.
+
+Un joueur mieux classé gagne moins de points lorsqu’il bat un adversaire moins bien classé.
+
+Un joueur moins bien classé gagne davantage de points lorsqu’il bat un adversaire mieux classé.
+
+### Résultats pris en compte
+
+Le système ELO traite les résultats suivants :
+
+- victoire ;
+- défaite ;
+- match nul ;
+- victoire par abandon ;
+- victoire par forfait ;
+- défaite par abandon ;
+- défaite par forfait.
+
+Un match nul utilise un score intermédiaire pour les deux joueurs.
+
+Les combats annulés ou encore actifs ne modifient pas les cotes.
+
+### Protection contre les doubles mises à jour
+
+Chaque combat possède maintenant un indicateur permettant de savoir si son résultat ELO a déjà été appliqué.
+
+Une seconde résolution ou une nouvelle actualisation ne peut donc pas modifier une deuxième fois les cotes des joueurs.
+
+Cette protection s’applique également aux combats terminés par abandon ou forfait.
+
+### Classement global
+
+Une nouvelle page est disponible à l’adresse `/classement`.
+
+Elle affiche :
+
+- le rang du joueur ;
+- son pseudo public ;
+- sa cote ELO ;
+- tous les joueurs enregistrés ;
+- les joueurs classés par cote décroissante ;
+- un ordre secondaire par pseudo pour départager les cotes identiques.
+
+Les adresses électroniques et les informations privées ne sont pas affichées.
+
+Le classement est accessible depuis la navigation principale.
+
+### Profil du joueur
+
+La cote ELO actuelle est maintenant affichée dans la page de profil du joueur.
+
+Le joueur peut ainsi consulter son niveau sans ouvrir la page complète du classement.
+
+### Intégration aux combats
+
+La mise à jour ELO est branchée sur le service central qui attribue les récompenses de fin de combat.
+
+Ainsi, les changements de cote sont déclenchés après :
+
+- une victoire classique ;
+- une égalité ;
+- un abandon ;
+- un forfait.
+
+Les récompenses en pièces et la cote ELO restent gérées dans le même cycle de fin de combat.
+
+### Base de données
+
+La migration `Version20260830210000` ajoute :
+
+- la colonne `elo` sur les comptes joueurs ;
+- la colonne `elo_attribuee` sur les combats.
+
+Aucune donnée privée supplémentaire n’est exposée dans le classement.
+
+### Interface
+
+L’interface reste volontairement simple et adaptée au prototype actuel :
+
+- tableau HTML classique ;
+- affichage lisible des rangs ;
+- surbrillance du joueur connecté ;
+- lien ajouté dans la navigation principale ;
+- cote visible dans le profil.
+
+### Vérifications automatiques
+
+- Cote initiale à 1000.
+- Victoire entre joueurs de même niveau.
+- Défaite entre joueurs de même niveau.
+- Match nul.
+- Victoire d’un joueur mieux classé.
+- Victoire d’un joueur moins bien classé.
+- Gestion d’un forfait.
+- Refus d’une modification sur un combat actif.
+- Protection contre la double attribution.
+- Affichage de tous les joueurs.
+- Tri du classement par cote ELO.
+- Affichage de la cote dans le profil.
+- Migration Doctrine appliquée en développement et en test.
+- Schéma Doctrine synchronisé.
+- Conteneur Symfony valide.
+- Suite complète validée : 209 tests et 1 765 assertions.
+
+### Résultat
+
+StickVerse possède maintenant une première base compétitive avec une cote individuelle et un classement global.
+
+Chaque combat terminé peut faire évoluer le niveau des joueurs, tandis que la page de classement permet de consulter la position de toute la communauté.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

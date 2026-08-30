@@ -201,6 +201,23 @@ table {
     max-width: 100%;
 }
 
+[data-classement] {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+[data-classement] th,
+[data-classement] td {
+    padding: 6px;
+    border: 1px solid #999;
+    text-align: left;
+}
+
+[data-classement-joueur] {
+    background: #eee;
+    font-weight: bold;
+}
+
 @media (max-width: 650px) {
     .site-header {
         align-items: flex-start;

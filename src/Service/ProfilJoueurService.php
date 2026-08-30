@@ -24,6 +24,7 @@ final readonly class ProfilJoueurService
     /**
      * @return array{
      *     nombreStickmen: int,
+     *     elo: int,
      *     equipe: Equipe|null,
      *     statistiques: array{
      *         total: int,
@@ -42,6 +43,7 @@ final readonly class ProfilJoueurService
             'nombreStickmen' => $this->inventaireRepository->count([
                 'utilisateur' => $joueur,
             ]),
+            'elo' => $joueur->getElo(),
             'equipe' => $this->equipeRepository->findOneBy([
                 'utilisateur' => $joueur,
             ]),

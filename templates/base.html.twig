@@ -37,6 +37,10 @@
                     {% if navigation_route starts with 'app_wiki' %}aria-current="page"{% endif %}
                 >Wiki</a>
                 <a
+                    href="{{ path('app_classement') }}"
+                    {% if navigation_route == 'app_classement' %}aria-current="page"{% endif %}
+                >Classement</a>
+                <a
                     href="{{ path('app_caisse_publique') }}"
                     {% if navigation_route == 'app_caisse_publique' %}aria-current="page"{% endif %}
                 >Caisses</a>

@@ -16,6 +16,7 @@ final class RecompenseCombatService
 
     public function __construct(
         private readonly ?MouvementPiecesService $mouvementPiecesService = null,
+        private readonly ?ClassementEloService $classementEloService = null,
     ) {
     }
 
@@ -24,6 +25,8 @@ final class RecompenseCombatService
      */
     public function attribuerSiNecessaire(Combat $combat): array
     {
+        $this->classementEloService?->mettreAJourSiNecessaire($combat);
+
         if ($combat->estRecompenseAttribuee()) {
             return [
                 'joueur1' => 0,

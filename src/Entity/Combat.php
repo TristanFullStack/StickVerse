@@ -97,6 +97,9 @@ class Combat
     #[ORM\Column(options: ['default' => false])]
     private bool $recompenseAttribuee = false;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $eloAttribuee = false;
+
     /**
      * @var Collection<int, CombattantCombat>
      */
@@ -456,6 +459,19 @@ class Combat
     public function marquerRecompenseAttribuee(): static
     {
         $this->recompenseAttribuee = true;
+        $this->actualiserDate();
+
+        return $this;
+    }
+
+    public function estEloAttribuee(): bool
+    {
+        return $this->eloAttribuee;
+    }
+
+    public function marquerEloAttribuee(): static
+    {
+        $this->eloAttribuee = true;
         $this->actualiserDate();
 
         return $this;

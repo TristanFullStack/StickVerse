@@ -19,6 +19,7 @@ use InvalidArgumentException;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const PIECES_DEPART = 1000;
+    public const ELO_DEPART = 1000;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -33,6 +34,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(options: ['unsigned' => true, 'default' => self::PIECES_DEPART])]
     private int $pieces = self::PIECES_DEPART;
+
+    #[ORM\Column(options: ['unsigned' => true, 'default' => self::ELO_DEPART])]
+    private int $elo = self::ELO_DEPART;
 
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $dateDerniereRecompenseQuotidienne = null;
@@ -115,6 +119,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPieces(): int
     {
         return $this->pieces;
+    }
+
+    public function getElo(): int
+    {
+        return $this->elo;
+    }
+
+    public function setElo(int $elo): static
+    {
+        if ($elo < 0) {
+            throw new InvalidArgumentException(
+                'La cote ELO ne peut pas être négative.'
+            );
+        }
+
+        $this->elo = $elo;
+
+        return $this;
+    }
+
+    public function modifierElo(int $variation): static
+    {
+        return $this->setElo(max(0, $this->elo + $variation));
     }
 
     public function getDateDerniereRecompenseQuotidienne(): ?\DateTimeImmutable

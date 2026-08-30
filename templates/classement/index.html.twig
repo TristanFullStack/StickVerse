@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Classement - StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Classement ELO</h1>
+
+    <p>
+        Tous les joueurs sont classés selon leur cote ELO.
+    </p>
+
+    {% if joueurs is empty %}
+        <p>Aucun joueur inscrit pour le moment.</p>
+    {% else %}
+        <table data-classement>
+            <thead>
+                <tr>
+                    <th>Rang</th>
+                    <th>Pseudo</th>
+                    <th>ELO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for joueur in joueurs %}
+                    <tr
+                        {% if app.user and app.user.id == joueur.id %}
+                            data-classement-joueur
+                        {% endif %}
+                    >
+                        <td>{{ loop.index }}</td>
+                        <td>{{ joueur.pseudo }}</td>
+                        <td>{{ joueur.elo }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

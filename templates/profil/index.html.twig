@@ -21,6 +21,9 @@
             <dt>Solde</dt>
             <dd data-profile-pieces>{{ app.user.pieces }} pièces</dd>
 
+            <dt>Cote ELO</dt>
+            <dd data-profile-elo>{{ profil.elo }}</dd>
+
             <dt>Type de compte</dt>
             <dd data-profile-account-type>
                 {% if is_granted('ROLE_ADMIN') %}

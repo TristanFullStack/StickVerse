@@ -13,6 +13,11 @@ final class UserTest extends TestCase
         self::assertSame(User::PIECES_DEPART, (new User())->getPieces());
     }
 
+    public function testCommenceAvecMillePointsElo(): void
+    {
+        self::assertSame(User::ELO_DEPART, (new User())->getElo());
+    }
+
     public function testCrediteEtDebiteLePortefeuille(): void
     {
         $joueur = new User();

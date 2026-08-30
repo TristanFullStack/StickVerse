@@ -6,6 +6,7 @@ use App\Entity\Combat;
 use App\Entity\MouvementPieces;
 use App\Entity\User;
 use App\Service\MouvementPiecesService;
+use App\Service\ClassementEloService;
 use App\Service\RecompenseCombatService;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
@@ -30,6 +31,39 @@ final class RecompenseCombatServiceTest extends TestCase
         self::assertSame(1100, $joueur1->getPieces());
         self::assertSame(1025, $joueur2->getPieces());
         self::assertTrue($combat->estRecompenseAttribuee());
+    }
+
+    public function testMetAJourLeClassementEloUneSeuleFois(): void
+    {
+        [$combat, $joueur1, $joueur2] = $this->creerCombat();
+        $combat
+            ->setGagnant($joueur1)
+            ->setStatut(Combat::STATUT_TERMINE);
+        $service = new RecompenseCombatService(
+            classementEloService: new ClassementEloService(),
+        );
+
+        $service->attribuerSiNecessaire($combat);
+        $secondeAttribution = $service->attribuerSiNecessaire($combat);
+
+        self::assertSame(1016, $joueur1->getElo());
+        self::assertSame(984, $joueur2->getElo());
+        self::assertTrue($combat->estEloAttribuee());
+        self::assertSame([0, 0], array_values($secondeAttribution));
+    }
+
+    public function testNeModifiePasLeClassementDUnCombatActif(): void
+    {
+        [$combat, $joueur1, $joueur2] = $this->creerCombat();
+        $service = new RecompenseCombatService(
+            classementEloService: new ClassementEloService(),
+        );
+
+        $service->attribuerSiNecessaire($combat);
+
+        self::assertSame(User::ELO_DEPART, $joueur1->getElo());
+        self::assertSame(User::ELO_DEPART, $joueur2->getElo());
+        self::assertFalse($combat->estEloAttribuee());
     }
 
     public function testEnregistreLesMouvementsDesDeuxJoueurs(): void
