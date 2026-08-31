@@ -30,6 +30,7 @@ final class ResolutionRoundService
         PlanCombat $planJoueur1,
         EtatEquipeCombat $joueur2,
         PlanCombat $planJoueur2,
+        int $numeroRound = 1,
     ): array {
         $impacts = [];
 
@@ -55,7 +56,10 @@ final class ResolutionRoundService
          * Tous les impacts sont calculés avant la modification des PV.
          * La résolution reste donc simultanée.
          */
-        $resultats = $this->combatService->resoudreRound($impacts);
+        $resultats = $this->combatService->resoudreRound(
+            $impacts,
+            $numeroRound,
+        );
 
         $this->appliquerResultats(
             resultats: $resultats,

@@ -170,6 +170,20 @@ body:has(#rapport-combat) {
     color: var(--combat-cyan);
 }
 
+#combat-en-ligne [data-combat-en-ligne-target="chargement"] {
+    position: fixed;
+    z-index: 250;
+    top: 8px;
+    right: 8px;
+    width: auto;
+    max-width: min(360px, calc(100% - 16px));
+    margin: 0;
+    padding: 7px 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    font-size: 12px;
+    pointer-events: none;
+}
+
 #combat-en-ligne [data-combat-en-ligne-target="erreur"] {
     color: #ffd6d5;
     border-color: rgba(255, 92, 88, 0.7);
@@ -305,6 +319,7 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .carte-combattant {
+    position: relative;
     min-width: 0;
     overflow: hidden;
     color: #101827;
@@ -312,6 +327,46 @@ body:has(#rapport-combat) {
     border-radius: 9px;
     background: linear-gradient(145deg, #fff, #dbe4ec);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+#combat-en-ligne .carte-combattant.est-selectionnable {
+    cursor: pointer;
+    outline: 3px solid #555;
+    outline-offset: 2px;
+}
+
+#combat-en-ligne .carte-combattant.est-selectionnable:hover,
+#combat-en-ligne .carte-combattant.est-selectionnable:focus-visible {
+    transform: translateY(-3px);
+}
+
+#combat-en-ligne .carte-combattant.est-choisie {
+    border-color: #ffffff;
+}
+
+#combat-en-ligne .carte-combattant-choix {
+    position: absolute;
+    z-index: 2;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+#combat-en-ligne .carte-combattant-choix span {
+    padding: 3px 5px;
+    color: #ffffff;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #333;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+#combat-en-ligne .carte-combattant-choix [data-type="defense"] {
+    background: #666;
 }
 
 #combat-en-ligne .carte-combattant-titre {
@@ -555,6 +610,88 @@ body:has(#rapport-combat) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+}
+
+#combat-en-ligne .pression-combat {
+    padding: 10px 12px;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    color: #222;
+    background: #eee;
+    font-weight: 800;
+}
+
+#combat-en-ligne .plan-tactique,
+#combat-en-ligne .plan-selects-secours {
+    grid-column: 1 / -1;
+}
+
+#combat-en-ligne .plan-tactique-instruction,
+#combat-en-ligne .plan-tactique-resume {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border: 1px solid #aaa;
+    border-radius: 7px;
+    color: #222;
+    background: #f2f2f2;
+}
+
+#combat-en-ligne .plan-tactique-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+#combat-en-ligne .plan-tactique-action {
+    min-height: 70px;
+    color: #222;
+    border-color: #999;
+    background: #f4f4f4;
+    box-shadow: none;
+}
+
+#combat-en-ligne .plan-tactique-action strong,
+#combat-en-ligne .plan-tactique-action span {
+    display: block;
+}
+
+#combat-en-ligne .plan-tactique-action span {
+    margin-top: 5px;
+    color: #555;
+    font-size: 11px;
+}
+
+#combat-en-ligne .plan-tactique-action.est-active {
+    border-color: #333;
+    background: #ddd;
+}
+
+#combat-en-ligne .plan-tactique-action.est-complete span {
+    color: #222;
+}
+
+#combat-en-ligne .plan-tactique-resume {
+    margin-bottom: 0;
+    border-color: #888;
+    font-weight: 800;
+}
+
+#combat-en-ligne .plan-selects-secours {
+    border: 1px solid #294b63;
+    border-radius: 8px;
+}
+
+#combat-en-ligne .plan-selects-secours summary {
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+#combat-en-ligne .plan-selects-grille {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0 12px 12px;
 }
 
 #combat-en-ligne fieldset {
@@ -892,8 +1029,13 @@ body:has(#rapport-combat) {
     }
 
     #combat-en-ligne [data-combat-en-ligne-target="participants"],
-    #combat-en-ligne [data-combat-en-ligne-target="planForm"] {
+    #combat-en-ligne [data-combat-en-ligne-target="planForm"],
+    #combat-en-ligne .plan-selects-grille {
         grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne .plan-tactique-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     #combat-en-ligne [data-combat-en-ligne-target="envoyerPlanButton"] {
@@ -944,5 +1086,562 @@ body:has(#rapport-combat) {
         display: block;
         width: 100%;
         margin: 10px 0 0;
+    }
+}
+
+/* Arène J80 : proche du rythme de la V24, avec l'aspect simple du prototype. */
+#combat-en-ligne .combat-actif {
+    color: #f4f8fc;
+    border: 1px solid #27506d;
+    border-radius: 10px;
+    background: #06111d;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38);
+}
+
+#combat-en-ligne .combat-actif-entete,
+#combat-en-ligne .combat-actions-globales {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#combat-en-ligne .combat-actif-entete {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #294a62;
+}
+
+#combat-en-ligne .combat-actif-entete h2,
+#combat-en-ligne .combat-actif-entete p {
+    margin: 0;
+    color: #f4f8fc;
+}
+
+#combat-en-ligne .combat-actif-entete .pression-combat {
+    padding: 5px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+#combat-en-ligne .combat-arene {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(340px, 0.9fr) minmax(280px, 1fr);
+    gap: 10px;
+    margin: 0;
+}
+
+#combat-en-ligne .combat-arene > section {
+    min-width: 0;
+    margin: 0;
+    padding: 8px;
+    color: #222;
+    border: 1px solid #267eb1;
+    border-radius: 8px;
+    background: #091725;
+}
+
+#combat-en-ligne .combat-arene .combat-equipe-adversaire {
+    border-color: #c87413;
+}
+
+#combat-en-ligne .combat-arene h3 {
+    margin: 0 0 7px;
+    color: #41bfff;
+    font-size: 15px;
+    text-align: center;
+}
+
+#combat-en-ligne .combat-arene .combat-equipe-adversaire > h3 {
+    color: #ff9b24;
+}
+
+#combat-en-ligne .combat-arene [data-combat-en-ligne-target="moiCombattants"],
+#combat-en-ligne .combat-arene [data-combat-en-ligne-target="adversaireCombattants"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant {
+    min-height: 0;
+    color: #222;
+    border: 2px solid #71808c;
+    border-radius: 8px;
+    background: linear-gradient(#e2e6ea, #cfd5da);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 160ms ease, border-color 160ms ease;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-titre {
+    min-height: 29px;
+    padding: 6px 5px 3px;
+    font-size: 12px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-image {
+    height: clamp(86px, 13vh, 125px);
+    padding: 3px 6px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-vie {
+    padding: 5px 6px 6px;
+    color: #222;
+    background: #eee;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-vie-informations {
+    margin-bottom: 4px;
+    font-size: 10px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-vie-barre {
+    position: relative;
+    height: 8px;
+    border-radius: 2px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-statistiques {
+    padding: 5px 4px;
+    color: #222;
+    background: #ddd;
+    font-size: 10px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant.est-selectionnable {
+    outline: 2px solid #555;
+    outline-offset: 1px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant.est-selectionnable:hover,
+#combat-en-ligne .combat-arene .carte-combattant.est-selectionnable:focus-visible {
+    transform: translateY(-2px);
+}
+
+#combat-en-ligne .carte-combattant-menace {
+    position: absolute;
+    z-index: 4;
+    top: 31px;
+    left: 5px;
+    right: 5px;
+    padding: 4px;
+    color: #fff;
+    border: 1px solid #9b5b00;
+    border-radius: 3px;
+    background: #d87b00;
+    font-size: 8px;
+    font-weight: 900;
+    line-height: 1.2;
+    text-align: center;
+}
+
+#combat-en-ligne .carte-combattant[data-menace="grave"] .carte-combattant-menace {
+    border-color: #6f0000;
+    background: #a60000;
+}
+
+#combat-en-ligne .carte-combattant-preview-degats {
+    position: absolute;
+    z-index: 5;
+    right: 7px;
+    bottom: 42px;
+    left: auto;
+    padding: 3px 6px;
+    color: #fff;
+    border: 1px solid #8d0000;
+    border-radius: 3px;
+    background: rgba(170, 0, 0, 0.94);
+    font-size: 9px;
+    font-weight: 900;
+    text-align: center;
+    pointer-events: none;
+}
+
+#combat-en-ligne .carte-combattant-vie-preview {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    display: block;
+    border-radius: 0;
+    background: #f01818;
+    box-shadow: 0 0 7px rgba(255, 0, 0, 0.75);
+    pointer-events: none;
+    transition: left 120ms ease, width 120ms ease;
+}
+
+#combat-en-ligne .carte-combattant-animation {
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    color: #fff;
+    background: rgba(24, 91, 170, 0.78);
+    font-size: clamp(16px, 2vw, 25px);
+    font-weight: 900;
+    text-align: center;
+    pointer-events: none;
+    animation: phase-combat-apparition 300ms ease both;
+}
+
+#combat-en-ligne .carte-combattant-animation[data-phase="degats"] {
+    background: rgba(180, 22, 22, 0.8);
+}
+
+@keyframes phase-combat-apparition {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#combat-en-ligne .combat-centre {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+#combat-en-ligne .combat-etat-round,
+#combat-en-ligne .combat-centre .plan-tactique-instruction,
+#combat-en-ligne .combat-centre .plan-tactique-resume {
+    margin: 0;
+    padding: 6px 8px;
+    color: #e9f4fc;
+    border: 1px solid #2b536d;
+    border-radius: 3px;
+    background: #0c2030;
+    font-size: 10px;
+}
+
+#combat-en-ligne .capacites-tactiques {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+}
+
+#combat-en-ligne .capacites-equipe {
+    padding: 5px;
+    border: 1px solid #2a526d;
+    background: #0a1a28;
+}
+
+#combat-en-ligne .capacites-equipe h4 {
+    margin: 0 0 4px;
+    color: #dceaf4;
+    font-size: 10px;
+    text-align: center;
+}
+
+#combat-en-ligne .capacites-equipe-grille {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+}
+
+#combat-en-ligne .capacites-equipe-grille span {
+    padding: 3px;
+    border: 1px solid #31546b;
+    background: #102536;
+    text-align: center;
+}
+
+#combat-en-ligne .capacites-equipe-grille small,
+#combat-en-ligne .capacites-equipe-grille strong {
+    display: block;
+    font-size: 9px;
+}
+
+#combat-en-ligne .capacites-equipe-grille [data-type="attaque"] strong {
+    color: #ff746b;
+}
+
+#combat-en-ligne .capacites-equipe-grille [data-type="defense"] strong {
+    color: #69baff;
+}
+
+#combat-en-ligne .combat-centre .plan-combat,
+#combat-en-ligne .combat-centre .preparation-combat,
+#combat-en-ligne .combat-centre .resultat-round-compact {
+    margin: 0;
+    padding: 7px;
+    color: #edf6fc;
+    border: 1px solid #2a5069;
+    border-radius: 3px;
+    background: #081723;
+}
+
+#combat-en-ligne .combat-centre [data-combat-en-ligne-target="planForm"] {
+    display: block;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    margin: 6px 0;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-action {
+    min-height: 46px;
+    padding: 5px;
+    color: #eef7ff;
+    border: 1px solid #976900;
+    border-radius: 6px;
+    background: #3b2c08;
+    font-size: 10px;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-action.est-active {
+    border-color: #ffc400;
+    background: #624900;
+    box-shadow: 0 0 12px rgba(255, 183, 0, 0.32);
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-action[data-plan-cle^="cibleDefense"] {
+    border-color: #308b29;
+    background: #133b16;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-action[data-plan-cle^="cibleDefense"].est-active {
+    border-color: #67e833;
+    background: #205b1b;
+    box-shadow: 0 0 12px rgba(103, 232, 51, 0.25);
+}
+
+#combat-en-ligne .combat-centre .plan-selects-secours {
+    margin-top: 6px;
+    color: #d9e8f2;
+    border-color: #31556d;
+    font-size: 10px;
+}
+
+#combat-en-ligne .combat-centre [data-combat-en-ligne-target="envoyerPlanButton"] {
+    width: 100%;
+    min-height: 36px;
+    margin-top: 6px;
+    padding: 6px;
+    color: #fff;
+    border: 1px solid #1479ff;
+    border-radius: 3px;
+    background: #0b4f90;
+    box-shadow: 0 0 12px rgba(20, 121, 255, 0.25);
+    font-size: 11px;
+}
+
+#combat-en-ligne .resultat-round-compact h3 {
+    margin-bottom: 3px;
+}
+
+#combat-en-ligne .resultat-round-tableau {
+    max-height: 90px;
+    overflow: auto;
+}
+
+#combat-en-ligne .resultat-round-compact table {
+    color: #222;
+    border-color: #aaa;
+    font-size: 9px;
+}
+
+#combat-en-ligne .resultat-round-compact th,
+#combat-en-ligne .resultat-round-compact td {
+    padding: 2px 3px;
+    color: #222;
+    border-color: #ccc;
+    background: #fff;
+}
+
+#combat-en-ligne .combat-historique {
+    margin: 7px 0 0;
+    padding: 6px 8px;
+    color: #dceaf4;
+    border: 1px solid #294b63;
+    background: #071522;
+    font-size: 11px;
+}
+
+#combat-en-ligne .combat-historique > summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+#combat-en-ligne .combat-actions-globales {
+    justify-content: center;
+    margin-top: 8px;
+}
+
+#combat-en-ligne .combat-actions-globales button {
+    min-height: 35px;
+    padding: 6px 14px;
+    color: #eef7ff;
+    border: 1px solid #315b7d;
+    border-radius: 6px;
+    background: #0a2030;
+    box-shadow: none;
+    font-size: 11px;
+}
+
+#combat-en-ligne .combat-actions-globales [data-combat-en-ligne-target="abandonButton"] {
+    margin: 0;
+    color: #7d0000;
+    border-color: #9d5555;
+    background: #f0dddd;
+}
+
+@media (min-width: 800px) and (min-height: 560px) {
+    body:has(#combat-en-ligne .combat-actif:not([hidden])) {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
+        background: #020711;
+    }
+
+    body:has(#combat-en-ligne .combat-actif:not([hidden])) .site-header {
+        z-index: 100;
+        flex: 0 0 auto;
+        color: #edf6fc;
+        border-color: #24445b;
+        background: #06111d;
+    }
+
+    body:has(#combat-en-ligne .combat-actif:not([hidden])) .site-header a {
+        color: #edf6fc;
+        border-color: #31556d;
+        background: #0b1d2b;
+    }
+
+    body:has(#combat-en-ligne .combat-actif:not([hidden])) .site-content {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: none;
+        min-height: 0;
+        padding: 7px 10px;
+        overflow: hidden;
+    }
+
+    #combat-en-ligne:has(.combat-actif:not([hidden])) {
+        height: 100%;
+        min-height: 0;
+        padding-bottom: 0;
+    }
+
+    #combat-en-ligne > section:has(.combat-actif:not([hidden])) {
+        width: 100%;
+        max-width: 1900px;
+        height: 100%;
+        padding-top: 0;
+    }
+
+    #combat-en-ligne > section:has(.combat-actif:not([hidden])) > h1,
+    #combat-en-ligne > section:has(.combat-actif:not([hidden])) > h1 + p {
+        display: none;
+    }
+
+    #combat-en-ligne .combat-actif {
+        height: 100%;
+        padding: 8px;
+        overflow: hidden;
+    }
+
+    #combat-en-ligne .combat-arene {
+        height: calc(100% - 91px);
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.88fr) minmax(0, 1fr);
+    }
+
+    #combat-en-ligne .combat-actif:has(.combat-historique:not([hidden])) .combat-arene {
+        height: calc(100% - 124px);
+    }
+
+    #combat-en-ligne .combat-arene > section {
+        overflow: hidden;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-image {
+        height: clamp(62px, 12dvh, 130px);
+    }
+}
+
+@media (max-width: 799px), (max-height: 559px) {
+    #combat-en-ligne .combat-arene {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne .combat-centre {
+        grid-row: 2;
+    }
+}
+
+@media (max-width: 560px) {
+    #combat-en-ligne .combat-arene [data-combat-en-ligne-target="moiCombattants"],
+    #combat-en-ligne .combat-arene [data-combat-en-ligne-target="adversaireCombattants"] {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne .combat-actif-entete {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* Contrastes du thème V24 : tous les textes restent lisibles sur fond sombre. */
+#combat-en-ligne .combat-actif-entete .pression-combat {
+    color: #ffe0a3;
+    border-color: #b97812;
+    background: #3b2909;
+}
+
+#combat-en-ligne .combat-arene .combat-equipe-adversaire {
+    border-color: #d17c18;
+}
+
+#combat-en-ligne .combat-arene .combat-equipe-adversaire > h3 {
+    color: #ffad3d;
+}
+
+#combat-en-ligne .capacites-equipe h4 {
+    color: #f6fbff;
+}
+
+#combat-en-ligne .capacites-equipe-grille small {
+    color: #c6d9e8;
+    font-weight: 700;
+}
+
+#combat-en-ligne .capacites-equipe-grille strong {
+    color: #fff;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-action span,
+#combat-en-ligne .combat-centre .plan-tactique-action.est-complete span {
+    color: #ffe5a8;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-action[data-plan-cle^="cibleDefense"] span,
+#combat-en-ligne .combat-centre .plan-tactique-action[data-plan-cle^="cibleDefense"].est-complete span {
+    color: #c9ffc4;
+}
+
+#combat-en-ligne .combat-centre .plan-tactique-resume {
+    color: #f2f8fc;
+}
+
+#combat-en-ligne .combat-centre .plan-selects-secours summary {
+    color: #dceaf4;
+}
+
+#combat-en-ligne .combat-centre [data-combat-en-ligne-target="envoyerPlanButton"]:disabled {
+    color: #aebdca;
+    border-color: #36536a;
+    background: #102c43;
+    opacity: 1;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant.est-ko {
+    opacity: 0.62;
+}
+
+@media (min-width: 800px) and (min-height: 560px) {
+    #combat-en-ligne .combat-arene .carte-combattant-image {
+        height: clamp(70px, 14dvh, 150px);
     }
 }

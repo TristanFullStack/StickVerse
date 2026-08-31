@@ -150,6 +150,7 @@ final class ResolutionRoundCombatEnLigneService
                     planJoueur1: $planJoueur1->toPlanCombat(),
                     joueur2: $etatJoueur2,
                     planJoueur2: $planJoueur2->toPlanCombat(),
+                    numeroRound: $numeroRound,
                 );
 
                 $this->appliquerPvAuxSnapshots(

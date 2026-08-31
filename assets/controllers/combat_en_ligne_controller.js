@@ -1,4 +1,12 @@
 import { Controller } from '@hotwired/stimulus';
+import {
+    calculerApercuDegats,
+    calculerMenaceFocus,
+    capacitesTactiques,
+    combattantsVivants,
+    normaliserEtapesAnimation,
+    puissanceGroupe,
+} from './combat_v24_calculs.js';
 
 export default class extends Controller {
     static targets = [
@@ -12,6 +20,8 @@ export default class extends Controller {
         'combatStatut',
         'numeroRound',
         'etatRound',
+        'pressionAttaque',
+        'capacitesTactiques',
         'finCombat',
         'finCombatTitre',
         'finCombatMessage',
@@ -36,6 +46,9 @@ export default class extends Controller {
         'adversaireCombattants',
         'planSection',
         'planForm',
+        'instructionPlan',
+        'resumePlan',
+        'planActionButton',
         'cibleAttaqueX',
         'cibleDefenseX',
         'cibleAttaqueY',
@@ -75,17 +88,22 @@ export default class extends Controller {
         this.requeteEnCours = null;
         this.minuterieActualisation = null;
         this.actionEnCours = false;
+        this.actionPlanActive = 'cibleAttaqueX';
         this.etatsInteractions = new Map();
+        this.animationRoundEnCours = false;
+        this.generationAnimation = 0;
+        this.signatureCombatAffiche = null;
         this.chargerSalon();
     }
 
     disconnect() {
         this.requeteEnCours?.abort();
+        this.generationAnimation += 1;
         this.annulerActualisation();
     }
 
     rafraichir() {
-        if (this.actionEnCours) {
+        if (this.actionEnCours || this.animationRoundEnCours) {
             return;
         }
 
@@ -105,12 +123,36 @@ export default class extends Controller {
 
         this.combatActifIdCourant = null;
         this.combat = null;
+        this.signatureCombatAffiche = null;
         this.annulerActualisation();
         await this.chargerSalon();
     }
 
     changerEquipe() {
         this.afficherEquipeSelectionnee();
+    }
+
+    activerChoixPlan(event) {
+        const cle = event.currentTarget?.dataset?.planCle;
+
+        if (!this.clesPlan().includes(cle)) {
+            return;
+        }
+
+        this.actionPlanActive = cle;
+        this.mettreAJourPlanTactique();
+    }
+
+    synchroniserPlan() {
+        const premiereActionIncomplete = this.clesPlan().find(
+            (cle) => this.selectPlan(cle)?.value === ''
+        );
+
+        if (premiereActionIncomplete) {
+            this.actionPlanActive = premiereActionIncomplete;
+        }
+
+        this.mettreAJourPlanTactique();
     }
 
     async soumettrePlan(event) {
@@ -238,6 +280,7 @@ export default class extends Controller {
 
             this.combatActifIdCourant = null;
             this.combat = null;
+            this.signatureCombatAffiche = null;
             await this.chargerSalon();
             this.afficherInformation(
                 'Le combat en attente a bien été annulé.'
@@ -425,6 +468,7 @@ export default class extends Controller {
 
         this.combatActifIdCourant = null;
         this.combat = null;
+        this.signatureCombatAffiche = null;
         this.annulerActualisation();
         this.combatActifTarget.hidden = true;
         this.salonTarget.hidden = false;
@@ -438,9 +482,10 @@ export default class extends Controller {
         this.requeteEnCours?.abort();
 
         const requete = new AbortController();
+        const premierChargement = this.combat === null;
         this.requeteEnCours = requete;
         this.chargementTarget.textContent = 'Actualisation du combat…';
-        this.chargementTarget.hidden = false;
+        this.chargementTarget.hidden = !premierChargement;
         this.masquerErreur();
 
         try {
@@ -470,6 +515,7 @@ export default class extends Controller {
             if (donnees.expirationAutomatique === true) {
                 this.combatActifIdCourant = null;
                 this.combat = null;
+                this.signatureCombatAffiche = null;
                 await this.chargerSalon();
                 this.afficherInformation([
                     'Le combat a été annulé automatiquement',
@@ -482,6 +528,7 @@ export default class extends Controller {
             if (donnees.annulationPreparationAutomatique === true) {
                 this.combatActifIdCourant = null;
                 this.combat = null;
+                this.signatureCombatAffiche = null;
                 await this.chargerSalon();
                 this.afficherInformation([
                     'Le combat a été annulé automatiquement',
@@ -492,8 +539,18 @@ export default class extends Controller {
                 return;
             }
 
+            const signature = JSON.stringify(donnees);
+            const combatModifie = signature !== this.signatureCombatAffiche;
+
             this.combat = donnees;
-            this.afficherCombat();
+
+            if (combatModifie) {
+                this.signatureCombatAffiche = signature;
+                this.afficherCombat();
+            } else {
+                this.afficherPreparation();
+                this.afficherEtatRound();
+            }
 
             if (donnees.forfaitPreparationAutomatique === true) {
                 this.afficherInformation([
@@ -502,6 +559,7 @@ export default class extends Controller {
                 ].join(' '));
             }
 
+            await this.animerNouveauRoundSiNecessaire();
             this.programmerActualisation();
         } catch (erreur) {
             if (erreur.name !== 'AbortError') {
@@ -544,6 +602,7 @@ export default class extends Controller {
             this.moiNomTarget,
             this.moiCombattantsTarget,
             'Ton équipe',
+            'moi',
         );
 
         const adversairePresent = this.combat.adversaire !== null;
@@ -569,10 +628,15 @@ export default class extends Controller {
             this.adversaireNomTarget,
             this.adversaireCombattantsTarget,
             'Équipe adverse',
+            'adversaire',
         );
+
+        this.afficherCapacitesTactiques();
+        this.afficherMenacesFocus();
 
         this.afficherPreparation();
         this.afficherEtatRound();
+        this.afficherPressionAttaque();
         this.afficherFinCombat();
         this.afficherDernierRound();
         this.afficherHistoriqueRounds();
@@ -1019,23 +1083,47 @@ export default class extends Controller {
         this.envoyerPlanButtonTarget.disabled =
             ciblesAttaque.length === 0
             || ciblesDefense.length === 0;
+
+        this.remplirCibleUnique(
+            this.cibleAttaqueXTarget,
+            ciblesAttaque,
+        );
+        this.remplirCibleUnique(
+            this.cibleAttaqueYTarget,
+            ciblesAttaque,
+        );
+        this.remplirCibleUnique(
+            this.cibleDefenseXTarget,
+            ciblesDefense,
+        );
+        this.remplirCibleUnique(
+            this.cibleDefenseYTarget,
+            ciblesDefense,
+        );
+
+        if (!this.clesPlan().includes(this.actionPlanActive)) {
+            this.actionPlanActive = 'cibleAttaqueX';
+        }
+
+        const premiereActionIncomplete = this.clesPlan().find(
+            (cle) => this.selectPlan(cle)?.value === ''
+        );
+
+        if (premiereActionIncomplete) {
+            this.actionPlanActive = premiereActionIncomplete;
+        }
+
+        this.mettreAJourPlanTactique();
+    }
+
+    remplirCibleUnique(select, combattants) {
+        if (combattants.length === 1) {
+            select.value = combattants[0].slot;
+        }
     }
 
     combattantsVivants(participant) {
-        if (!Array.isArray(participant?.combattants)) {
-            return [];
-        }
-
-        return participant.combattants.filter((combattant) => {
-            const pvActuels = Number.parseInt(
-                combattant.pvActuels,
-                10,
-            );
-
-            return combattant.vivant !== false
-                && Number.isInteger(pvActuels)
-                && pvActuels > 0;
-        });
+        return combattantsVivants(participant);
     }
 
     remplirSelectCibles(select, combattants) {
@@ -1072,7 +1160,323 @@ export default class extends Controller {
         select.disabled = combattants.length === 0;
     }
 
-    afficherParticipant(participant, nomTarget, listeTarget, libelle) {
+    clesPlan() {
+        return [
+            'cibleAttaqueX',
+            'cibleAttaqueY',
+            'cibleDefenseX',
+            'cibleDefenseY',
+        ];
+    }
+
+    selectPlan(cle) {
+        const selects = {
+            cibleAttaqueX: this.cibleAttaqueXTarget,
+            cibleAttaqueY: this.cibleAttaqueYTarget,
+            cibleDefenseX: this.cibleDefenseXTarget,
+            cibleDefenseY: this.cibleDefenseYTarget,
+        };
+
+        return selects[cle] ?? null;
+    }
+
+    campPourActionPlan(cle) {
+        return cle.startsWith('cibleAttaque')
+            ? 'adversaire'
+            : 'moi';
+    }
+
+    selectionnerCiblePlan(camp, slot) {
+        if (
+            this.planSectionTarget.hidden
+            || camp !== this.campPourActionPlan(this.actionPlanActive)
+        ) {
+            return;
+        }
+
+        const select = this.selectPlan(this.actionPlanActive);
+        const optionValide = Array.from(select?.options ?? [])
+            .some((option) => option.value === slot && !option.disabled);
+
+        if (!select || !optionValide) {
+            return;
+        }
+
+        select.value = slot;
+        this.actionPlanActive = this.prochaineActionPlan(
+            this.actionPlanActive,
+        );
+        this.mettreAJourPlanTactique();
+    }
+
+    prochaineActionPlan(cleActuelle, chercherVide = false) {
+        const cles = this.clesPlan();
+        const depart = Math.max(0, cles.indexOf(cleActuelle));
+
+        for (let decalage = 1; decalage <= cles.length; decalage += 1) {
+            const cle = cles[(depart + decalage) % cles.length];
+
+            if (!chercherVide || this.selectPlan(cle)?.value === '') {
+                return cle;
+            }
+        }
+
+        return cleActuelle;
+    }
+
+    mettreAJourPlanTactique() {
+        if (!this.hasPlanActionButtonTarget) {
+            return;
+        }
+
+        const libelles = {
+            cibleAttaqueX: 'Sélectionne un adversaire pour l’attaque X.',
+            cibleAttaqueY: 'Sélectionne un adversaire pour l’attaque Y.',
+            cibleDefenseX: 'Sélectionne un allié pour la défense X.',
+            cibleDefenseY: 'Sélectionne un allié pour la défense Y.',
+        };
+
+        for (const bouton of this.planActionButtonTargets) {
+            const cle = bouton.dataset.planCle;
+            const select = this.selectPlan(cle);
+            const valeur = bouton.querySelector('[data-plan-valeur]');
+            const option = Array.from(select?.options ?? [])
+                .find((element) => element.value === select.value);
+
+            bouton.classList.toggle(
+                'est-active',
+                cle === this.actionPlanActive,
+            );
+            bouton.classList.toggle(
+                'est-complete',
+                select?.value !== '',
+            );
+
+            if (valeur) {
+                valeur.textContent = option?.textContent ?? 'À choisir';
+            }
+        }
+
+        this.instructionPlanTarget.textContent =
+            libelles[this.actionPlanActive] ?? 'Choisis une cible.';
+        this.envoyerPlanButtonTarget.disabled = this.clesPlan().some(
+            (cle) => this.selectPlan(cle)?.value === ''
+        );
+        this.mettreAJourCartesPlan();
+        this.mettreAJourResumePlan();
+        this.actualiserApercusSurvoles();
+    }
+
+    mettreAJourCartesPlan() {
+        const cartes = this.participantsTarget.querySelectorAll(
+            '.carte-combattant[data-slot][data-camp]'
+        );
+        const campActif = this.campPourActionPlan(this.actionPlanActive);
+        const choixParCarte = new Map();
+        const libelles = {
+            cibleAttaqueX: 'ATQ X',
+            cibleAttaqueY: 'ATQ Y',
+            cibleDefenseX: 'DÉF X',
+            cibleDefenseY: 'DÉF Y',
+        };
+
+        for (const cle of this.clesPlan()) {
+            const slot = this.selectPlan(cle)?.value;
+
+            if (!slot) {
+                continue;
+            }
+
+            const identifiant = `${this.campPourActionPlan(cle)}:${slot}`;
+            const choix = choixParCarte.get(identifiant) ?? [];
+            choix.push(libelles[cle]);
+            choixParCarte.set(identifiant, choix);
+        }
+
+        for (const carte of cartes) {
+            const estVivante = carte.dataset.vivant !== 'false';
+            const estSelectionnable = estVivante
+                && carte.dataset.camp === campActif;
+            const identifiant = `${carte.dataset.camp}:${carte.dataset.slot}`;
+            const choix = choixParCarte.get(identifiant) ?? [];
+            const conteneur = carte.querySelector(
+                '.carte-combattant-choix'
+            );
+
+            carte.classList.toggle(
+                'est-selectionnable',
+                estSelectionnable,
+            );
+            carte.classList.toggle('est-choisie', choix.length > 0);
+            carte.tabIndex = estSelectionnable ? 0 : -1;
+
+            if (estSelectionnable) {
+                carte.setAttribute('role', 'button');
+            } else {
+                carte.removeAttribute('role');
+            }
+
+            carte.setAttribute(
+                'aria-label',
+                estSelectionnable
+                    ? `Choisir ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                    : carte.textContent.trim(),
+            );
+
+            if (conteneur) {
+                conteneur.replaceChildren();
+
+                for (const choixTexte of choix) {
+                    const badge = document.createElement('span');
+                    badge.textContent = choixTexte;
+                    badge.dataset.type = choixTexte.startsWith('ATQ')
+                        ? 'attaque'
+                        : 'defense';
+                    conteneur.append(badge);
+                }
+            }
+        }
+    }
+
+    mettreAJourResumePlan() {
+        const selections = Object.fromEntries(
+            this.clesPlan().map((cle) => [
+                cle,
+                this.selectPlan(cle)?.value ?? '',
+            ])
+        );
+        const incomplet = Object.values(selections)
+            .some((valeur) => valeur === '');
+
+        if (incomplet) {
+            this.resumePlanTarget.textContent =
+                'Complète les quatre choix pour afficher le résumé du plan.';
+
+            return;
+        }
+
+        const attaqueX = this.puissanceGroupe('X', 'attaque');
+        const attaqueY = this.puissanceGroupe('Y', 'attaque');
+        const defenseX = this.puissanceGroupe('X', 'defense');
+        const defenseY = this.puissanceGroupe('Y', 'defense');
+        const attaque = selections.cibleAttaqueX
+            === selections.cibleAttaqueY
+            ? `Focus sur ${selections.cibleAttaqueX} : ${attaqueX + attaqueY} ATQ.`
+            : `Split : X vise ${selections.cibleAttaqueX} (${attaqueX} ATQ), Y vise ${selections.cibleAttaqueY} (${attaqueY} ATQ).`;
+        const defense = selections.cibleDefenseX
+            === selections.cibleDefenseY
+            ? `Double défense sur ${selections.cibleDefenseX} : ${defenseX + defenseY} DÉF.`
+            : `Défense : X protège ${selections.cibleDefenseX} (${defenseX}), Y protège ${selections.cibleDefenseY} (${defenseY}).`;
+
+        this.resumePlanTarget.textContent = `${attaque} ${defense}`;
+    }
+
+    puissanceGroupe(groupe, statistique) {
+        const bonus = Number(
+            this.combat?.pressionAttaque?.bonusPourcentage ?? 0
+        );
+
+        return puissanceGroupe(
+            this.combat?.moi,
+            groupe,
+            statistique,
+            bonus,
+        );
+    }
+
+    afficherCapacitesTactiques() {
+        if (!this.hasCapacitesTactiquesTarget) {
+            return;
+        }
+
+        const bonus = Number(
+            this.combat?.pressionAttaque?.bonusPourcentage ?? 0
+        );
+        const equipes = [
+            ['Toi', capacitesTactiques(this.combat?.moi, bonus)],
+            [
+                'Adversaire',
+                capacitesTactiques(this.combat?.adversaire, bonus),
+            ],
+        ];
+
+        this.capacitesTactiquesTarget.replaceChildren();
+
+        for (const [nom, valeurs] of equipes) {
+            const groupe = document.createElement('section');
+            const titre = document.createElement('h4');
+            const grille = document.createElement('div');
+
+            groupe.className = 'capacites-equipe';
+            titre.textContent = nom;
+            grille.className = 'capacites-equipe-grille';
+
+            for (const [libelle, valeur, type] of [
+                ['ATQ X', valeurs.attaqueX, 'attaque'],
+                ['ATQ Y', valeurs.attaqueY, 'attaque'],
+                ['Focus', valeurs.focus, 'attaque'],
+                ['DÉF X', valeurs.defenseX, 'defense'],
+                ['DÉF Y', valeurs.defenseY, 'defense'],
+                ['Double', valeurs.doubleDefense, 'defense'],
+            ]) {
+                const statistique = document.createElement('span');
+                const nomStatistique = document.createElement('small');
+                const valeurStatistique = document.createElement('strong');
+
+                statistique.dataset.type = type;
+                nomStatistique.textContent = libelle;
+                valeurStatistique.textContent = String(valeur);
+                statistique.append(nomStatistique, valeurStatistique);
+                grille.append(statistique);
+            }
+
+            groupe.append(titre, grille);
+            this.capacitesTactiquesTarget.append(groupe);
+        }
+    }
+
+    afficherMenacesFocus() {
+        const bonus = Number(
+            this.combat?.pressionAttaque?.bonusPourcentage ?? 0
+        );
+        const configurations = [
+            ['moi', this.combat?.moi, this.combat?.adversaire],
+            ['adversaire', this.combat?.adversaire, this.combat?.moi],
+        ];
+
+        for (const [camp, defenseur, attaquant] of configurations) {
+            for (const combattant of defenseur?.combattants ?? []) {
+                const carte = this.carteCombattant(camp, combattant.slot);
+                const badge = carte?.querySelector(
+                    '.carte-combattant-menace'
+                );
+                const menace = calculerMenaceFocus(
+                    combattant,
+                    attaquant,
+                    defenseur,
+                    bonus,
+                );
+
+                if (!badge || !carte) {
+                    continue;
+                }
+
+                carte.dataset.menace = menace?.niveau ?? '';
+                badge.hidden = menace === null;
+                badge.textContent = menace
+                    ? `${menace.symbole} ${menace.texte}`
+                    : '';
+            }
+        }
+    }
+
+    afficherParticipant(
+        participant,
+        nomTarget,
+        listeTarget,
+        libelle,
+        camp,
+    ) {
         const pourcentagesPrecedents = new Map(
             Array.from(
                 listeTarget.querySelectorAll(
@@ -1103,13 +1507,164 @@ export default class extends Controller {
             : [];
 
         for (const combattant of combattants) {
-            listeTarget.append(
-                this.creerCarteCombattant(
-                    combattant,
-                    pourcentagesPrecedents.get(combattant.slot),
+            const carte = this.creerCarteCombattant(
+                combattant,
+                pourcentagesPrecedents.get(combattant.slot),
+            );
+
+            carte.dataset.camp = camp;
+            carte.addEventListener('click', () => {
+                this.selectionnerCiblePlan(camp, combattant.slot);
+            });
+            carte.addEventListener('mouseenter', () => {
+                this.afficherApercuDegats(carte, camp, combattant.slot);
+            });
+            carte.addEventListener('mouseleave', () => {
+                this.masquerApercuDegats(carte);
+            });
+            carte.addEventListener('focusin', () => {
+                this.afficherApercuDegats(carte, camp, combattant.slot);
+            });
+            carte.addEventListener('focusout', () => {
+                this.masquerApercuDegats(carte);
+            });
+            carte.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    this.selectionnerCiblePlan(camp, combattant.slot);
+                }
+            });
+            listeTarget.append(carte);
+        }
+    }
+
+    afficherApercuDegats(carte, camp, slot) {
+        if (
+            camp !== 'adversaire'
+            || this.planSectionTarget.hidden
+            || carte.dataset.vivant === 'false'
+        ) {
+            return;
+        }
+
+        let attaque = 0;
+
+        for (const groupe of ['X', 'Y']) {
+            const cle = groupe === 'X'
+                ? 'cibleAttaqueX'
+                : 'cibleAttaqueY';
+            const cible = this.selectPlan(cle)?.value;
+
+            if (
+                cible === slot
+                || (
+                    cle === this.actionPlanActive
+                    && this.actionPlanActive.startsWith('cibleAttaque')
                 )
+            ) {
+                attaque += this.puissanceGroupe(groupe, 'attaque');
+            }
+        }
+
+        if (attaque === 0) {
+            return;
+        }
+
+        const apercu = calculerApercuDegats(
+            attaque,
+            carte.dataset.pvActuels,
+            carte.dataset.pvMaximum,
+        );
+        const bande = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
+        const previsualisation = carte.querySelector(
+            '.carte-combattant-preview-degats'
+        );
+
+        if (!bande || !previsualisation) {
+            return;
+        }
+
+        const pourcentageActuel = Number(carte.dataset.pourcentageVie ?? 0);
+        bande.style.left = `${apercu.pourcentageRestant}%`;
+        bande.style.width = `${Math.max(
+            0,
+            pourcentageActuel - apercu.pourcentageRestant,
+        )}%`;
+        bande.hidden = apercu.degats === 0;
+        previsualisation.textContent = apercu.degats > 0
+            ? `−${apercu.degats} PV sans défense`
+            : '0 dégât sans défense';
+        previsualisation.hidden = false;
+        carte.classList.add('affiche-preview-degats');
+    }
+
+    masquerApercuDegats(carte) {
+        const bande = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
+        const previsualisation = carte.querySelector(
+            '.carte-combattant-preview-degats'
+        );
+
+        if (bande) {
+            bande.hidden = true;
+            bande.style.left = '0';
+            bande.style.width = '0';
+        }
+
+        if (previsualisation) {
+            previsualisation.hidden = true;
+        }
+
+        carte.classList.remove('affiche-preview-degats');
+    }
+
+    actualiserApercusSurvoles() {
+        for (const carte of this.participantsTarget.querySelectorAll(
+            '.carte-combattant.affiche-preview-degats'
+        )) {
+            this.masquerApercuDegats(carte);
+        }
+
+        for (const carte of this.participantsTarget.querySelectorAll(
+            '.carte-combattant:hover[data-camp="adversaire"]'
+        )) {
+            this.afficherApercuDegats(
+                carte,
+                carte.dataset.camp,
+                carte.dataset.slot,
             );
         }
+    }
+
+    afficherPressionAttaque() {
+        const bonus = Number.parseInt(
+            this.combat?.pressionAttaque?.bonusPourcentage,
+            10,
+        );
+        const prochainRound = Number.parseInt(
+            this.combat?.pressionAttaque?.prochainPalierRound,
+            10,
+        );
+
+        if (!Number.isInteger(bonus) || bonus < 0) {
+            this.pressionAttaqueTarget.hidden = true;
+
+            return;
+        }
+
+        const prefixe = this.combat.numeroRound >= 10
+            ? 'Pression maximale'
+            : 'Pression du combat';
+        const suite = Number.isInteger(prochainRound)
+            ? ` Prochain palier au round ${prochainRound}.`
+            : '';
+
+        this.pressionAttaqueTarget.textContent =
+            `${prefixe} : toutes les attaques gagnent +${bonus} %.${suite}`;
+        this.pressionAttaqueTarget.hidden = false;
     }
 
     afficherEtatRound() {
@@ -1205,11 +1760,179 @@ export default class extends Controller {
         return `${prefixe}${minutes} min ${String(reste).padStart(2, '0')} s.`;
     }
 
+    async animerNouveauRoundSiNecessaire() {
+        const dernierRound = this.combat?.dernierRound;
+        const numero = this.entierPositif(dernierRound?.numero);
+        const combatId = this.entierPositif(this.combat?.combatId);
+
+        if (numero === null || combatId === null) {
+            return;
+        }
+
+        const cleMemoire = `stickverse:combat:${combatId}:round-anime`;
+        let dernierNumeroAnime = 0;
+
+        try {
+            dernierNumeroAnime = Number.parseInt(
+                window.sessionStorage.getItem(cleMemoire) ?? '0',
+                10,
+            );
+        } catch {
+            dernierNumeroAnime = 0;
+        }
+
+        if (Number.isInteger(dernierNumeroAnime) && dernierNumeroAnime >= numero) {
+            return;
+        }
+
+        const lignes = this.lignesResultatRound(
+            dernierRound?.resultats,
+            dernierRound?.positionMoi,
+        );
+        const etapes = normaliserEtapesAnimation(
+            lignes,
+            dernierRound?.positionMoi,
+        );
+
+        if (etapes.length === 0) {
+            this.memoriserRoundAnime(cleMemoire, numero);
+
+            return;
+        }
+
+        this.animationRoundEnCours = true;
+        this.annulerActualisation();
+        this.planSectionTarget.hidden = true;
+        this.combatActifTarget.setAttribute('aria-busy', 'true');
+        const generation = ++this.generationAnimation;
+        const mouvementReduit = window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+        const durees = mouvementReduit
+            ? { defense: 80, degats: 100, pause: 30 }
+            : { defense: 850, degats: 1050, pause: 280 };
+
+        for (const etape of etapes) {
+            if (generation !== this.generationAnimation) {
+                return;
+            }
+
+            const carte = this.carteCombattant(etape.camp, etape.slot);
+
+            if (!carte) {
+                continue;
+            }
+
+            this.preparerCartePourAnimation(carte, etape);
+            this.afficherPhaseAnimation(
+                carte,
+                'defense',
+                `🛡 ${etape.bloque} point${etape.bloque > 1 ? 's' : ''} défendu${etape.bloque > 1 ? 's' : ''}`,
+            );
+            await this.attendreAnimation(durees.defense, generation);
+
+            if (generation !== this.generationAnimation) {
+                return;
+            }
+
+            this.appliquerDegatsAnimation(carte, etape);
+            this.afficherPhaseAnimation(
+                carte,
+                'degats',
+                etape.degats > 0
+                    ? `−${etape.degats} PV`
+                    : '0 dégât',
+            );
+            await this.attendreAnimation(durees.degats, generation);
+            this.masquerPhaseAnimation(carte);
+            await this.attendreAnimation(durees.pause, generation);
+        }
+
+        if (generation !== this.generationAnimation) {
+            return;
+        }
+
+        this.memoriserRoundAnime(cleMemoire, numero);
+        this.animationRoundEnCours = false;
+        this.combatActifTarget.removeAttribute('aria-busy');
+        this.afficherFormulairePlan();
+    }
+
+    preparerCartePourAnimation(carte, etape) {
+        const maximum = Number(carte.dataset.pvMaximum ?? 0);
+        const barre = carte.querySelector('.carte-combattant-vie-remplissage');
+        const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+
+        carte.classList.add('est-en-animation');
+
+        if (barre && maximum > 0) {
+            barre.style.width = `${Math.min(100, (etape.pvAvant / maximum) * 100)}%`;
+        }
+
+        if (valeur) {
+            valeur.textContent = `PV ${etape.pvAvant} / ${maximum}`;
+        }
+    }
+
+    appliquerDegatsAnimation(carte, etape) {
+        const maximum = Number(carte.dataset.pvMaximum ?? 0);
+        const barre = carte.querySelector('.carte-combattant-vie-remplissage');
+        const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+
+        if (barre && maximum > 0) {
+            barre.style.width = `${Math.min(100, (etape.pvRestants / maximum) * 100)}%`;
+        }
+
+        if (valeur) {
+            valeur.textContent = `PV ${etape.pvRestants} / ${maximum}`;
+        }
+    }
+
+    afficherPhaseAnimation(carte, phase, texte) {
+        const panneau = carte.querySelector('.carte-combattant-animation');
+
+        if (!panneau) {
+            return;
+        }
+
+        panneau.dataset.phase = phase;
+        panneau.textContent = texte;
+        panneau.hidden = false;
+    }
+
+    masquerPhaseAnimation(carte) {
+        const panneau = carte.querySelector('.carte-combattant-animation');
+
+        if (panneau) {
+            panneau.hidden = true;
+            panneau.dataset.phase = '';
+        }
+
+        carte.classList.remove('est-en-animation');
+    }
+
+    attendreAnimation(duree, generation) {
+        return new Promise((resolve) => {
+            window.setTimeout(() => {
+                resolve(generation === this.generationAnimation);
+            }, duree);
+        });
+    }
+
+    memoriserRoundAnime(cle, numero) {
+        try {
+            window.sessionStorage.setItem(cle, String(numero));
+        } catch {
+            // L’animation reste fonctionnelle si le stockage est bloqué.
+        }
+    }
+
     programmerActualisation() {
         this.annulerActualisation();
 
         if (
             this.actionEnCours
+            || this.animationRoundEnCours
             || (
             this.combat?.statut !== 'en_attente'
             && this.combat?.statut !== 'en_cours'
@@ -1335,6 +2058,10 @@ export default class extends Controller {
 
     creerCarteCombattant(combattant, pourcentagePrecedent = null) {
         const carte = document.createElement('article');
+        const choixPlan = document.createElement('div');
+        const menace = document.createElement('div');
+        const animation = document.createElement('div');
+        const previsualisation = document.createElement('div');
         const titre = document.createElement('h4');
         const image = document.createElement('img');
         const vie = document.createElement('div');
@@ -1343,9 +2070,18 @@ export default class extends Controller {
         const vieEtat = document.createElement('span');
         const vieBarre = document.createElement('div');
         const vieRemplissage = document.createElement('span');
+        const viePrevisualisation = document.createElement('span');
         const statistiques = document.createElement('p');
 
         carte.className = 'carte-combattant';
+        choixPlan.className = 'carte-combattant-choix';
+        menace.className = 'carte-combattant-menace';
+        animation.className = 'carte-combattant-animation';
+        previsualisation.className = 'carte-combattant-preview-degats';
+        menace.hidden = true;
+        animation.hidden = true;
+        previsualisation.hidden = true;
+        animation.setAttribute('role', 'status');
         titre.className = 'carte-combattant-titre';
         image.className = 'carte-combattant-image';
         vie.className = 'carte-combattant-vie';
@@ -1354,6 +2090,8 @@ export default class extends Controller {
         vieEtat.className = 'carte-combattant-vie-etat';
         vieBarre.className = 'carte-combattant-vie-barre';
         vieRemplissage.className = 'carte-combattant-vie-remplissage';
+        viePrevisualisation.className = 'carte-combattant-vie-preview';
+        viePrevisualisation.hidden = true;
         statistiques.className = 'carte-combattant-statistiques';
         titre.textContent = [
             combattant.slot ?? '?',
@@ -1408,6 +2146,11 @@ export default class extends Controller {
         }
 
         carte.dataset.etatVie = etatVie;
+        carte.dataset.pvActuels = String(pvActuels);
+        carte.dataset.pvMaximum = String(pvMaximum);
+        carte.dataset.pourcentageVie = String(pourcentageVie);
+        carte.dataset.attaque = String(combattant.attaque ?? 0);
+        carte.dataset.defense = String(combattant.defense ?? 0);
         carte.classList.add(`est-${etatVie}`);
 
         if (estKo) {
@@ -1443,7 +2186,7 @@ export default class extends Controller {
         }
 
         vieInformations.append(vieValeur, vieEtat);
-        vieBarre.append(vieRemplissage);
+        vieBarre.append(vieRemplissage, viePrevisualisation);
         vie.append(vieInformations, vieBarre);
 
         statistiques.textContent = [
@@ -1451,9 +2194,29 @@ export default class extends Controller {
             `DÉF ${combattant.defense ?? '—'}`,
         ].join(' · ');
 
-        carte.append(titre, image, vie, statistiques);
+        carte.append(
+            choixPlan,
+            menace,
+            animation,
+            previsualisation,
+            titre,
+            image,
+            vie,
+            statistiques,
+        );
 
         return carte;
+    }
+
+    carteCombattant(camp, slot) {
+        return Array.from(
+            this.participantsTarget.querySelectorAll(
+                '.carte-combattant[data-camp][data-slot]'
+            )
+        ).find(
+            (carte) => carte.dataset.camp === camp
+                && carte.dataset.slot === slot
+        ) ?? null;
     }
 
     afficherCombatsDisponibles() {

@@ -111,6 +111,14 @@ final class CombatEnLigneControllerTest extends WebTestCase
             $donnees['numeroRound'],
         );
 
+        self::assertSame(
+            [
+                'bonusPourcentage' => 0,
+                'prochainPalierRound' => 4,
+            ],
+            $donnees['pressionAttaque'],
+        );
+
         self::assertNull($donnees['gagnantId']);
         self::assertNull($donnees['dernierRound']);
         self::assertSame([], $donnees['historiqueRounds']);

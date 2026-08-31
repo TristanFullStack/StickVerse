@@ -7,6 +7,21 @@ use InvalidArgumentException;
 
 final class CombatService
 {
+    public function bonusPressionAttaque(int $numeroRound): int
+    {
+        if ($numeroRound < 1) {
+            throw new InvalidArgumentException(
+                'Le numéro du round doit être supérieur à zéro.'
+            );
+        }
+
+        if ($numeroRound <= 9) {
+            return intdiv($numeroRound - 1, 3) * 10;
+        }
+
+        return 30 + (($numeroRound - 10) * 10);
+    }
+
     /**
      * @return array{
      *     attaque: int,
@@ -48,7 +63,10 @@ final class CombatService
     /**
      * @param list<Stickman> $stickmen
      */
-    public function calculerAttaqueTotale(array $stickmen): int
+    public function calculerAttaqueTotale(
+        array $stickmen,
+        int $numeroRound = 1,
+    ): int
     {
         $attaqueTotale = 0;
 
@@ -56,7 +74,10 @@ final class CombatService
             $attaqueTotale += $stickman->getAttaque() ?? 0;
         }
 
-        return $attaqueTotale;
+        return (int) round(
+            $attaqueTotale
+            * (1 + ($this->bonusPressionAttaque($numeroRound) / 100))
+        );
     }
 
     /**
@@ -91,8 +112,12 @@ final class CombatService
         array $attaquants,
         array $defenseurs,
         int $pvActuels,
+        int $numeroRound = 1,
     ): array {
-        $attaqueTotale = $this->calculerAttaqueTotale($attaquants);
+        $attaqueTotale = $this->calculerAttaqueTotale(
+            $attaquants,
+            $numeroRound,
+        );
         $defenseTotale = $this->calculerDefenseTotale($defenseurs);
 
         return $this->calculerImpact(
@@ -119,7 +144,10 @@ final class CombatService
      *     pvRestants: int
      * }>
      */
-    public function resoudreRound(array $impacts): array
+    public function resoudreRound(
+        array $impacts,
+        int $numeroRound = 1,
+    ): array
     {
         $resultats = [];
 
@@ -128,6 +156,7 @@ final class CombatService
                 attaquants: $impact['attaquants'],
                 defenseurs: $impact['defenseurs'],
                 pvActuels: $impact['pvActuels'],
+                numeroRound: $numeroRound,
             );
         }
 

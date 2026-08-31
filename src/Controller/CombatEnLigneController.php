@@ -19,6 +19,7 @@ use App\Service\ExpirationPlanCombatEnLigneService;
 use App\Service\ExpirationPreparationCombatEnLigneService;
 use App\Service\PreparationCombatEnLigneService;
 use App\Service\RecompenseCombatService;
+use App\Service\CombatService;
 use App\Service\RecuperationRoundCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
 use App\Service\SoumissionPlanCombatService;
@@ -58,6 +59,7 @@ final class CombatEnLigneController extends AbstractController
         RecuperationRoundCombatEnLigneService $recuperationRoundService,
         ResolutionRoundCombatEnLigneService $resolutionRoundService,
         RecompenseCombatService $recompenseService,
+        CombatService $combatService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -147,6 +149,13 @@ final class CombatEnLigneController extends AbstractController
             'resolutionAutomatique' => $resolutionAutomatique,
             'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
+            'pressionAttaque' => [
+                'bonusPourcentage' => $combatService
+                    ->bonusPressionAttaque($combat->getNumeroRound()),
+                'prochainPalierRound' => $this->prochainPalierPression(
+                    $combat->getNumeroRound(),
+                ),
+            ],
             'gagnantId' => $combat->getGagnant()?->getId(),
             'recompensePieces' => $recompenseService->montantPour(
                 $combat,
@@ -231,6 +240,23 @@ final class CombatEnLigneController extends AbstractController
                     ->getValue(),
             ],
         ]);
+    }
+
+    private function prochainPalierPression(int $numeroRound): int
+    {
+        if ($numeroRound < 4) {
+            return 4;
+        }
+
+        if ($numeroRound < 7) {
+            return 7;
+        }
+
+        if ($numeroRound < 10) {
+            return 10;
+        }
+
+        return $numeroRound + 1;
     }
 
     #[Route(

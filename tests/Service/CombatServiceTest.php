@@ -8,6 +8,36 @@ use PHPUnit\Framework\TestCase;
 
 final class CombatServiceTest extends TestCase
 {
+    public function testCalculeLaPressionDattaqueCommeDansLaV24(): void
+    {
+        $service = new CombatService();
+
+        self::assertSame(0, $service->bonusPressionAttaque(1));
+        self::assertSame(0, $service->bonusPressionAttaque(3));
+        self::assertSame(10, $service->bonusPressionAttaque(4));
+        self::assertSame(20, $service->bonusPressionAttaque(7));
+        self::assertSame(30, $service->bonusPressionAttaque(10));
+        self::assertSame(40, $service->bonusPressionAttaque(11));
+        self::assertSame(90, $service->bonusPressionAttaque(16));
+    }
+
+    public function testAppliqueLaPressionAuxAttaquesMaisPasAuxDefenses(): void
+    {
+        $stickman = (new Stickman())
+            ->setAttaque(55)
+            ->setDefense(70);
+        $service = new CombatService();
+
+        self::assertSame(
+            72,
+            $service->calculerAttaqueTotale([$stickman], 10),
+        );
+        self::assertSame(
+            70,
+            $service->calculerDefenseTotale([$stickman]),
+        );
+    }
+
     public function testCalculerUnImpactNormal(): void
     {
         $service = new CombatService();

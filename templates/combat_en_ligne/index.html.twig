@@ -95,30 +95,26 @@
             ></p>
 
             <section
+                class="combat-actif"
                 data-combat-en-ligne-target="combatActif"
                 aria-labelledby="combat-actif-titre"
                 hidden
             >
-                <h2 id="combat-actif-titre">
-                    Combat actif
-                </h2>
+                <header class="combat-actif-entete">
+                    <h2 id="combat-actif-titre">Combat actif</h2>
 
-                <p>
-                    Tu participes actuellement au combat
-                    #<strong data-combat-en-ligne-target="combatActifId"></strong>.
-                </p>
+                    <p>
+                        Combat #<strong data-combat-en-ligne-target="combatActifId"></strong>
+                        · <strong data-combat-en-ligne-target="combatStatut"></strong>
+                        · Round <strong data-combat-en-ligne-target="numeroRound"></strong>
+                    </p>
 
-                <p>
-                    Statut :
-                    <strong data-combat-en-ligne-target="combatStatut"></strong>
-                    — Round
-                    <strong data-combat-en-ligne-target="numeroRound"></strong>
-                </p>
-
-                <p
-                    data-combat-en-ligne-target="etatRound"
-                    role="status"
-                ></p>
+                    <p
+                        class="pression-combat"
+                        data-combat-en-ligne-target="pressionAttaque"
+                        hidden
+                    ></p>
+                </header>
 
                 <section
                     data-combat-en-ligne-target="finCombat"
@@ -187,8 +183,14 @@
                     </button>
                 </section>
 
-                <div data-combat-en-ligne-target="participants">
-                    <section aria-labelledby="mon-equipe-combat-titre">
+                <div
+                    class="combat-arene"
+                    data-combat-en-ligne-target="participants"
+                >
+                    <section
+                        class="combat-equipe combat-equipe-moi"
+                        aria-labelledby="mon-equipe-combat-titre"
+                    >
                         <h3
                             id="mon-equipe-combat-titre"
                             data-combat-en-ligne-target="moiNom"
@@ -201,7 +203,130 @@
                         ></div>
                     </section>
 
-                    <section aria-labelledby="equipe-adverse-combat-titre">
+                    <section class="combat-centre" aria-label="Commandes du round">
+                        <p
+                            class="combat-etat-round"
+                            data-combat-en-ligne-target="etatRound"
+                            role="status"
+                        ></p>
+
+                        <section
+                            class="capacites-tactiques"
+                            aria-label="Capacités tactiques visibles"
+                            data-combat-en-ligne-target="capacitesTactiques"
+                        ></section>
+
+                        <section
+                            class="preparation-combat"
+                            data-combat-en-ligne-target="preparationSection"
+                            aria-labelledby="preparation-combat-titre"
+                            hidden
+                        >
+                            <h3 id="preparation-combat-titre">Préparation</h3>
+                            <p
+                                data-combat-en-ligne-target="preparationMessage"
+                                role="status"
+                            ></p>
+                            <button
+                                type="button"
+                                data-combat-en-ligne-target="pretButton"
+                                data-action="combat-en-ligne#confirmerPret"
+                            >Je suis prêt</button>
+                        </section>
+
+                        <section
+                            class="plan-combat"
+                            data-combat-en-ligne-target="planSection"
+                            aria-labelledby="plan-secret-titre"
+                            hidden
+                        >
+                            <h3 id="plan-secret-titre">Ton plan secret</h3>
+
+                            <form
+                                data-combat-en-ligne-target="planForm"
+                                data-action="submit->combat-en-ligne#soumettrePlan change->combat-en-ligne#synchroniserPlan"
+                            >
+                                <div class="plan-tactique">
+                                    <p
+                                        class="plan-tactique-instruction"
+                                        data-combat-en-ligne-target="instructionPlan"
+                                        role="status"
+                                    >Choisis d’abord la cible de l’attaque X.</p>
+
+                                    <div class="plan-tactique-actions">
+                                        {% for cle, libelle in {
+                                            cibleAttaqueX: 'Attaque X',
+                                            cibleAttaqueY: 'Attaque Y',
+                                            cibleDefenseX: 'Défense X',
+                                            cibleDefenseY: 'Défense Y'
+                                        } %}
+                                            <button
+                                                type="button"
+                                                class="plan-tactique-action"
+                                                data-plan-cle="{{ cle }}"
+                                                data-combat-en-ligne-target="planActionButton"
+                                                data-action="combat-en-ligne#activerChoixPlan"
+                                            >
+                                                <strong>{{ libelle }}</strong>
+                                                <span data-plan-valeur>À choisir</span>
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+
+                                    <p
+                                        class="plan-tactique-resume"
+                                        data-combat-en-ligne-target="resumePlan"
+                                    >Le résumé tactique apparaîtra ici.</p>
+                                </div>
+
+                                <details class="plan-selects-secours">
+                                    <summary>Listes de sélection</summary>
+                                    <div class="plan-selects-grille">
+                                        <fieldset>
+                                            <legend>Équipe X — A + B</legend>
+                                            <label for="cible-attaque-x">Cible de l’attaque</label>
+                                            <select id="cible-attaque-x" required data-combat-en-ligne-target="cibleAttaqueX"></select>
+                                            <label for="cible-defense-x">Cible de la défense</label>
+                                            <select id="cible-defense-x" required data-combat-en-ligne-target="cibleDefenseX"></select>
+                                        </fieldset>
+                                        <fieldset>
+                                            <legend>Équipe Y — C + D</legend>
+                                            <label for="cible-attaque-y">Cible de l’attaque</label>
+                                            <select id="cible-attaque-y" required data-combat-en-ligne-target="cibleAttaqueY"></select>
+                                            <label for="cible-defense-y">Cible de la défense</label>
+                                            <select id="cible-defense-y" required data-combat-en-ligne-target="cibleDefenseY"></select>
+                                        </fieldset>
+                                    </div>
+                                </details>
+
+                                <button type="submit" data-combat-en-ligne-target="envoyerPlanButton">
+                                    Valider le tour
+                                </button>
+                            </form>
+                        </section>
+
+                        <section
+                            class="resultat-round-compact"
+                            data-combat-en-ligne-target="resultatRound"
+                            aria-labelledby="resultat-round-titre"
+                            hidden
+                        >
+                            <h3 id="resultat-round-titre">
+                                Round <span data-combat-en-ligne-target="resultatRoundNumero"></span>
+                            </h3>
+                            <div class="resultat-round-tableau">
+                                <table>
+                                    <thead><tr><th>Cible</th><th>ATQ</th><th>DÉF</th><th>Dégâts</th><th>PV</th></tr></thead>
+                                    <tbody data-combat-en-ligne-target="resultatRoundLignes"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </section>
+
+                    <section
+                        class="combat-equipe combat-equipe-adversaire"
+                        aria-labelledby="equipe-adverse-combat-titre"
+                    >
                         <h3
                             id="equipe-adverse-combat-titre"
                             data-combat-en-ligne-target="adversaireNom"
@@ -215,170 +340,25 @@
                     </section>
                 </div>
 
-                <section
-                    class="preparation-combat"
-                    data-combat-en-ligne-target="preparationSection"
-                    aria-labelledby="preparation-combat-titre"
-                    hidden
-                >
-                    <h3 id="preparation-combat-titre">
-                        Préparation du combat
-                    </h3>
-
-                    <p
-                        data-combat-en-ligne-target="preparationMessage"
-                        role="status"
-                    ></p>
-
-                    <button
-                        type="button"
-                        data-combat-en-ligne-target="pretButton"
-                        data-action="combat-en-ligne#confirmerPret"
-                    >
-                        Je suis prêt
-                    </button>
-                </section>
-
-                <section
-                    data-combat-en-ligne-target="resultatRound"
-                    aria-labelledby="resultat-round-titre"
-                    hidden
-                >
-                    <h3 id="resultat-round-titre">
-                        Résultat du round
-                        <span
-                            data-combat-en-ligne-target="resultatRoundNumero"
-                        ></span>
-                    </h3>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th scope="col">Cible</th>
-                                <th scope="col">Attaque</th>
-                                <th scope="col">Défense</th>
-                                <th scope="col">Dégâts</th>
-                                <th scope="col">PV restants</th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            data-combat-en-ligne-target="resultatRoundLignes"
-                        ></tbody>
-                    </table>
-                </section>
-
-                <section
+                <details
+                    class="combat-historique"
                     data-combat-en-ligne-target="historiqueRounds"
                     aria-labelledby="historique-rounds-titre"
                     hidden
                 >
-                    <h3 id="historique-rounds-titre">
-                        Rounds précédents
-                    </h3>
+                    <summary id="historique-rounds-titre">Rounds précédents</summary>
 
                     <div
                         data-combat-en-ligne-target="historiqueRoundsListe"
                     ></div>
-                </section>
+                </details>
 
-                <section
-                    data-combat-en-ligne-target="planSection"
-                    aria-labelledby="plan-secret-titre"
-                    hidden
-                >
-                    <h3 id="plan-secret-titre">
-                        Ton plan secret
-                    </h3>
-
-                    <p>
-                        Tes choix resteront cachés jusqu’à la résolution du round.
-                    </p>
-
-                    <form
-                        data-combat-en-ligne-target="planForm"
-                        data-action="submit->combat-en-ligne#soumettrePlan"
-                    >
-                        <fieldset>
-                            <legend>Équipe X — Stickmans A + B</legend>
-
-                            <label for="cible-attaque-x">
-                                Cible de l’attaque
-                            </label>
-
-                            <select
-                                id="cible-attaque-x"
-                                required
-                                data-combat-en-ligne-target="cibleAttaqueX"
-                            ></select>
-
-                            <label for="cible-defense-x">
-                                Cible de la défense
-                            </label>
-
-                            <select
-                                id="cible-defense-x"
-                                required
-                                data-combat-en-ligne-target="cibleDefenseX"
-                            ></select>
-                        </fieldset>
-
-                        <fieldset>
-                            <legend>Équipe Y — Stickmans C + D</legend>
-
-                            <label for="cible-attaque-y">
-                                Cible de l’attaque
-                            </label>
-
-                            <select
-                                id="cible-attaque-y"
-                                required
-                                data-combat-en-ligne-target="cibleAttaqueY"
-                            ></select>
-
-                            <label for="cible-defense-y">
-                                Cible de la défense
-                            </label>
-
-                            <select
-                                id="cible-defense-y"
-                                required
-                                data-combat-en-ligne-target="cibleDefenseY"
-                            ></select>
-                        </fieldset>
-
-                        <button
-                            type="submit"
-                            data-combat-en-ligne-target="envoyerPlanButton"
-                        >
-                            Envoyer mon plan
-                        </button>
-                    </form>
-                </section>
-
-                <button
-                    type="button"
-                    data-action="combat-en-ligne#rafraichir"
-                >
-                    Actualiser
-                </button>
-
-                <button
-                    type="button"
-                    data-combat-en-ligne-target="abandonButton"
-                    data-action="combat-en-ligne#abandonnerCombat"
-                    hidden
-                >
-                    Abandonner le combat
-                </button>
-
-                <button
-                    type="button"
-                    data-combat-en-ligne-target="annulerButton"
-                    data-action="combat-en-ligne#annulerCombat"
-                    hidden
-                >
-                    Annuler ce combat
-                </button>
+                <footer class="combat-actions-globales">
+                    <button type="button" data-action="combat-en-ligne#retournerSalon">Retour</button>
+                    <button type="button" data-action="combat-en-ligne#rafraichir">Actualiser</button>
+                    <button type="button" data-combat-en-ligne-target="abandonButton" data-action="combat-en-ligne#abandonnerCombat" hidden>Abandonner</button>
+                    <button type="button" data-combat-en-ligne-target="annulerButton" data-action="combat-en-ligne#annulerCombat" hidden>Annuler ce combat</button>
+                </footer>
             </section>
 
             <div data-combat-en-ligne-target="salon" hidden>

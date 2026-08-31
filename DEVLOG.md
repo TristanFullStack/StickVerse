@@ -7240,6 +7240,159 @@ StickVerse possède maintenant un fonctionnement saisonnier automatisé.
 
 Une nouvelle saison peut être créée et programmée depuis l’administration, puis apparaître automatiquement dans le jeu à la date prévue sans révéler son contenu trop tôt.
 
+## J80 — Rapprocher les combats en ligne de la V24
+
+### Objectif
+
+J80 améliore le rythme, la lisibilité et le dynamisme des combats en ligne en reprenant les principaux repères tactiques de la V24 dans l’application Symfony officielle.
+
+### Arène de combat
+
+L’interface du combat actif est maintenant organisée autour de trois zones principales :
+
+- l’équipe du joueur à gauche ;
+- les commandes et informations tactiques au centre ;
+- l’équipe adverse à droite ;
+- les actions générales en bas de l’arène.
+
+Sur un écran d’ordinateur, les quatre Stickmans de chaque équipe restent disposés en grille de deux cartes par deux cartes.
+
+La navigation principale et la navigation administrateur restent visibles au-dessus du combat.
+
+L’arène utilise automatiquement toute la hauteur restante sans obliger le joueur à faire défiler la page pour préparer son tour.
+
+Sur les écrans plus étroits, les différentes zones repassent progressivement sur plusieurs lignes afin de conserver une interface utilisable.
+
+### Style visuel inspiré de la V24
+
+Le combat utilise maintenant une présentation plus proche de la V24 :
+
+- fond général bleu nuit ;
+- équipe du joueur identifiée en bleu ;
+- équipe adverse identifiée en orange ;
+- commandes d’attaque en jaune et orange ;
+- commandes de défense en vert ;
+- statistiques offensives en rouge clair ;
+- statistiques défensives en bleu clair ;
+- cartes claires conservant une bonne lisibilité des Stickmans.
+
+Les contrastes des textes, des boutons désactivés, de la pression du combat et des capacités tactiques ont été renforcés.
+
+### Sélection du plan
+
+Le joueur peut préparer son plan directement en cliquant sur les cartes.
+
+Les quatre actions sont présentées séparément :
+
+- attaque de l’équipe X ;
+- attaque de l’équipe Y ;
+- défense de l’équipe X ;
+- défense de l’équipe Y.
+
+Après chaque sélection, l’interface passe automatiquement à l’action suivante.
+
+Un résumé indique si les attaques sont séparées ou concentrées sur une même cible et si une carte reçoit une simple ou une double défense.
+
+Les listes de sélection classiques restent disponibles dans un panneau secondaire pour conserver une solution de secours accessible.
+
+### Capacités tactiques
+
+Le panneau central affiche en permanence les capacités visibles des deux joueurs :
+
+- attaque de l’équipe X ;
+- attaque de l’équipe Y ;
+- puissance maximale d’un focus ;
+- défense de l’équipe X ;
+- défense de l’équipe Y ;
+- puissance maximale d’une double défense.
+
+Ces valeurs tiennent compte des Stickmans encore vivants et de la pression offensive du round actuel.
+
+### Alertes de danger
+
+Chaque carte analyse le focus maximal que l’adversaire peut produire.
+
+Un point d’exclamation orange apparaît lorsqu’une carte doit être protégée pour survivre.
+
+Une tête de mort rouge apparaît lorsqu’une double défense risque de ne pas suffire.
+
+Le message précise si une défense simple ou une double défense est nécessaire.
+
+### Prévisualisation des dégâts
+
+Pendant la sélection de l’attaque X ou Y, le survol d’une carte adverse affiche immédiatement les dégâts possibles sans défense.
+
+Une bande rouge apparaît directement dans la barre de vie entre les PV prévus après l’attaque et les PV actuels.
+
+La prévisualisation fonctionne avant la sélection de la cible et se recalcule automatiquement lorsqu’un focus est préparé.
+
+### Animation de résolution
+
+Lorsqu’un nouveau round est résolu, les cartes touchées sont animées l’une après l’autre.
+
+Pour chaque cible :
+
+- un premier passage bleu affiche le nombre de points bloqués par la défense ;
+- un second passage rouge affiche les dégâts réellement reçus ;
+- la barre de vie évolue des PV précédents vers les nouveaux PV ;
+- la carte suivante est ensuite traitée.
+
+L’animation est volontairement assez lente pour permettre au joueur de comprendre la résolution complète du tour.
+
+Elle respecte également la préférence système de réduction des animations.
+
+### Pression offensive
+
+Les attaques gagnent progressivement en puissance pour éviter les combats trop longs :
+
+- rounds 1 à 3 : aucun bonus ;
+- rounds 4 à 6 : bonus de 10 % ;
+- rounds 7 à 9 : bonus de 20 % ;
+- round 10 : bonus de 30 % ;
+- rounds suivants : augmentation supplémentaire de 10 % par round.
+
+Le bonus actuel et le prochain palier sont affichés dans l’en-tête du combat.
+
+### Actualisations silencieuses
+
+Les actualisations automatiques ne reconstruisent plus l’interface lorsque les données du combat n’ont pas changé.
+
+Les sélections en cours, le survol et la position visuelle du joueur restent donc stables.
+
+Le message d’actualisation ne réserve plus d’espace dans la page et ne provoque plus de saut d’écran.
+
+### Maintenabilité
+
+Les calculs tactiques utilisés par l’interface sont regroupés dans un module JavaScript séparé.
+
+Ce module centralise :
+
+- les Stickmans vivants ;
+- les puissances des équipes X et Y ;
+- les capacités tactiques ;
+- les alertes de focus ;
+- la prévisualisation des dégâts ;
+- les étapes de l’animation d’un round.
+
+La résolution serveur reste la source officielle des dégâts réellement appliqués.
+
+### Vérifications automatiques
+
+- Syntaxe PHP et JavaScript vérifiée.
+- Template Twig validé.
+- Conteneur Symfony validé.
+- Schémas Doctrine de développement et de test synchronisés.
+- Calculs tactiques JavaScript vérifiés.
+- Tests de la pression offensive ajoutés.
+- Tests de résolution des rounds adaptés.
+- Tests HTTP de l’interface complétés.
+- Suite complète validée : 220 tests et 1 823 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+Le combat en ligne de StickVerse possède maintenant une arène compacte et dynamique proche de la V24, tout en conservant les règles sécurisées et persistantes de la version Symfony.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

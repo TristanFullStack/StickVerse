@@ -12,6 +12,30 @@ use PHPUnit\Framework\TestCase;
 
 final class ResolutionRoundServiceTest extends TestCase
 {
+    public function testLeRoundQuatreAppliqueLePremierPalierDePression(): void
+    {
+        $joueur1 = new EtatEquipeCombat($this->creerEquipeJoueur1());
+        $joueur2 = new EtatEquipeCombat($this->creerEquipeJoueur2());
+        $plan = new PlanCombat(
+            cibleAttaqueX: 'A',
+            cibleAttaqueY: 'A',
+            cibleDefenseX: 'B',
+            cibleDefenseY: 'C',
+        );
+        $service = new ResolutionRoundService(new CombatService());
+
+        $resultats = $service->resoudre(
+            joueur1: $joueur1,
+            planJoueur1: $plan,
+            joueur2: $joueur2,
+            planJoueur2: $plan,
+            numeroRound: 4,
+        );
+
+        self::assertSame(11, $resultats['joueur1_A']['attaque']);
+        self::assertSame(11, $resultats['joueur2_A']['attaque']);
+    }
+
     public function testResoudreUnRoundCompletEtSimultane(): void
     {
         $joueur1 = new EtatEquipeCombat(

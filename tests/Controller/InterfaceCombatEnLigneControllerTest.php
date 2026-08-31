@@ -147,6 +147,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="numeroRound"]'
         );
         self::assertSelectorExists(
+            '[data-combat-en-ligne-target="pressionAttaque"]'
+        );
+        self::assertSelectorExists(
             '[data-combat-en-ligne-target="finCombat"]'
         );
         self::assertSelectorExists(
@@ -190,6 +193,12 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="adversaireCombattants"]'
+        );
+        self::assertSelectorExists(
+            '.combat-arene[data-combat-en-ligne-target="participants"]'
+        );
+        self::assertSelectorExists(
+            '.combat-centre [data-combat-en-ligne-target="capacitesTactiques"]'
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="resultatRound"]'
@@ -239,7 +248,18 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="planSection"]'
         );
         self::assertSelectorExists(
-            'form[data-action="submit->combat-en-ligne#soumettrePlan"]'
+            'form[data-action*="submit->combat-en-ligne#soumettrePlan"]'
+        );
+        self::assertSelectorCount(
+            4,
+            '[data-combat-en-ligne-target="planActionButton"]'
+            .'[data-action="combat-en-ligne#activerChoixPlan"]',
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="instructionPlan"]'
+        );
+        self::assertSelectorExists(
+            '[data-combat-en-ligne-target="resumePlan"]'
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="cibleAttaqueX"]'
@@ -259,6 +279,7 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="annulerButton"][data-action="combat-en-ligne#annulerCombat"]'
         );
+        self::assertSelectorExists('.combat-actions-globales');
         self::assertSelectorTextContains(
             '.site-account',
             $joueur->getPseudo(),
