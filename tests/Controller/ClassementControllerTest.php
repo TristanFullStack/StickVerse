@@ -5,6 +5,7 @@ namespace App\Tests\Controller;
 use App\Entity\ClassementSaisonJoueur;
 use App\Entity\CollectionJeu;
 use App\Entity\User;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -86,6 +87,8 @@ final class ClassementControllerTest extends WebTestCase
         $this->entityManager->persist($classementBas);
         $this->entityManager->flush();
 
+        $this->client->loginUser($joueurMieuxClasse);
+
         $this->client->request('GET', '/classement');
 
         self::assertResponseIsSuccessful();
@@ -103,6 +106,12 @@ final class ClassementControllerTest extends WebTestCase
             '1025',
             $this->client->getCrawler()->filter('[data-classement-saison] tbody tr')->eq(0)->filter('td')->eq(2)->text(),
         );
+        self::assertSelectorTextContains('[data-ma-division]', 'Argent');
+        self::assertSelectorTextContains('[data-ma-division]', '200 pièces');
+        self::assertSelectorTextContains(
+            '[data-classement-saison] tbody tr:first-child [data-division]',
+            'Argent',
+        );
         self::assertSelectorCount(2, '[data-classement] tbody tr');
         self::assertSame(
             $joueurMieuxClasse->getPseudo(),
@@ -111,6 +120,50 @@ final class ClassementControllerTest extends WebTestCase
         self::assertSame(
             $joueurMoinsClasse->getPseudo(),
             $this->client->getCrawler()->filter('[data-classement] tbody tr')->eq(1)->filter('td')->eq(1)->text(),
+        );
+    }
+
+    public function testReclameLaRecompenseDUneSaisonTerminee(): void
+    {
+        $joueur = (new User())
+            ->setEmail('classement-recompense-'.bin2hex(random_bytes(4)).'@example.com')
+            ->setPseudo('JoueurRecompense'.bin2hex(random_bytes(2)))
+            ->setPassword('mot-de-passe-test');
+        $saison = (new CollectionJeu())
+            ->setNom('Saison terminée')
+            ->setSlug('saison-terminee-'.bin2hex(random_bytes(4)))
+            ->setDescription('Saison terminée utilisée par le test HTTP.')
+            ->setSaison(98)
+            ->setStatutActif(false)
+            ->setDateFin(new DateTimeImmutable('2026-08-31 23:59:59'));
+        $classement = (new ClassementSaisonJoueur($joueur, $saison))
+            ->enregistrerResultat(200, 1.0);
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->persist($saison);
+        $this->entityManager->persist($classement);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($joueur);
+        $page = $this->client->request('GET', '/classement?saison=98');
+        $formulaire = $page->filter('[data-recompense-saison]')->form();
+
+        $this->client->submit($formulaire);
+
+        self::assertResponseRedirects('/classement?saison=98');
+        $this->client->followRedirect();
+        self::assertSame(
+            1350,
+            (int) $this->entityManager->getConnection()->fetchOne(
+                'SELECT pieces FROM user WHERE id = ?',
+                [$joueur->getId()],
+            ),
+        );
+        self::assertSelectorNotExists('[data-recompense-saison]');
+        self::assertSelectorExists('[data-recompense-saison-reclamee]');
+        self::assertSelectorTextContains(
+            '.alert-success',
+            'Récompense de la Saison 98 récupérée',
         );
     }
 }

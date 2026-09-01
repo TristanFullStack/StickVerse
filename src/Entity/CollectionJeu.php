@@ -164,6 +164,11 @@ class CollectionJeu
         return $this->dateFin === null || $date <= $this->dateFin;
     }
 
+    public function estTermineeA(DateTimeImmutable $date): bool
+    {
+        return $this->dateFin !== null && $date > $this->dateFin;
+    }
+
     /**
      * @return Collection<int, Stickman>
      */

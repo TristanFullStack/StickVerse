@@ -5,6 +5,7 @@ namespace App\Tests\Entity;
 use App\Entity\ClassementSaisonJoueur;
 use App\Entity\CollectionJeu;
 use App\Entity\User;
+use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
@@ -35,6 +36,20 @@ final class ClassementSaisonJoueurTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         new ClassementSaisonJoueur(new User(), $collection);
+    }
+
+    public function testMemoriseLaRecuperationDeLaRecompense(): void
+    {
+        $classement = new ClassementSaisonJoueur(
+            new User(),
+            $this->creerSaison(),
+        );
+        $date = new DateTimeImmutable('2026-09-01 12:00:00');
+
+        $classement->marquerRecompenseReclamee($date);
+
+        self::assertTrue($classement->estRecompenseReclamee());
+        self::assertSame($date, $classement->getDateRecompenseReclamee());
     }
 
     private function creerSaison(): CollectionJeu

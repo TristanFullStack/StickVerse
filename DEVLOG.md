@@ -7762,6 +7762,130 @@ La migration a été appliquée aux bases de développement et de test.
 
 StickVerse possède maintenant un classement compétitif renouvelé à chaque saison, tout en conservant l’ELO général et les archives des saisons terminées. Chaque combat public est rattaché à sa saison dès sa création, les résultats mettent à jour automatiquement les points et les statistiques, et les combats privés restent entièrement exclus du classement.
 
+## J84 — Ajouter les divisions et les récompenses de saison
+
+### Objectif
+
+J84 transforme l’ELO saisonnier de J83 en une progression plus facile à comprendre et ajoute une récompense à récupérer lorsque la saison est réellement terminée.
+
+Le joueur peut maintenant identifier immédiatement son niveau, connaître le prochain palier et voir le montant qu’il gagnera à la fin de la saison.
+
+### Divisions classées
+
+Le classement saisonnier utilise cinq divisions calculées automatiquement depuis l’ELO de la saison :
+
+- Bronze : de 0 à 999 ELO ;
+- Argent : de 1 000 à 1 199 ELO ;
+- Or : de 1 200 à 1 399 ELO ;
+- Platine : de 1 400 à 1 599 ELO ;
+- Diamant : à partir de 1 600 ELO.
+
+La division n’est pas stockée dans la base de données. Elle est toujours recalculée depuis l’ELO afin d’éviter qu’un classement et sa division puissent se contredire.
+
+Les seuils sont regroupés dans `DivisionClassementService`, ce qui permettra de les équilibrer ultérieurement depuis un seul endroit.
+
+### Progression vers le palier suivant
+
+Pour chaque joueur classé, le service fournit également :
+
+- le seuil minimal de sa division ;
+- le seuil maximal éventuel ;
+- le prochain palier ;
+- le nombre de points ELO restants ;
+- le pourcentage de progression dans la division.
+
+La page Classement affiche la division de tous les participants directement à côté de leur ELO saisonnier.
+
+Lorsqu’un joueur connecté consulte son propre classement, un bloc personnel indique sa division, son ELO, sa progression et sa récompense potentielle.
+
+La division Diamant est le palier maximal et affiche donc directement que le niveau maximal est atteint.
+
+### Montants de fin de saison
+
+Les récompenses sont proportionnelles à la division finale :
+
+- Bronze : 100 pièces ;
+- Argent : 200 pièces ;
+- Or : 350 pièces ;
+- Platine : 550 pièces ;
+- Diamant : 800 pièces.
+
+Un joueur doit posséder une ligne de classement dans la saison pour recevoir une récompense. Un compte qui n’a participé à aucun combat public classé ne reçoit donc rien.
+
+### Fin de saison contrôlée
+
+Une récompense devient disponible uniquement lorsque la date actuelle est strictement postérieure à la date de fin enregistrée sur la saison.
+
+Désactiver manuellement une collection ne distribue pas prématurément les récompenses.
+
+Une saison sans date de fin affiche que la récompense n’est pas encore planifiée.
+
+Pendant une saison active, la page indique la date à partir de laquelle la récompense pourra être récupérée.
+
+### Récupération sécurisée
+
+Le joueur récupère sa récompense depuis un formulaire protégé par un jeton CSRF sur la page Classement.
+
+Le service de récompense exécute toute l’opération dans une transaction et verrouille :
+
+- le compte du joueur ;
+- sa ligne de classement pour la saison concernée.
+
+Avant le paiement, le serveur revérifie systématiquement :
+
+- que le joueur et la saison existent en base ;
+- que le joueur possède un classement pour cette saison ;
+- que la date de fin est dépassée ;
+- que la récompense n’a jamais été récupérée.
+
+Le verrou empêche deux requêtes simultanées de créditer deux fois le même compte.
+
+Après paiement, la ligne de classement mémorise le statut et la date de récupération. Le bouton disparaît et la date est affichée au joueur.
+
+### Historique des pièces
+
+Le type de mouvement `recompense_saison` a été ajouté à `MouvementPieces`.
+
+Chaque paiement crée un mouvement positif contenant :
+
+- le numéro de la saison ;
+- la division finale ;
+- le nombre de pièces créditées ;
+- la date de création déjà gérée par l’historique.
+
+Le gain reste donc explicable et vérifiable depuis le profil du joueur.
+
+### Migration de la base de données
+
+La migration `Version20260901130000` ajoute au classement saisonnier :
+
+- le booléen `recompense_reclamee`, faux par défaut ;
+- la date facultative `date_recompense_reclamee`.
+
+La migration a été appliquée aux bases de développement et de test.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée sur les entités, repository, services, contrôleur, migration et tests de J84.
+- Template du classement validé avec le linter Twig.
+- Conteneur Symfony validé.
+- Mapping Doctrine validé.
+- Schémas des bases de développement et de test synchronisés avec le mapping.
+- Tests de tous les seuils Bronze, Argent, Or, Platine et Diamant ajoutés.
+- Test de progression vers le prochain palier ajouté.
+- Test du refus avant la fin de saison ajouté.
+- Test du paiement correspondant à la division ajouté.
+- Test de la protection contre une seconde récupération ajouté.
+- Test du mouvement de pièces saisonnier ajouté.
+- Test HTTP du formulaire, du crédit réel, du message et de la disparition du bouton ajouté.
+- Tests ciblés validés : 21 tests et 73 assertions.
+- Suite complète validée : 249 tests et 1 981 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse possède maintenant une progression classée lisible et motivante. Les joueurs voient leur division et le chemin vers le palier suivant pendant la saison, puis récupèrent une récompense proportionnelle à leur classement final grâce à un paiement transactionnel, historisé et impossible à réclamer deux fois.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

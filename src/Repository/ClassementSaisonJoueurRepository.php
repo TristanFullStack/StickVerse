@@ -4,7 +4,9 @@ namespace App\Repository;
 
 use App\Entity\ClassementSaisonJoueur;
 use App\Entity\CollectionJeu;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -33,5 +35,19 @@ class ClassementSaisonJoueurRepository extends ServiceEntityRepository
             ->addOrderBy('joueur.pseudo', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function trouverAvecVerrouEcriture(
+        User $joueur,
+        CollectionJeu $saison,
+    ): ?ClassementSaisonJoueur {
+        return $this->createQueryBuilder('classement')
+            ->andWhere('classement.joueur = :joueur')
+            ->andWhere('classement.saison = :saison')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('saison', $saison)
+            ->getQuery()
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->getOneOrNullResult();
     }
 }

@@ -45,6 +45,12 @@ class ClassementSaisonJoueur
     #[ORM\Column]
     private DateTimeImmutable $dateMiseAJour;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $recompenseReclamee = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?DateTimeImmutable $dateRecompenseReclamee = null;
+
     public function __construct(User $joueur, CollectionJeu $saison)
     {
         if (($saison->getSaison() ?? 0) <= 0) {
@@ -101,6 +107,25 @@ class ClassementSaisonJoueur
     public function getDateMiseAJour(): DateTimeImmutable
     {
         return $this->dateMiseAJour;
+    }
+
+    public function estRecompenseReclamee(): bool
+    {
+        return $this->recompenseReclamee;
+    }
+
+    public function getDateRecompenseReclamee(): ?DateTimeImmutable
+    {
+        return $this->dateRecompenseReclamee;
+    }
+
+    public function marquerRecompenseReclamee(
+        ?DateTimeImmutable $date = null,
+    ): static {
+        $this->recompenseReclamee = true;
+        $this->dateRecompenseReclamee = $date ?? new DateTimeImmutable();
+
+        return $this;
     }
 
     public function enregistrerResultat(

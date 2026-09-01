@@ -69,4 +69,19 @@ final class MouvementPiecesTest extends TestCase
             $mouvement->getType(),
         );
     }
+
+    public function testAccepteLaRecompenseDeSaison(): void
+    {
+        $mouvement = new MouvementPieces(
+            new User(),
+            350,
+            MouvementPieces::TYPE_RECOMPENSE_SAISON,
+            'Récompense Saison 1 — division Or',
+        );
+
+        self::assertSame(
+            MouvementPieces::TYPE_RECOMPENSE_SAISON,
+            $mouvement->getType(),
+        );
+    }
 }

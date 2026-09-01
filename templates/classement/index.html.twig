@@ -3,6 +3,13 @@
 {% block title %}Classement - StickVerse{% endblock %}
 
 {% block body %}
+    {% for message in app.flashes('success') %}
+        <p class="alert-success" role="status">{{ message }}</p>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <p class="alert-error" role="alert">{{ message }}</p>
+    {% endfor %}
+
     <h1>Classement ELO</h1>
 
     <p>
@@ -34,10 +41,66 @@
             </nav>
         {% endif %}
 
+        {% if classementJoueur %}
+            {% set maDivision = divisionsSaison[classementJoueur.id] %}
+            <section data-ma-division>
+                <h3>Ma division : {{ maDivision.nom }}</h3>
+                <p>
+                    {{ classementJoueur.elo }} ELO — récompense de fin de saison :
+                    <strong>{{ maDivision.recompense }} pièces</strong>
+                </p>
+
+                {% if maDivision.prochainPalier %}
+                    <progress value="{{ maDivision.progression }}" max="100">
+                        {{ maDivision.progression }} %
+                    </progress>
+                    <p>
+                        Encore {{ maDivision.pointsRestants }} point(s) pour le prochain palier.
+                    </p>
+                {% else %}
+                    <p>Division maximale atteinte.</p>
+                {% endif %}
+
+                {% if classementJoueur.estRecompenseReclamee() %}
+                    <p data-recompense-saison-reclamee>
+                        Récompense récupérée le {{ classementJoueur.dateRecompenseReclamee|date('d/m/Y') }}.
+                    </p>
+                {% elseif recompenseJoueurDisponible %}
+                    <form
+                        method="post"
+                        action="{{ path('app_classement_saison_recompense', {saison: saisonSelectionnee.id}) }}"
+                    >
+                        <input
+                            type="hidden"
+                            name="_token"
+                            value="{{ csrf_token('recompense-saison-' ~ saisonSelectionnee.id) }}"
+                        >
+                        <button type="submit" data-recompense-saison>
+                            Récupérer {{ maDivision.recompense }} pièces
+                        </button>
+                    </form>
+                {% elseif saisonSelectionnee.dateFin %}
+                    <p>
+                        Récompense disponible après le
+                        {{ saisonSelectionnee.dateFin|date('d/m/Y à H:i') }}.
+                    </p>
+                {% else %}
+                    <p>La date de fin de saison n’est pas encore définie.</p>
+                {% endif %}
+            </section>
+        {% endif %}
+
         {% if saisonSelectionnee is null %}
-            <p>Aucune saison classée n’est disponible.</p>
+            <p data-classement-saison-vide>Aucune saison classée n’est disponible.</p>
         {% elseif classementSaison is empty %}
-            <p>Aucun combat classé n’a encore été terminé pendant cette saison.</p>
+            <div data-classement-saison-vide>
+                <p>Aucun combat classé n’a encore été terminé pendant cette saison.</p>
+                <p>
+                    Le classement général ci-dessous contient tous les joueurs inscrits.
+                    Termine un combat public pour apparaître dans le classement de la saison.
+                </p>
+                <a href="{{ path('app_combats_en_ligne') }}">Lancer un combat public</a>
+            </div>
         {% else %}
             <table data-classement-saison>
                 <thead>
@@ -45,6 +108,7 @@
                         <th>Rang</th>
                         <th>Pseudo</th>
                         <th>ELO saison</th>
+                        <th>Division</th>
                         <th>Parties</th>
                         <th>Victoires</th>
                         <th>Défaites</th>
@@ -53,6 +117,7 @@
                 </thead>
                 <tbody>
                     {% for classement in classementSaison %}
+                        {% set division = divisionsSaison[classement.id] %}
                         <tr
                             {% if app.user and app.user.id == classement.joueur.id %}
                                 data-classement-joueur
@@ -61,6 +126,7 @@
                             <td>{{ loop.index }}</td>
                             <td>{{ classement.joueur.pseudo }}</td>
                             <td>{{ classement.elo }}</td>
+                            <td data-division>{{ division.nom }}</td>
                             <td>{{ classement.parties }}</td>
                             <td>{{ classement.victoires }}</td>
                             <td>{{ classement.defaites }}</td>

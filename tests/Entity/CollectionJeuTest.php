@@ -26,4 +26,17 @@ final class CollectionJeuTest extends TestCase
 
         self::assertFalse($collection->estDisponibleA(new DateTimeImmutable()));
     }
+
+    public function testEstTermineeUniquementApresSaDateDeFin(): void
+    {
+        $collection = (new CollectionJeu())
+            ->setDateFin(new DateTimeImmutable('2026-09-01 00:00:00'));
+
+        self::assertFalse($collection->estTermineeA(
+            new DateTimeImmutable('2026-09-01 00:00:00'),
+        ));
+        self::assertTrue($collection->estTermineeA(
+            new DateTimeImmutable('2026-09-01 00:00:01'),
+        ));
+    }
 }
