@@ -110,6 +110,9 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '#combat-en-ligne[data-combat-en-ligne-creer-url-value="/salon-combat-en-ligne/creer"]'
         );
         self::assertSelectorExists(
+            '#combat-en-ligne[data-combat-en-ligne-matchmaking-url-value="/salon-combat-en-ligne/rechercher-adversaire"]'
+        );
+        self::assertSelectorExists(
             '#combat-en-ligne[data-combat-en-ligne-rejoindre-url-modele-value="/salon-combat-en-ligne/__combat_id__/rejoindre"]'
         );
         self::assertSelectorExists(
@@ -119,13 +122,14 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             '[data-combat-en-ligne-target="equipeSelect"]'
         );
         self::assertSelectorExists(
-            '[data-action="combat-en-ligne#creerCombat"]'
+            '[data-action="combat-en-ligne#rechercherAdversaire"]'
         );
         self::assertSelectorExists(
-            '[data-combat-en-ligne-target="combatPrive"][type="checkbox"]'
+            '[data-action="combat-en-ligne#creerCombatPrive"]'
         );
-        self::assertSelectorExists(
-            '[data-combat-en-ligne-target="combatsDisponibles"]'
+        self::assertSelectorTextContains(
+            '#combat-prive-titre',
+            'Rejoindre un combat privé',
         );
         self::assertSelectorExists(
             '[data-combat-en-ligne-target="aucunHistoriqueCombat"]'

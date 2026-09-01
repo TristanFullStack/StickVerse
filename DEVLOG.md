@@ -7523,6 +7523,125 @@ Cette pondération limite l’intérêt du farming contre des joueurs faibles, d
 
 StickVerse permet maintenant de préparer plusieurs équipes clairement identifiées, de connaître leur puissance réelle avant un combat et d’utiliser un classement ELO public qui récompense les performances en tenant compte du niveau et du matériel engagé.
 
+## J82 — Ajouter le matchmaking classé équilibré
+
+### Objectif
+
+J82 remplace la sélection manuelle d’un combat public par une recherche automatique d’adversaire fondée sur l’ELO des joueurs et la puissance réelle des équipes engagées.
+
+Le joueur choisit toujours librement son équipe, mais le serveur sélectionne désormais l’adversaire public le plus équilibré disponible.
+
+### File d’attente classée
+
+Un combat public en attente sert directement d’entrée dans la file classée.
+
+Cette solution réutilise le cycle de vie déjà sécurisé des combats et évite d’ajouter une seconde table contenant des recherches temporaires.
+
+Lorsqu’un joueur lance une recherche :
+
+- le serveur vérifie que l’équipe lui appartient ;
+- la puissance de ses quatre Stickmans est calculée ;
+- les combats privés, terminés, déjà rejoints ou créés par le même joueur sont ignorés ;
+- les recherches publiques compatibles sont comparées ;
+- l’adversaire présentant l’écart de puissance le plus faible est prioritaire ;
+- l’écart ELO départage deux puissances aussi proches ;
+- si aucun adversaire ne convient, un nouveau combat public en attente est créé ;
+- si une recherche est relancée alors que le joueur attend déjà, le même combat est conservé sans créer de doublon.
+
+Le premier joueur attend dans son combat public. Le second joueur compatible rejoint automatiquement ce combat avec les snapshots de l’équipe qu’il a sélectionnée.
+
+### Critères initiaux
+
+La recherche commence avec des limites volontairement strictes :
+
+- écart ELO maximal : 100 points ;
+- écart relatif de puissance maximal : 10 %.
+
+L’écart relatif de puissance utilise la formule suivante :
+
+`écart puissance = |puissance A - puissance B| / puissance maximale des deux équipes × 100`
+
+Une équipe sans score de puissance exploitable ne peut pas participer au rapprochement automatique.
+
+### Élargissement progressif
+
+Pour ne pas laisser un joueur attendre indéfiniment lorsque peu de personnes sont connectées, les limites s’élargissent toutes les 30 secondes :
+
+- +50 points d’ELO acceptés par palier ;
+- +5 points de pourcentage de puissance acceptés par palier.
+
+Les limites définitives restent plafonnées à :
+
+- 400 points d’écart ELO ;
+- 40 % d’écart de puissance.
+
+Le serveur recalcule les critères depuis la date de création du combat. Une actualisation de la page ne remet donc jamais le temps d’attente à zéro.
+
+La limite existante de cinq minutes continue d’annuler automatiquement une recherche abandonnée.
+
+### Protection contre les contournements
+
+La liste publique n’est plus utilisée pour choisir manuellement un adversaire.
+
+L’ancienne route HTTP de jonction directe refuse maintenant les combats publics et demande de passer par la recherche automatique.
+
+Les services internes conservent leur verrouillage transactionnel : si deux joueurs tentent de rejoindre le même combat presque simultanément, un seul peut être associé et la recherche peut continuer sur un autre candidat.
+
+Cette protection empêche un joueur de sélectionner volontairement :
+
+- une équipe beaucoup plus faible à farmer ;
+- un adversaire avec un ELO arrangé ;
+- une recherche publique précise à partir de son identifiant.
+
+### Interface du salon
+
+Le salon sépare maintenant clairement les deux usages :
+
+- « Combat classé public » lance le matchmaking automatique ;
+- « Combat privé » crée une invitation sans effet sur l’ELO ;
+- la jonction privée par code reste disponible dans une section dédiée.
+
+Pendant la recherche classée, l’écran indique :
+
+- l’ELO du joueur ;
+- la puissance de l’équipe engagée ;
+- l’écart ELO actuellement accepté ;
+- l’écart de puissance actuellement accepté.
+
+Dès qu’un adversaire est trouvé, le combat passe dans la préparation existante. Les deux joueurs doivent toujours confirmer qu’ils sont prêts avant de commencer le premier round.
+
+### Maintenabilité
+
+Les responsabilités sont séparées entre deux nouveaux services :
+
+- `ReglesMatchmakingService` contient uniquement les formules, les paliers et les plafonds ;
+- `MatchmakingCombatEnLigneService` orchestre la sélection, la jonction ou la création d’un combat.
+
+Les valeurs d’équilibrage sont regroupées dans des constantes afin de pouvoir ajuster rapidement le matchmaking après les premiers retours de joueurs.
+
+Aucune migration Doctrine n’est nécessaire pour J82 : les participants, les snapshots de statistiques, la visibilité et la date de création du combat fournissent déjà toutes les données requises.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée sur les services, contrôleurs et tests modifiés.
+- Syntaxe JavaScript du contrôleur de combat vérifiée avec Node.js.
+- Conteneur Symfony validé.
+- Ensemble des templates Twig validé.
+- Schémas Doctrine de développement et de test synchronisés.
+- Tests des limites initiales du matchmaking ajoutés.
+- Tests de l’élargissement toutes les 30 secondes ajoutés.
+- Tests des plafonds ELO et puissance ajoutés.
+- Test HTTP de création d’une recherche puis d’association automatique de deux joueurs ajouté.
+- Test de l’affichage des critères de recherche ajouté.
+- Test du blocage de la jonction publique directe ajouté.
+- Parcours privé par code conservé et retesté.
+- Suite complète validée : 234 tests et 1 912 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse possède maintenant un matchmaking public classé qui rapproche automatiquement des équipes comparables, s’assouplit progressivement lorsque l’attente augmente et empêche le choix manuel d’un adversaire facile. Les combats privés restent libres et séparés du classement.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

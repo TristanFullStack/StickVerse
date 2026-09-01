@@ -59,9 +59,7 @@ export default class extends Controller {
         'equipeSelect',
         'equipeApercu',
         'creerButton',
-        'combatPrive',
-        'aucunCombat',
-        'combatsDisponibles',
+        'rechercherButton',
         'codeInvitationInput',
         'aucunHistoriqueCombat',
         'historiqueCombats',
@@ -70,6 +68,7 @@ export default class extends Controller {
     static values = {
         salonUrl: String,
         creerUrl: String,
+        matchmakingUrl: String,
         rejoindreUrlModele: String,
         rejoindreParCodeUrl: String,
         combatUrlModele: String,
@@ -288,7 +287,7 @@ export default class extends Controller {
         });
     }
 
-    async creerCombat() {
+    async creerCombatPrive() {
         const equipeId = this.equipeSelectionneeId();
 
         if (equipeId === null) {
@@ -304,12 +303,40 @@ export default class extends Controller {
                 this.creerUrlValue,
                 {
                     equipeId,
-                    prive: this.combatPriveTarget.checked,
+                    prive: true,
                 },
                 this.salon?.csrf?.creer,
             );
 
             await this.chargerSalon();
+        });
+    }
+
+    async rechercherAdversaire() {
+        const equipeId = this.equipeSelectionneeId();
+
+        if (equipeId === null) {
+            this.afficherErreur(
+                'Sélectionne une équipe avant de lancer la recherche.'
+            );
+
+            return;
+        }
+
+        await this.executerAction(async () => {
+            const resultat = await this.envoyerJson(
+                this.matchmakingUrlValue,
+                { equipeId },
+                this.salon?.csrf?.matchmaking,
+            );
+
+            await this.chargerSalon();
+
+            if (resultat.etat === 'adversaire_trouve') {
+                this.afficherInformation(
+                    'Adversaire équilibré trouvé. Confirme ta préparation.'
+                );
+            }
         });
     }
 
@@ -473,7 +500,6 @@ export default class extends Controller {
         this.combatActifTarget.hidden = true;
         this.salonTarget.hidden = false;
         this.afficherEquipes();
-        this.afficherCombatsDisponibles();
         this.afficherHistoriqueCombats();
     }
 
@@ -607,11 +633,27 @@ export default class extends Controller {
 
         const adversairePresent = this.combat.adversaire !== null;
         this.attenteAdversaireTarget.hidden = adversairePresent;
+        const matchmaking = this.combat?.matchmaking;
+
+        if (!adversairePresent && matchmaking?.active === true) {
+            this.attenteAdversaireTarget.textContent = [
+                'Recherche classée en cours.',
+                `ELO ${matchmaking.elo ?? '—'},`,
+                `puissance ${matchmaking.puissanceEquipe ?? '—'}.`,
+                'Écarts acceptés :',
+                `${matchmaking.ecartEloMaximum ?? '—'} ELO et`,
+                `${matchmaking.ecartPuissanceMaximumPourcent ?? '—'} % de puissance.`,
+            ].join(' ');
+        } else if (!adversairePresent) {
+            this.attenteAdversaireTarget.textContent =
+                'En attente d’un adversaire…';
+        }
         const codeInvitation = typeof this.combat.codeInvitation === 'string'
             ? this.combat.codeInvitation
             : '';
         const afficherInvitation = this.combat.statut === 'en_attente'
             && !adversairePresent
+            && this.combat?.prive === true
             && codeInvitation !== '';
 
         this.invitationCombatTarget.hidden = !afficherInvitation;
@@ -2020,6 +2062,7 @@ export default class extends Controller {
         const aucuneEquipe = this.equipeSelectTarget.options.length === 0;
         this.equipeSelectTarget.disabled = aucuneEquipe;
         this.creerButtonTarget.disabled = aucuneEquipe;
+        this.rechercherButtonTarget.disabled = aucuneEquipe;
         this.afficherEquipeSelectionnee();
     }
 
@@ -2228,45 +2271,6 @@ export default class extends Controller {
             (carte) => carte.dataset.camp === camp
                 && carte.dataset.slot === slot
         ) ?? null;
-    }
-
-    afficherCombatsDisponibles() {
-        const combats = Array.isArray(this.salon?.combatsDisponibles)
-            ? this.salon.combatsDisponibles
-            : [];
-
-        this.combatsDisponiblesTarget.replaceChildren();
-        this.aucunCombatTarget.hidden = combats.length > 0;
-
-        for (const combat of combats) {
-            const combatId = this.entierPositif(combat.id);
-
-            if (combatId === null) {
-                continue;
-            }
-
-            const ligne = document.createElement('article');
-            const titre = document.createElement('h3');
-            const details = document.createElement('p');
-            const bouton = document.createElement('button');
-
-            ligne.className = 'combat-disponible';
-            titre.textContent = `Combat #${combatId}`;
-            const pseudo = combat.joueur1Pseudo
-                ?? `Joueur #${combat.joueur1Id ?? '—'}`;
-            details.textContent = [
-                pseudo,
-                `ELO ${combat.joueur1Elo ?? '—'}`,
-                `Puissance ${combat.puissanceEquipe ?? '—'}`,
-            ].join(' · ');
-            bouton.type = 'button';
-            bouton.textContent = 'Rejoindre';
-            bouton.dataset.combatId = String(combatId);
-            bouton.dataset.action = 'combat-en-ligne#rejoindreCombat';
-
-            ligne.append(titre, details, bouton);
-            this.combatsDisponiblesTarget.append(ligne);
-        }
     }
 
     afficherHistoriqueCombats() {

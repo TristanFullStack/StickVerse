@@ -18,7 +18,9 @@ use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ExpirationPlanCombatEnLigneService;
 use App\Service\ExpirationPreparationCombatEnLigneService;
 use App\Service\PreparationCombatEnLigneService;
+use App\Service\ReglesMatchmakingService;
 use App\Service\RecompenseCombatService;
+use App\Service\ScorePuissanceService;
 use App\Service\CombatService;
 use App\Service\RecuperationRoundCombatEnLigneService;
 use App\Service\ResolutionRoundCombatEnLigneService;
@@ -60,6 +62,8 @@ final class CombatEnLigneController extends AbstractController
         ResolutionRoundCombatEnLigneService $resolutionRoundService,
         RecompenseCombatService $recompenseService,
         CombatService $combatService,
+        ReglesMatchmakingService $reglesMatchmakingService,
+        ScorePuissanceService $scorePuissanceService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::CONSULTER,
@@ -149,6 +153,20 @@ final class CombatEnLigneController extends AbstractController
             'resolutionAutomatique' => $resolutionAutomatique,
             'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
+            'matchmaking' => $combat->estEnAttente()
+                && !$combat->estPrive()
+                ? [
+                    'active' => true,
+                    'elo' => $utilisateur->getElo(),
+                    'puissanceEquipe' => $scorePuissanceService
+                        ->calculerCombatPourJoueur(
+                            $combat,
+                            $utilisateur,
+                        ),
+                    ...$reglesMatchmakingService
+                        ->criteresPour($combat),
+                ]
+                : null,
             'pressionAttaque' => [
                 'bonusPourcentage' => $combatService
                     ->bonusPressionAttaque($combat->getNumeroRound()),

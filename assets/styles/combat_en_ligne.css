@@ -805,6 +805,39 @@ body:has(#rapport-combat) {
     color: var(--combat-violet);
 }
 
+#combat-en-ligne .choix-mode-combat {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+#combat-en-ligne .choix-mode-combat article {
+    display: flex;
+    min-width: 0;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid #315b7d;
+    border-radius: 9px;
+    background: rgba(7, 21, 34, 0.82);
+}
+
+#combat-en-ligne .choix-mode-combat h3 {
+    margin: 0 0 8px;
+    color: var(--combat-cyan);
+}
+
+#combat-en-ligne .choix-mode-combat p {
+    margin: 0 0 16px;
+    color: var(--combat-texte-secondaire);
+    line-height: 1.45;
+}
+
+#combat-en-ligne .choix-mode-combat button {
+    width: 100%;
+    margin-top: auto;
+}
+
 #combat-en-ligne [data-combat-en-ligne-target="combatsDisponibles"] {
     display: grid;
     gap: 10px;
@@ -1012,6 +1045,10 @@ body:has(#rapport-combat) {
 }
 
 @media (max-width: 720px) {
+    #combat-en-ligne .choix-mode-combat {
+        grid-template-columns: 1fr;
+    }
+
     #combat-en-ligne > header {
         position: static;
         align-items: flex-start;

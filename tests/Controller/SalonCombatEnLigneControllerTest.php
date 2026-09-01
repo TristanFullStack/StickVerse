@@ -89,6 +89,81 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         parent::tearDown();
     }
 
+    public function testMatchmakingCreePuisAssocieDeuxJoueursCompatibles(): void
+    {
+        [
+            $joueur1,
+            $joueur2,
+            $equipeJoueur1,
+            $equipeJoueur2,
+        ] = $this->creerDonneesDuSalon();
+
+        $equipeJoueur1Id = $equipeJoueur1->getId();
+        $equipeJoueur2Id = $equipeJoueur2->getId();
+
+        self::assertNotNull($equipeJoueur1Id);
+        self::assertNotNull($equipeJoueur2Id);
+
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+        $csrfJoueur1 = $this->lireReponseJson()['csrf']['matchmaking'];
+
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/rechercher-adversaire',
+            ['equipeId' => $equipeJoueur1Id],
+            ['HTTP_X_CSRF_TOKEN' => $csrfJoueur1],
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $recherche = $this->lireReponseJson();
+        self::assertSame('recherche_lancee', $recherche['etat']);
+        $combatId = $recherche['combatId'];
+
+        $this->client->request('GET', '/combat-en-ligne/'.$combatId);
+        self::assertResponseIsSuccessful();
+        $etatRecherche = $this->lireReponseJson();
+        self::assertTrue($etatRecherche['matchmaking']['active']);
+        self::assertSame(1000, $etatRecherche['matchmaking']['elo']);
+        self::assertSame(
+            32,
+            $etatRecherche['matchmaking']['puissanceEquipe'],
+        );
+        self::assertSame(
+            100,
+            $etatRecherche['matchmaking']['ecartEloMaximum'],
+        );
+        self::assertSame(
+            10,
+            $etatRecherche['matchmaking']['ecartPuissanceMaximumPourcent'],
+        );
+
+        $this->client->loginUser($joueur2);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+        $csrfJoueur2 = $this->lireReponseJson()['csrf']['matchmaking'];
+
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/rechercher-adversaire',
+            ['equipeId' => $equipeJoueur2Id],
+            ['HTTP_X_CSRF_TOKEN' => $csrfJoueur2],
+        );
+
+        self::assertResponseIsSuccessful();
+        $resultat = $this->lireReponseJson();
+        self::assertSame('adversaire_trouve', $resultat['etat']);
+        self::assertSame($combatId, $resultat['combatId']);
+
+        $this->entityManager->clear();
+        $combat = $this->combatRepository->find($combatId);
+        self::assertInstanceOf(Combat::class, $combat);
+        self::assertFalse($combat->estPrive());
+        self::assertSame(Combat::STATUT_EN_COURS, $combat->getStatut());
+        self::assertSame($joueur2->getId(), $combat->getJoueur2()?->getId());
+        self::assertCount(8, $combat->getCombattants());
+        self::assertTrue($combat->estEnPreparation());
+    }
+
     public function testCreePuisRejointUnCombatPriveParCode(): void
     {
         [
@@ -551,6 +626,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         [
             $joueur1,
             $joueur2,
+            ,
+            $equipeJoueur2,
         ] = $this->creerDonneesDuSalon();
 
         $combatPublic = new Combat($joueur1);
@@ -581,6 +658,25 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         self::assertFalse($combatsDisponibles[0]['prive']);
         self::assertSame(User::ELO_DEPART, $combatsDisponibles[0]['joueur1Elo']);
         self::assertSame(0, $combatsDisponibles[0]['puissanceEquipe']);
+
+        $equipeJoueur2Id = $equipeJoueur2->getId();
+        self::assertNotNull($equipeJoueur2Id);
+
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/'.$combatPublicId.'/rejoindre',
+            ['equipeId' => $equipeJoueur2Id],
+            [
+                'HTTP_X_CSRF_TOKEN' => $this->lireReponseJson()
+                    ['csrf']['rejoindre'],
+            ],
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        self::assertSame(
+            'Les combats publics doivent être rejoints par la recherche automatique.',
+            $this->lireReponseJson()['erreur'],
+        );
     }
 
     public function testLimiteLesEssaisDeCodesInvitation(): void

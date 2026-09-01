@@ -21,6 +21,9 @@
         data-combat-en-ligne-creer-url-value="{{ path(
             'app_salon_combat_en_ligne_creer'
         ) }}"
+        data-combat-en-ligne-matchmaking-url-value="{{ path(
+            'app_salon_combat_en_ligne_rechercher_adversaire'
+        ) }}"
         data-combat-en-ligne-rejoindre-url-modele-value="{{ path(
             'app_salon_combat_en_ligne_rejoindre',
             {id: '__combat_id__'}
@@ -382,50 +385,41 @@
                         aria-live="polite"
                     ></div>
 
-                    <label class="visibilite-combat">
-                        <input
-                            type="checkbox"
-                            data-combat-en-ligne-target="combatPrive"
-                        >
+                    <div class="choix-mode-combat">
+                        <article>
+                            <h3>Combat classé public</h3>
+                            <p>
+                                Le jeu cherche automatiquement l’adversaire le plus proche selon ton ELO et la puissance de ton équipe.
+                            </p>
+                            <button
+                                type="button"
+                                data-combat-en-ligne-target="rechercherButton"
+                                data-action="combat-en-ligne#rechercherAdversaire"
+                            >
+                                Rechercher un adversaire
+                            </button>
+                        </article>
 
-                        <span>
-                            <strong>Combat privé</strong>
-                            <small>
-                                Il sera invisible dans la liste et accessible uniquement avec son code.
-                            </small>
-                        </span>
-                    </label>
-
-                    <button
-                        type="button"
-                        data-combat-en-ligne-target="creerButton"
-                        data-action="combat-en-ligne#creerCombat"
-                    >
-                        Créer un combat
-                    </button>
+                        <article>
+                            <h3>Combat privé</h3>
+                            <p>
+                                Crée un combat sans effet sur l’ELO et partage son code avec un ami.
+                            </p>
+                            <button
+                                type="button"
+                                data-combat-en-ligne-target="creerButton"
+                                data-action="combat-en-ligne#creerCombatPrive"
+                            >
+                                Créer un combat privé
+                            </button>
+                        </article>
+                    </div>
                 </section>
 
-                <section aria-labelledby="combats-disponibles-titre">
-                    <h2 id="combats-disponibles-titre">
-                        Combats disponibles
+                <section aria-labelledby="combat-prive-titre">
+                    <h2 id="combat-prive-titre">
+                        Rejoindre un combat privé
                     </h2>
-
-                    <p data-combat-en-ligne-target="aucunCombat">
-                        Aucun combat n’attend de joueur pour le moment.
-                    </p>
-
-                    <div
-                        data-combat-en-ligne-target="combatsDisponibles"
-                        aria-live="polite"
-                    ></div>
-
-                    <button
-                        type="button"
-                        data-action="combat-en-ligne#rafraichir"
-                    >
-                        Actualiser la liste
-                    </button>
-
                     <form
                         class="rejoindre-par-code"
                         data-action="submit->combat-en-ligne#rejoindreParCode"

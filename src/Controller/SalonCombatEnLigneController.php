@@ -11,6 +11,7 @@ use App\Repository\EquipeRepository;
 use App\Service\CreationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\LimitationTentativesInvitationCombatService;
+use App\Service\MatchmakingCombatEnLigneService;
 use App\Service\RejoindreCombatEnLigneService;
 use App\Service\ScorePuissanceService;
 use InvalidArgumentException;
@@ -147,6 +148,13 @@ final class SalonCombatEnLigneController extends AbstractController
                     ->getToken(
                         $this->creerIdentifiantCsrf(
                             'rejoindre'
+                        )
+                    )
+                    ->getValue(),
+                'matchmaking' => $csrfTokenManager
+                    ->getToken(
+                        $this->creerIdentifiantCsrf(
+                            'matchmaking'
                         )
                     )
                     ->getValue(),
@@ -317,6 +325,7 @@ final class SalonCombatEnLigneController extends AbstractController
     public function rejoindre(
         int $id,
         Request $request,
+        CombatRepository $combatRepository,
         EquipeRepository $equipeRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
         RejoindreCombatEnLigneService $rejoindreService,
@@ -353,12 +362,109 @@ final class SalonCombatEnLigneController extends AbstractController
             );
         }
 
+        $combat = $combatRepository->find($id);
+
+        if ($combat instanceof Combat && !$combat->estPrive()) {
+            return $this->json(
+                [
+                    'erreur' => 'Les combats publics doivent être rejoints par la recherche automatique.',
+                ],
+                Response::HTTP_CONFLICT,
+            );
+        }
+
         return $this->traiterJonction(
             $id,
             $donnees,
             $utilisateur,
             $equipeRepository,
             $rejoindreService,
+        );
+    }
+
+    #[Route(
+        '/rechercher-adversaire',
+        name: 'rechercher_adversaire',
+        methods: ['POST']
+    )]
+    public function rechercherAdversaire(
+        Request $request,
+        EquipeRepository $equipeRepository,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        MatchmakingCombatEnLigneService $matchmakingService,
+    ): JsonResponse {
+        $utilisateur = $this->getUser();
+
+        if (!$utilisateur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (
+            !$this->csrfEstValide(
+                'matchmaking',
+                $request,
+                $csrfTokenManager,
+            )
+        ) {
+            return $this->json(
+                ['erreur' => 'Le jeton CSRF de recherche est invalide.'],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
+
+        try {
+            $donnees = $request->toArray();
+            $equipeId = $this->lireEquipeId($donnees);
+        } catch (JsonException) {
+            return $this->json(
+                ['erreur' => 'Le contenu JSON est invalide.'],
+                Response::HTTP_BAD_REQUEST,
+            );
+        } catch (InvalidArgumentException $exception) {
+            return $this->json(
+                ['erreur' => $exception->getMessage()],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        $equipe = $equipeRepository->findOneBy([
+            'id' => $equipeId,
+            'utilisateur' => $utilisateur,
+        ]);
+
+        if (!$equipe instanceof Equipe) {
+            return $this->json(
+                ['erreur' => 'L’équipe demandée est introuvable.'],
+                Response::HTTP_NOT_FOUND,
+            );
+        }
+
+        try {
+            $combat = $matchmakingService->rechercher(
+                $utilisateur,
+                $equipe,
+            );
+        } catch (LogicException $exception) {
+            return $this->json(
+                ['erreur' => $exception->getMessage()],
+                Response::HTTP_CONFLICT,
+            );
+        }
+
+        $adversaireTrouve = $combat->getJoueur2() instanceof User;
+
+        return $this->json(
+            [
+                'etat' => $adversaireTrouve
+                    ? 'adversaire_trouve'
+                    : 'recherche_lancee',
+                'combatId' => $combat->getId(),
+                'statut' => $combat->getStatut(),
+                'numeroRound' => $combat->getNumeroRound(),
+            ],
+            $adversaireTrouve
+                ? Response::HTTP_OK
+                : Response::HTTP_CREATED,
         );
     }
 
