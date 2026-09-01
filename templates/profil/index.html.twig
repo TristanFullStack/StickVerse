@@ -109,9 +109,12 @@
         {% endif %}
     </section>
 
-    <section class="profile-section" aria-labelledby="recompense-quotidienne-titre">
+    <section class="profile-section profile-rewards" aria-labelledby="recompenses-titre" data-profile-recompenses>
+        <h2 id="recompenses-titre">Récompenses</h2>
+
+        <section aria-labelledby="recompense-quotidienne-titre">
         <h2 id="recompense-quotidienne-titre">Récompense quotidienne</h2>
-        <p>Récupère {{ constant('App\\Service\\RecompenseQuotidienneService::MONTANT') }} pièces une fois par jour.</p>
+        <p>Récompense de connexion : {{ constant('App\\Service\\RecompenseQuotidienneService::MONTANT') }} pièces une fois par jour.</p>
         {% if profil.recompenseQuotidienneDisponible %}
             <form method="post" action="{{ path('app_recompense_quotidienne') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('recompense-quotidienne') }}">
@@ -122,7 +125,61 @@
         {% else %}
             <p data-profile-recompense-indisponible>Récompense déjà récupérée aujourd’hui.</p>
         {% endif %}
-    </section>
+        </section>
+
+        <section aria-labelledby="recompense-horaire-titre">
+            <h2 id="recompense-horaire-titre">Récompense horaire</h2>
+            <p>{{ constant('App\\Service\\RecompenseHoraireService::MONTANT_PAR_HEURE') }} pièces par heure, cumulables jusqu’à {{ constant('App\\Service\\RecompenseHoraireService::MONTANT_MAXIMUM') }} pièces.</p>
+            {% if profil.recompenseHoraireDisponible > 0 %}
+                <p data-profile-recompense-horaire-disponible>{{ profil.recompenseHoraireDisponible }} pièces disponibles.</p>
+                <form method="post" action="{{ path('app_recompense_horaire') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('recompense-horaire') }}">
+                    <button type="submit" data-profile-recompense-horaire>Récupérer mes pièces</button>
+                </form>
+            {% else %}
+                <p data-profile-recompense-horaire-indisponible>Prochaine pièce disponible dans moins d’une heure.</p>
+            {% endif %}
+        </section>
+
+        <section aria-labelledby="missions-quotidiennes-titre">
+            <h2 id="missions-quotidiennes-titre">Missions quotidiennes</h2>
+            {% for mission in profil.missions.quotidiennes %}
+                <div data-profile-mission="quotidiennes-{{ mission.id }}">
+                    <strong>{{ mission.libelle }}</strong> — {{ mission.description }}
+                    ({{ mission.progression }}/{{ mission.cible }}) — {{ mission.recompense }} pièces
+                    {% if mission.reclame %}
+                        <span data-profile-mission-reclamee>Réclamée</span>
+                    {% elseif mission.disponible %}
+                        <form method="post" action="{{ path('app_mission_reclamer', {periode: 'quotidiennes', mission: mission.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('mission-quotidiennes-' ~ mission.id) }}">
+                            <button type="submit">Réclamer</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p>Aucune mission quotidienne.</p>
+            {% endfor %}
+        </section>
+
+        <section aria-labelledby="missions-hebdomadaires-titre">
+            <h2 id="missions-hebdomadaires-titre">Missions hebdomadaires</h2>
+            {% for mission in profil.missions.hebdomadaires %}
+                <div data-profile-mission="hebdomadaires-{{ mission.id }}">
+                    <strong>{{ mission.libelle }}</strong> — {{ mission.description }}
+                    ({{ mission.progression }}/{{ mission.cible }}) — {{ mission.recompense }} pièces
+                    {% if mission.reclame %}
+                        <span data-profile-mission-reclamee>Réclamée</span>
+                    {% elseif mission.disponible %}
+                        <form method="post" action="{{ path('app_mission_reclamer', {periode: 'hebdomadaires', mission: mission.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('mission-hebdomadaires-' ~ mission.id) }}">
+                            <button type="submit">Réclamer</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p>Aucune mission hebdomadaire.</p>
+            {% endfor %}
+        </section>
 
     <section class="profile-section" aria-labelledby="objectifs-titre">
         <h2 id="objectifs-titre">Objectifs</h2>
@@ -148,5 +205,6 @@
                 {% endfor %}
             </ul>
         {% endif %}
+    </section>
     </section>
 {% endblock %}

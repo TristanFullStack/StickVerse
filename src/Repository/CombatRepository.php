@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Combat;
 use App\Entity\User;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
@@ -200,5 +201,40 @@ class CombatRepository extends ServiceEntityRepository
             ),
             'matchsNuls' => $matchsNuls,
         ];
+    }
+
+    public function compterDepuisPourJoueur(
+        User $joueur,
+        DateTimeImmutable $debut,
+    ): int {
+        return (int) $this->createQueryBuilder('combat')
+            ->select('COUNT(combat.id)')
+            ->andWhere('(combat.joueur1 = :joueur OR combat.joueur2 = :joueur)')
+            ->andWhere('combat.statut IN (:statuts)')
+            ->andWhere('combat.dateMiseAJour >= :debut')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('statuts', [
+                Combat::STATUT_TERMINE,
+                Combat::STATUT_ABANDONNE,
+                Combat::STATUT_FORFAIT,
+            ])
+            ->setParameter('debut', $debut)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function compterVictoiresDepuisPourJoueur(
+        User $joueur,
+        DateTimeImmutable $debut,
+    ): int {
+        return (int) $this->createQueryBuilder('combat')
+            ->select('COUNT(combat.id)')
+            ->andWhere('(combat.joueur1 = :joueur OR combat.joueur2 = :joueur)')
+            ->andWhere('combat.gagnant = :joueur')
+            ->andWhere('combat.dateMiseAJour >= :debut')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('debut', $debut)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

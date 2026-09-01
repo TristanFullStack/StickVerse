@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User;
+use DateTimeImmutable;
 
 final class InitialisationNouveauJoueurService
 {
@@ -16,6 +17,6 @@ final class InitialisationNouveauJoueurService
     {
         $utilisateur->setCaissesPremiersRenforts(
             User::CAISSES_PREMIERS_RENFORTS_DEPART,
-        );
+        )->setDateDerniereRecompenseHoraire(new DateTimeImmutable());
     }
 }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\MouvementPieces;
 use App\Entity\User;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -42,6 +43,23 @@ class MouvementPiecesRepository extends ServiceEntityRepository
             ->andWhere('mouvement.type = :type')
             ->setParameter('joueur', $joueur)
             ->setParameter('type', $type)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function compterDepuisPourJoueurEtType(
+        User $joueur,
+        string $type,
+        DateTimeImmutable $debut,
+    ): int {
+        return (int) $this->createQueryBuilder('mouvement')
+            ->select('COUNT(mouvement.id)')
+            ->andWhere('mouvement.utilisateur = :joueur')
+            ->andWhere('mouvement.type = :type')
+            ->andWhere('mouvement.dateCreation >= :debut')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('type', $type)
+            ->setParameter('debut', $debut)
             ->getQuery()
             ->getSingleScalarResult();
     }

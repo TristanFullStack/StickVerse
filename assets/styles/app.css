@@ -155,6 +155,21 @@ fieldset {
     outline-offset: 3px;
 }
 
+.stickman-card-link--non-obtenue .stickman-card {
+    filter: grayscale(1);
+    opacity: 0.52;
+}
+
+.stickman-card-link--non-obtenue:hover .stickman-card,
+.stickman-card-link--non-obtenue:focus-visible .stickman-card {
+    opacity: 0.72;
+}
+
+.stickman-card-status {
+    font-weight: bold;
+    color: #555;
+}
+
 .stickman-card h2 {
     min-height: 32px;
     margin: 0 0 6px;

@@ -45,6 +45,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $dateDerniereRecompenseQuotidienne = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $dateDerniereRecompenseHoraire = null;
+
     /** @var list<string> */
     #[ORM\Column(type: 'json')]
     private array $objectifsReclames = [];
@@ -199,6 +202,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         ?\DateTimeImmutable $date,
     ): static {
         $this->dateDerniereRecompenseQuotidienne = $date;
+
+        return $this;
+    }
+
+    public function getDateDerniereRecompenseHoraire(): ?\DateTimeImmutable
+    {
+        return $this->dateDerniereRecompenseHoraire;
+    }
+
+    public function setDateDerniereRecompenseHoraire(
+        ?\DateTimeImmutable $date,
+    ): static {
+        $this->dateDerniereRecompenseHoraire = $date;
 
         return $this;
     }

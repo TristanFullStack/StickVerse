@@ -8022,6 +8022,66 @@ StickVerse offre maintenant un départ identique et lisible à chaque nouveau jo
 commencer sa collection et une limite d’équipe cohérente avec son ELO. La remise à zéro des comptes existants est
 disponible via une commande protégée, sans supprimer l’historique utile du jeu.
 
+## J88 — Regrouper les récompenses et ajouter les missions périodiques
+
+### Objectif
+
+J88 rend la progression quotidienne plus lisible et donne plusieurs raisons de revenir jouer régulièrement.
+
+### Collection lisible
+
+Dans la collection et la page de saison, les Stickmans non obtenus restent visibles mais apparaissent grisés. Ils
+conservent leur lien vers le Wiki afin que le joueur puisse découvrir leur fiche et identifier ce qu’il lui manque.
+Les cartes obtenues gardent leur couleur de rareté et leur quantité habituelle.
+
+### Espace Récompenses
+
+Le profil regroupe maintenant au même endroit :
+
+- la récompense de connexion quotidienne de 100 pièces ;
+- la récompense horaire de 20 pièces par heure ;
+- les missions quotidiennes ;
+- les missions hebdomadaires ;
+- les anciens objectifs de progression.
+
+La récompense horaire peut cumuler cinq heures maximum, soit 100 pièces. Les minutes restantes après une récupération
+sont conservées afin que le joueur ne perde pas sa progression entre deux connexions.
+
+Chaque paiement passe par l’historique des mouvements de pièces. Les jetons CSRF, les transactions et les verrous
+d’écriture déjà utilisés par les récompenses précédentes sont conservés pour éviter les doubles crédits.
+
+### Missions quotidiennes et hebdomadaires
+
+Les missions quotidiennes sont renouvelées chaque jour : participer à un combat et remporter une victoire. Les
+missions hebdomadaires suivent la même logique avec des objectifs plus longs : cinq combats, trois victoires et trois
+ouvertures de caisses payantes.
+
+La progression est calculée depuis le début de la période concernée. Une mission réclamée est marquée avec une clé
+datée dans le compte du joueur : elle se débloque automatiquement à la prochaine journée ou semaine sans migration
+supplémentaire.
+
+Les récompenses de mission utilisent le même historique que les objectifs existants et restent protégées contre une
+seconde réclamation concurrente.
+
+### Migration et vérifications
+
+La migration `Version20260901150000` ajoute la date de référence de la récompense horaire. Le compteur est initialisé
+à l’inscription et remis à zéro par la commande de réinitialisation des joueurs.
+
+- Conteneur Symfony, templates Twig et mapping Doctrine validés.
+- Migration appliquée aux bases de développement et de test.
+- Tests de la récompense quotidienne adaptés à 100 pièces.
+- Tests du cumul horaire, du plafond de 100 pièces et de la conservation des minutes ajoutés.
+- Tests des missions quotidiennes, hebdomadaires et de l’idempotence ajoutés.
+- Suite complète validée : 253 tests et 1 976 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+Le joueur voit désormais toutes ses récompenses dans un espace unique, peut récupérer 100 pièces chaque jour et
+jusqu’à 100 pièces grâce au temps écoulé, puis compléter des missions quotidiennes et hebdomadaires. Sa collection
+montre clairement les cartes encore à obtenir sans masquer leur existence.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

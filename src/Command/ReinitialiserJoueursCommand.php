@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\CombatRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use DateTimeImmutable;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -103,6 +104,7 @@ final class ReinitialiserJoueursCommand extends Command
                 ->setCaissesPremiersRenforts(
                     User::CAISSES_PREMIERS_RENFORTS_DEPART,
                 )
+                ->setDateDerniereRecompenseHoraire(new DateTimeImmutable())
                 ->setDateDerniereRecompenseQuotidienne(null)
                 ->reinitialiserObjectifsReclames();
         }

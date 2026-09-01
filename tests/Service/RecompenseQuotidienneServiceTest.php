@@ -22,10 +22,10 @@ final class RecompenseQuotidienneServiceTest extends TestCase
             RecompenseQuotidienneService::MONTANT,
             $service->reclamer($joueur, $date),
         );
-        self::assertSame(1025, $joueur->getPieces());
+        self::assertSame(1100, $joueur->getPieces());
         self::assertSame($date, $joueur->getDateDerniereRecompenseQuotidienne());
         self::assertSame(0, $service->reclamer($joueur, $date));
-        self::assertSame(1025, $joueur->getPieces());
+        self::assertSame(1100, $joueur->getPieces());
     }
 
     public function testAutoriseUneNouvelleRecompenseLeJourSuivant(): void
@@ -43,7 +43,7 @@ final class RecompenseQuotidienneServiceTest extends TestCase
                 new DateTimeImmutable('2026-08-31 00:01:00'),
             ),
         );
-        self::assertSame(1025, $joueur->getPieces());
+        self::assertSame(1100, $joueur->getPieces());
     }
 
     public function testEnregistreUnMouvementPositif(): void

@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Service\ProfilJoueurService;
 use App\Service\RecompenseQuotidienneService;
 use App\Service\ObjectifJoueurService;
+use App\Service\MissionsJoueurService;
+use App\Service\RecompenseHoraireService;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -70,6 +72,35 @@ final class ProfilController extends AbstractController
         return $this->redirectToRoute('app_profil');
     }
 
+    #[Route('/profil/recompense-horaire', name: 'app_recompense_horaire', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function reclamerRecompenseHoraire(
+        Request $request,
+        RecompenseHoraireService $recompenseHoraireService,
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'recompense-horaire',
+            $request->getPayload()->getString('_token'),
+        )) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $joueur = $this->getUser();
+        if (!$joueur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $montant = $recompenseHoraireService->reclamer($joueur);
+        $this->addFlash(
+            $montant > 0 ? 'success' : 'error',
+            $montant > 0
+                ? sprintf('Récompense horaire récupérée : +%d pièces.', $montant)
+                : 'Aucune récompense horaire disponible pour le moment.',
+        );
+
+        return $this->redirectToRoute('app_profil');
+    }
+
     #[Route('/profil/objectif/{objectif}/reclamer', name: 'app_objectif_reclamer', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function reclamerObjectif(
@@ -107,6 +138,42 @@ final class ProfilController extends AbstractController
                 'Cet objectif n’est pas encore disponible ou a déjà été réclamé.',
             );
         }
+
+        return $this->redirectToRoute('app_profil');
+    }
+
+    #[Route('/profil/mission/{periode}/{mission}/reclamer', name: 'app_mission_reclamer', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function reclamerMission(
+        Request $request,
+        string $periode,
+        string $mission,
+        MissionsJoueurService $missionsJoueurService,
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'mission-'.$periode.'-'.$mission,
+            $request->getPayload()->getString('_token'),
+        )) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $joueur = $this->getUser();
+        if (!$joueur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        try {
+            $montant = $missionsJoueurService->reclamer($joueur, $periode, $mission);
+        } catch (InvalidArgumentException) {
+            throw $this->createNotFoundException('Cette mission est inconnue.');
+        }
+
+        $this->addFlash(
+            $montant > 0 ? 'success' : 'error',
+            $montant > 0
+                ? sprintf('Mission validée : +%d pièces.', $montant)
+                : 'Cette mission n’est pas encore terminée ou a déjà été réclamée.',
+        );
 
         return $this->redirectToRoute('app_profil');
     }

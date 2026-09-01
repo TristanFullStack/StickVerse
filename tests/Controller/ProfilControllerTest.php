@@ -199,7 +199,7 @@ final class ProfilControllerTest extends WebTestCase
 
         self::assertResponseRedirects('/profil');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('[data-profile-pieces]', '1025 pièces');
+        self::assertSelectorTextContains('[data-profile-pieces]', '1100 pièces');
         self::assertSelectorTextContains(
             '[data-profile-mouvements]',
             'Récompense quotidienne',

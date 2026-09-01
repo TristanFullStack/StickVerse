@@ -63,11 +63,13 @@
                                     {% include 'stickman/_card.html.twig' with {
                                         stickman: stickman,
                                         inventaire: groupe.inventaires[stickman.id],
+                                        possede: true,
                                         puissance: groupe.puissances[stickman.id]|default(null),
                                     } only %}
                                 {% else %}
                                     {% include 'stickman/_card.html.twig' with {
                                         stickman: stickman,
+                                        possede: false,
                                         puissance: groupe.puissances[stickman.id]|default(null),
                                     } only %}
                                 {% endif %}

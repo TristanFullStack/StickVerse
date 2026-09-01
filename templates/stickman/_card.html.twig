@@ -1,11 +1,13 @@
+{% set carteObtenue = possede is defined ? possede : (inventaire is defined and inventaire is not null) %}
 <a
-    class="stickman-card-link"
+    class="stickman-card-link{{ carteObtenue ? '' : ' stickman-card-link--non-obtenue' }}"
     href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}"
     aria-label="Voir la fiche de {{ stickman.nom }}"
 >
     <article
         class="stickman-card stickman-card--rarete-{{ stickman.rarete|default(1) }}"
         data-rarete="{{ stickman.rarete|default(1) }}"
+        data-obtenue="{{ carteObtenue ? 'true' : 'false' }}"
     >
         <h2>{{ stickman.nom }}</h2>
 
@@ -19,6 +21,10 @@
             <p>
                 <strong>Quantité : {{ inventaire.quantite }}</strong>
             </p>
+        {% endif %}
+
+        {% if not carteObtenue %}
+            <p class="stickman-card-status">Non obtenue</p>
         {% endif %}
 
         {% if stickman.collectionJeu is defined and stickman.collectionJeu is not null %}

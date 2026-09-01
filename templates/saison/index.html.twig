@@ -55,11 +55,13 @@
                             {% include 'stickman/_card.html.twig' with {
                                 stickman: stickman,
                                 inventaire: saison.inventaires[stickman.id],
+                                possede: true,
                                 puissance: saison.puissances[stickman.id]|default(null),
                             } only %}
                         {% else %}
                             {% include 'stickman/_card.html.twig' with {
                                 stickman: stickman,
+                                possede: false,
                                 puissance: saison.puissances[stickman.id]|default(null),
                             } only %}
                         {% endif %}
