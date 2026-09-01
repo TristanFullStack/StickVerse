@@ -25,11 +25,10 @@ final class MatchmakingCombatEnLigneService
             ->trouverActifPourJoueur($joueur);
 
         if ($combatActif instanceof Combat) {
-            if (
-                $combatActif->estEnAttente()
-                && !$combatActif->estPrive()
-                && $combatActif->getJoueur1() === $joueur
-            ) {
+            // Une relance peut arriver juste après que l’adversaire a rejoint
+            // le combat. Retourner ce combat rend la recherche idempotente et
+            // permet au navigateur de récupérer immédiatement le bon état.
+            if (!$combatActif->estPrive()) {
                 return $combatActif;
             }
 

@@ -1,4 +1,7 @@
-<article class="stickman-card">
+<article
+    class="stickman-card stickman-card--rarete-{{ stickman.rarete|default(1) }}"
+    data-rarete="{{ stickman.rarete|default(1) }}"
+>
     <h2>{{ stickman.nom }}</h2>
 
     <img

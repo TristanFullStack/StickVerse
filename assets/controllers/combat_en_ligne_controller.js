@@ -258,8 +258,11 @@ export default class extends Controller {
             return;
         }
 
+        const estRecherchePublique = this.combat?.prive !== true;
         const confirmation = window.confirm([
-            'Annuler ce combat en attente ?',
+            estRecherchePublique
+                ? 'Annuler cette recherche classée ?'
+                : 'Annuler ce combat en attente ?',
             'Il disparaîtra du salon et tu pourras en créer ou rejoindre un autre.',
         ].join('\n'));
 
@@ -337,6 +340,38 @@ export default class extends Controller {
                     'Adversaire équilibré trouvé. Confirme ta préparation.'
                 );
             }
+        });
+    }
+
+    async relancerRechercheAdversaire() {
+        const combatId = this.combatActifIdCourant;
+
+        if (
+            combatId === null
+            || this.actionEnCours
+            || this.combat?.statut !== 'en_attente'
+            || this.combat?.matchmaking?.active !== true
+            || this.combat?.adversaire !== null
+        ) {
+            return;
+        }
+
+        const equipeId = this.equipeSelectionneeId();
+
+        if (equipeId === null) {
+            await this.chargerCombat(combatId);
+
+            return;
+        }
+
+        await this.executerAction(async () => {
+            await this.envoyerJson(
+                this.matchmakingUrlValue,
+                { equipeId },
+                this.salon?.csrf?.matchmaking,
+            );
+
+            await this.chargerSalon();
         });
     }
 
@@ -734,6 +769,9 @@ export default class extends Controller {
     }
 
     afficherBoutonAnnulation() {
+        this.annulerButtonTarget.textContent = this.combat?.prive === true
+            ? 'Annuler ce combat'
+            : 'Annuler la recherche';
         this.annulerButtonTarget.hidden = !(
             this.combat.statut === 'en_attente'
             && this.combat.adversaire === null
@@ -1985,6 +2023,16 @@ export default class extends Controller {
 
         this.minuterieActualisation = window.setTimeout(() => {
             if (this.combatActifIdCourant !== null) {
+                if (
+                    this.combat?.statut === 'en_attente'
+                    && this.combat?.matchmaking?.active === true
+                    && this.combat?.adversaire === null
+                ) {
+                    this.relancerRechercheAdversaire();
+
+                    return;
+                }
+
                 this.chargerCombat(this.combatActifIdCourant);
             }
         }, 3000);
@@ -2119,6 +2167,7 @@ export default class extends Controller {
         const vieBarre = document.createElement('div');
         const vieRemplissage = document.createElement('span');
         const viePrevisualisation = document.createElement('span');
+        const passifs = document.createElement('div');
         const statistiques = document.createElement('p');
 
         carte.className = 'carte-combattant';
@@ -2140,6 +2189,28 @@ export default class extends Controller {
         vieRemplissage.className = 'carte-combattant-vie-remplissage';
         viePrevisualisation.className = 'carte-combattant-vie-preview';
         viePrevisualisation.hidden = true;
+        passifs.className = 'carte-combattant-passifs';
+        passifs.setAttribute('aria-label', 'Emplacements de passifs');
+
+        // Les emplacements restent prêts pour les futurs passifs, mais une
+        // carte sans passif ne doit afficher aucun carré.
+        const passifsCarte = Array.isArray(combattant.passifs)
+            ? combattant.passifs.slice(0, 6)
+            : [];
+
+        for (const [index, passif] of passifsCarte.entries()) {
+            const emplacement = document.createElement('span');
+            emplacement.className = 'carte-combattant-passif';
+            emplacement.dataset.passifIndex = String(index + 1);
+            if (passif && typeof passif === 'object' && typeof passif.description === 'string') {
+                emplacement.title = passif.description;
+                emplacement.setAttribute('aria-label', passif.description);
+            } else {
+                emplacement.setAttribute('aria-hidden', 'true');
+            }
+            passifs.append(emplacement);
+        }
+
         statistiques.className = 'carte-combattant-statistiques';
         titre.textContent = [
             combattant.slot ?? '?',
@@ -2151,6 +2222,13 @@ export default class extends Controller {
         carte.dataset.vivant = combattant.vivant === false
             ? 'false'
             : 'true';
+        const rareteBrute = Number(combattant.rarete ?? 1);
+        const rarete = Number.isInteger(rareteBrute)
+            && rareteBrute >= 1
+            && rareteBrute <= 5
+            ? rareteBrute
+            : 1;
+        carte.dataset.rarete = String(rarete);
 
         if (typeof combattant.image === 'string') {
             image.src = [
@@ -2256,6 +2334,7 @@ export default class extends Controller {
             titre,
             image,
             vie,
+            passifs,
             statistiques,
         );
 

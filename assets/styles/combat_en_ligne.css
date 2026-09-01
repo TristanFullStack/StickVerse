@@ -233,6 +233,27 @@ body:has(#rapport-combat) {
     background: rgba(78, 31, 117, 0.18);
 }
 
+#combat-en-ligne .attente-adversaire-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#combat-en-ligne .attente-adversaire-actions [data-combat-en-ligne-target="attenteAdversaire"] {
+    flex: 1 1 320px;
+    margin: 0;
+}
+
+#combat-en-ligne .attente-adversaire-actions [data-combat-en-ligne-target="annulerButton"] {
+    flex: 0 0 auto;
+    margin: 0;
+    color: #ffd8d7;
+    border-color: var(--combat-rouge);
+    background: #251016;
+    box-shadow: none;
+}
+
 #combat-en-ligne [data-combat-en-ligne-target="finCombat"] {
     margin: 20px 0;
     padding: 24px;
@@ -1210,6 +1231,32 @@ body:has(#rapport-combat) {
     transition: transform 160ms ease, border-color 160ms ease;
 }
 
+/* La rareté reste visible dans l’arène sans masquer les informations de combat. */
+#combat-en-ligne .carte-combattant[data-rarete="1"] {
+    border-color: #8fa3b8;
+    background: linear-gradient(145deg, #e5edf5, #cbd9e6);
+}
+
+#combat-en-ligne .carte-combattant[data-rarete="2"] {
+    border-color: #65a879;
+    background: linear-gradient(145deg, #e2f3e5, #b9dcbc);
+}
+
+#combat-en-ligne .carte-combattant[data-rarete="3"] {
+    border-color: #4f8fd1;
+    background: linear-gradient(145deg, #e1efff, #b8d5f2);
+}
+
+#combat-en-ligne .carte-combattant[data-rarete="4"] {
+    border-color: #9466c4;
+    background: linear-gradient(145deg, #f0e1ff, #d4b8ef);
+}
+
+#combat-en-ligne .carte-combattant[data-rarete="5"] {
+    border-color: #c39320;
+    background: linear-gradient(145deg, #fff0be, #e9c96d);
+}
+
 #combat-en-ligne .combat-arene .carte-combattant-titre {
     min-height: 29px;
     padding: 6px 5px 3px;
@@ -1217,14 +1264,14 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .combat-arene .carte-combattant-image {
-    height: clamp(86px, 13vh, 125px);
+    height: clamp(92px, 14vh, 135px);
     padding: 3px 6px;
 }
 
 #combat-en-ligne .combat-arene .carte-combattant-vie {
     padding: 5px 6px 6px;
     color: #222;
-    background: #eee;
+    background: rgba(246, 249, 252, 0.88);
 }
 
 #combat-en-ligne .combat-arene .carte-combattant-vie-informations {
@@ -1241,8 +1288,28 @@ body:has(#rapport-combat) {
 #combat-en-ligne .combat-arene .carte-combattant-statistiques {
     padding: 5px 4px;
     color: #222;
-    background: #ddd;
+    background: rgba(216, 225, 234, 0.9);
     font-size: 10px;
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-passifs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 27px;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.94);
+    border-top: 1px solid rgba(72, 91, 108, 0.55);
+}
+
+#combat-en-ligne .combat-arene .carte-combattant-passif {
+    display: block;
+    width: 13px;
+    height: 13px;
+    border: 1px solid #7e8d9a;
+    border-radius: 2px;
+    background: #fff;
 }
 
 #combat-en-ligne .combat-arene .carte-combattant.est-selectionnable {
@@ -1263,9 +1330,9 @@ body:has(#rapport-combat) {
     right: 5px;
     padding: 4px;
     color: #fff;
-    border: 1px solid #9b5b00;
+    border: 1px solid rgba(155, 91, 0, 0.72);
     border-radius: 3px;
-    background: #d87b00;
+    background: rgba(216, 123, 0, 0.72);
     font-size: 8px;
     font-weight: 900;
     line-height: 1.2;
@@ -1273,15 +1340,15 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .carte-combattant[data-menace="grave"] .carte-combattant-menace {
-    border-color: #6f0000;
-    background: #a60000;
+    border-color: rgba(111, 0, 0, 0.72);
+    background: rgba(166, 0, 0, 0.72);
 }
 
 #combat-en-ligne .carte-combattant-preview-degats {
     position: absolute;
-    z-index: 5;
+    z-index: 6;
+    top: 68px;
     right: 7px;
-    bottom: 42px;
     left: auto;
     padding: 3px 6px;
     color: #fff;
@@ -1291,6 +1358,9 @@ body:has(#rapport-combat) {
     font-size: 9px;
     font-weight: 900;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     pointer-events: none;
 }
 

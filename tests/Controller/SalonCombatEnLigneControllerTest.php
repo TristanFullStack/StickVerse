@@ -162,6 +162,25 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         self::assertSame($joueur2->getId(), $combat->getJoueur2()?->getId());
         self::assertCount(8, $combat->getCombattants());
         self::assertTrue($combat->estEnPreparation());
+
+        // Une relance déclenchée juste après l’association doit rester
+        // idempotente et renvoyer le combat déjà en cours.
+        $this->client->loginUser($joueur1);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+        $csrfRelance = $this->lireReponseJson()['csrf']['matchmaking'];
+
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/rechercher-adversaire',
+            ['equipeId' => $equipeJoueur1Id],
+            ['HTTP_X_CSRF_TOKEN' => $csrfRelance],
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            'adversaire_trouve',
+            $this->lireReponseJson()['etat'],
+        );
     }
 
     public function testCreePuisRejointUnCombatPriveParCode(): void

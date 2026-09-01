@@ -155,9 +155,20 @@
                     </div>
                 </section>
 
-                <p data-combat-en-ligne-target="attenteAdversaire" hidden>
-                    En attente d’un adversaire…
-                </p>
+                <div class="attente-adversaire-actions">
+                    <p data-combat-en-ligne-target="attenteAdversaire" hidden>
+                        En attente d’un adversaire…
+                    </p>
+
+                    <button
+                        type="button"
+                        data-combat-en-ligne-target="annulerButton"
+                        data-action="combat-en-ligne#annulerCombat"
+                        hidden
+                    >
+                        Annuler la recherche
+                    </button>
+                </div>
 
                 <section
                     class="invitation-combat"
@@ -360,7 +371,6 @@
                     <button type="button" data-action="combat-en-ligne#retournerSalon">Retour</button>
                     <button type="button" data-action="combat-en-ligne#rafraichir">Actualiser</button>
                     <button type="button" data-combat-en-ligne-target="abandonButton" data-action="combat-en-ligne#abandonnerCombat" hidden>Abandonner</button>
-                    <button type="button" data-combat-en-ligne-target="annulerButton" data-action="combat-en-ligne#annulerCombat" hidden>Annuler ce combat</button>
                 </footer>
             </section>
 

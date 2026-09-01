@@ -107,6 +107,32 @@ fieldset {
     padding: 8px;
 }
 
+/* Chaque rareté possède une teinte propre, tout en gardant un contraste lisible. */
+.stickman-card--rarete-1 {
+    background: #f1f3f5;
+    border-color: #aab2bd;
+}
+
+.stickman-card--rarete-2 {
+    background: #eaf7ee;
+    border-color: #58a36c;
+}
+
+.stickman-card--rarete-3 {
+    background: #eaf3ff;
+    border-color: #5b8fd9;
+}
+
+.stickman-card--rarete-4 {
+    background: #f4edff;
+    border-color: #9a70cf;
+}
+
+.stickman-card--rarete-5 {
+    background: #fff5d6;
+    border-color: #d4a72c;
+}
+
 .stickman-card h2 {
     min-height: 32px;
     margin: 0 0 6px;
