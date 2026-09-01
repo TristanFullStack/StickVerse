@@ -2,12 +2,9 @@
 
 namespace App\Tests\Controller;
 
-use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\InventaireRepository;
-use App\Repository\StickmanRepository;
 use App\Repository\UserRepository;
-use App\Service\InitialisationNouveauJoueurService;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -40,7 +37,6 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         }
 
         $connexion->beginTransaction();
-        $this->garantirStickmansDeDepart();
     }
 
     protected function tearDown(): void
@@ -89,7 +85,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         );
         self::assertSelectorTextContains(
             'body',
-            'Composer ma première équipe',
+            'Obtenir au moins quatre Stickmans différents',
         );
 
         $userRepository = static::getContainer()->get(UserRepository::class);
@@ -105,54 +101,13 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
             'utilisateur' => $utilisateur,
         ]);
 
-        self::assertCount(4, $inventaires);
-        self::assertEqualsCanonicalizing(
-            InitialisationNouveauJoueurService::STICKMANS_DEPART,
-            array_map(
-                static fn ($inventaire): ?string =>
-                    $inventaire->getStickman()?->getSlug(),
-                $inventaires,
-            ),
-        );
-
-        $identifiantsParSlug = [];
-
-        foreach ($inventaires as $inventaire) {
-            $stickman = $inventaire->getStickman();
-
-            self::assertInstanceOf(Stickman::class, $stickman);
-            self::assertNotNull($stickman->getId());
-            $identifiantsParSlug[(string) $stickman->getSlug()] =
-                (string) $stickman->getId();
-        }
+        self::assertCount(0, $inventaires);
+        self::assertSame(5, $utilisateur->getCaissesPremiersRenforts());
 
         $this->client->request('GET', '/equipe');
         self::assertResponseIsSuccessful();
-        self::assertSelectorNotExists('.flash-error');
-        self::assertSelectorExists('form[name="equipe"]');
-
-        $this->client->submitForm('Créer cette équipe', [
-            'equipe[nom]' => 'Équipe de départ',
-            'equipe[stickmanA]' => $identifiantsParSlug['guerrier'],
-            'equipe[stickmanB]' => $identifiantsParSlug['archer'],
-            'equipe[stickmanC]' => $identifiantsParSlug['lancier'],
-            'equipe[stickmanD]' => $identifiantsParSlug['tank'],
-        ]);
-
-        self::assertResponseRedirects('/equipe');
-        $this->client->followRedirect();
-        self::assertSelectorTextContains(
-            '.flash-success',
-            'La nouvelle équipe a bien été créée',
-        );
-        self::assertSelectorTextContains(
-            'body',
-            'Accéder aux combats en ligne',
-        );
-
-        $this->client->request('GET', '/combats');
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'Combats en ligne');
+        self::assertSelectorExists('.flash-error');
+        self::assertSelectorNotExists('form[name="equipe"]');
     }
 
     public function testInscriptionRefuseUnPseudoDejaUtilise(): void
@@ -190,29 +145,4 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         );
     }
 
-    private function garantirStickmansDeDepart(): void
-    {
-        $repository = static::getContainer()->get(StickmanRepository::class);
-
-        foreach (InitialisationNouveauJoueurService::STICKMANS_DEPART as $slug) {
-            if ($repository->findOneBy(['slug' => $slug]) instanceof Stickman) {
-                continue;
-            }
-
-            $this->entityManager->persist(
-                (new Stickman())
-                    ->setSlug($slug)
-                    ->setNom(ucfirst($slug))
-                    ->setDescription('Stickman de départ pour le test.')
-                    ->setImage($slug.'.png')
-                    ->setRarete(1)
-                    ->setPv(10)
-                    ->setAttaque(2)
-                    ->setDefense(2)
-                    ->setStatutActif(true),
-            );
-        }
-
-        $this->entityManager->flush();
-    }
 }

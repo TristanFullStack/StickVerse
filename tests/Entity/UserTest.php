@@ -13,7 +13,7 @@ final class UserTest extends TestCase
         self::assertSame(User::PIECES_DEPART, (new User())->getPieces());
     }
 
-    public function testCommenceAvecMillePointsElo(): void
+    public function testCommenceAvecCinqCentsPointsElo(): void
     {
         self::assertSame(User::ELO_DEPART, (new User())->getElo());
     }

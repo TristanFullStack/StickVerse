@@ -9,6 +9,10 @@
         <p data-solde-pieces-page>
             Ton solde : <strong>{{ app.user.pieces }} pièces</strong>
         </p>
+        <p data-caisses-premiers-renforts-page>
+            Caisses Premiers Renforts offertes :
+            <strong>{{ app.user.caissesPremiersRenforts }}</strong>
+        </p>
     {% endif %}
 
     {% for message in app.flashes('success') %}
@@ -41,7 +45,12 @@
 
                     <p>{{ caisse.description }}</p>
                     <p>Collection : {{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Catalogue général' }}</p>
-                    <p>Prix : {{ caisse.prix }} pièces</p>
+                    {% set caisseOfferte = app.user and caisse.slug == constant('App\\Entity\\Caisse::SLUG_PREMIERS_RENFORTS') and app.user.caissesPremiersRenforts > 0 %}
+                    {% if caisseOfferte %}
+                        <p>Ouverture offerte — caisse de départ</p>
+                    {% else %}
+                        <p>Prix : {{ caisse.prix }} pièces</p>
+                    {% endif %}
 
                     {% if app.user %}
                         <form
@@ -56,9 +65,11 @@
 
                             <button
                                 type="submit"
-                                {% if app.user.pieces < caisse.prix %}disabled{% endif %}
+                                {% if not caisseOfferte and app.user.pieces < caisse.prix %}disabled{% endif %}
                             >
-                                {% if app.user.pieces < caisse.prix %}
+                                {% if caisseOfferte %}
+                                    Ouvrir une caisse offerte
+                                {% elseif app.user.pieces < caisse.prix %}
                                     Solde insuffisant
                                 {% else %}
                                     Ouvrir la caisse

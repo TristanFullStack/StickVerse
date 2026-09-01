@@ -88,6 +88,17 @@ final class ScorePuissanceService
         return $score;
     }
 
+    public function limiteEquipePourElo(int $elo): int
+    {
+        if ($elo < 0) {
+            throw new InvalidArgumentException(
+                'La cote ELO ne peut pas être négative.'
+            );
+        }
+
+        return max(500, intdiv($elo, 500) * 500);
+    }
+
     public function calculerCombatPourJoueur(
         Combat $combat,
         User $joueur,

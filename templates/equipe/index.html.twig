@@ -10,6 +10,11 @@
             Crée plusieurs compositions selon la puissance recherchée.
             Les Stickmans A et B forment l’équipe X, les Stickmans C et D l’équipe Y.
         </p>
+        <p>
+            Ton ELO actuel est de <strong>{{ app.user.elo }}</strong>.
+            La puissance maximale autorisée pour tes équipes est de
+            <strong>{{ limite_puissance }}</strong>.
+        </p>
 
         {% for message in app.flashes('success') %}
             <p class="flash-success">{{ message }}</p>

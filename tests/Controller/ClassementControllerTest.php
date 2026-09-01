@@ -103,14 +103,14 @@ final class ClassementControllerTest extends WebTestCase
             $this->client->getCrawler()->filter('[data-classement-saison] tbody tr')->eq(0)->filter('td')->eq(1)->text(),
         );
         self::assertSame(
-            '1025',
+            '525',
             $this->client->getCrawler()->filter('[data-classement-saison] tbody tr')->eq(0)->filter('td')->eq(2)->text(),
         );
-        self::assertSelectorTextContains('[data-ma-division]', 'Argent');
-        self::assertSelectorTextContains('[data-ma-division]', '200 pièces');
+        self::assertSelectorTextContains('[data-ma-division]', 'Bronze');
+        self::assertSelectorTextContains('[data-ma-division]', '100 pièces');
         self::assertSelectorTextContains(
             '[data-classement-saison] tbody tr:first-child [data-division]',
-            'Argent',
+            'Bronze',
         );
         self::assertSelectorCount(2, '[data-classement] tbody tr');
         self::assertSame(
@@ -153,7 +153,7 @@ final class ClassementControllerTest extends WebTestCase
         self::assertResponseRedirects('/classement?saison=98');
         $this->client->followRedirect();
         self::assertSame(
-            1350,
+            1100,
             (int) $this->entityManager->getConnection()->fetchOne(
                 'SELECT pieces FROM user WHERE id = ?',
                 [$joueur->getId()],

@@ -22,7 +22,7 @@ final class ClassementSaisonJoueurTest extends TestCase
         $classement->enregistrerResultat(-5, 0.5);
         $classement->enregistrerResultat(-10, 0.0);
 
-        self::assertSame(1001, $classement->getElo());
+        self::assertSame(501, $classement->getElo());
         self::assertSame(3, $classement->getParties());
         self::assertSame(1, $classement->getVictoires());
         self::assertSame(1, $classement->getDefaites());

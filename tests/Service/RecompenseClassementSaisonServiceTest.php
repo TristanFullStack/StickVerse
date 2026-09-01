@@ -39,7 +39,7 @@ final class RecompenseClassementSaisonServiceTest extends TestCase
             ->with(self::callback(
                 static fn (object $mouvement): bool => $mouvement instanceof MouvementPieces
                     && $mouvement->getType() === MouvementPieces::TYPE_RECOMPENSE_SAISON
-                    && $mouvement->getMontant() === 350,
+                    && $mouvement->getMontant() === 100,
             ));
         $service = $this->creerService(
             $joueur,
@@ -47,12 +47,12 @@ final class RecompenseClassementSaisonServiceTest extends TestCase
             new MouvementPiecesService($mouvementEntityManager),
         );
 
-        self::assertSame(350, $service->reclamer($joueur, $saison, $date));
-        self::assertSame(1350, $joueur->getPieces());
+        self::assertSame(100, $service->reclamer($joueur, $saison, $date));
+        self::assertSame(1100, $joueur->getPieces());
         self::assertTrue($classement->estRecompenseReclamee());
         self::assertSame($date, $classement->getDateRecompenseReclamee());
         self::assertSame(0, $service->reclamer($joueur, $saison, $date));
-        self::assertSame(1350, $joueur->getPieces());
+        self::assertSame(1100, $joueur->getPieces());
     }
 
     public function testRefuseLaRecompenseAvantLaFinDeLaSaison(): void

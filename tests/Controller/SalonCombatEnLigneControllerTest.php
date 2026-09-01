@@ -124,7 +124,7 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $etatRecherche = $this->lireReponseJson();
         self::assertTrue($etatRecherche['matchmaking']['active']);
-        self::assertSame(1000, $etatRecherche['matchmaking']['elo']);
+        self::assertSame(500, $etatRecherche['matchmaking']['elo']);
         self::assertSame(
             32,
             $etatRecherche['matchmaking']['puissanceEquipe'],

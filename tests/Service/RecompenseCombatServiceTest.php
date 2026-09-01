@@ -46,8 +46,8 @@ final class RecompenseCombatServiceTest extends TestCase
         $service->attribuerSiNecessaire($combat);
         $secondeAttribution = $service->attribuerSiNecessaire($combat);
 
-        self::assertSame(1016, $joueur1->getElo());
-        self::assertSame(984, $joueur2->getElo());
+        self::assertSame(516, $joueur1->getElo());
+        self::assertSame(484, $joueur2->getElo());
         self::assertTrue($combat->estEloAttribuee());
         self::assertSame([0, 0], array_values($secondeAttribution));
     }

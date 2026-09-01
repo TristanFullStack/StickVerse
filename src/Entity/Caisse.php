@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CaisseRepository::class)]
 class Caisse
 {
+    public const SLUG_PREMIERS_RENFORTS = 'caisse-saison-1-premiers-renforts';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

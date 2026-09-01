@@ -43,7 +43,13 @@ final class EquipeController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->validerEquipe($form, $equipe, $equipeRepository);
+            $this->validerEquipe(
+                $form,
+                $equipe,
+                $equipeRepository,
+                $scorePuissanceService,
+                $utilisateur,
+            );
 
             if ($form->isValid()) {
                 $entityManager->persist($equipe);
@@ -73,6 +79,8 @@ final class EquipeController extends AbstractController
             'equipes' => $equipes,
             'puissances' => $puissances,
             'nombre_stickmen_disponibles' => count($stickmenDisponibles),
+            'limite_puissance' => $scorePuissanceService
+                ->limiteEquipePourElo($utilisateur->getElo()),
         ]);
     }
 
@@ -97,7 +105,13 @@ final class EquipeController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->validerEquipe($form, $equipe, $equipeRepository);
+            $this->validerEquipe(
+                $form,
+                $equipe,
+                $equipeRepository,
+                $scorePuissanceService,
+                $utilisateur,
+            );
 
             if ($form->isValid()) {
                 $entityManager->flush();
@@ -112,6 +126,8 @@ final class EquipeController extends AbstractController
             'equipe' => $equipe,
             'puissance' => $scorePuissanceService->calculerEquipe($equipe),
             'nombre_stickmen_disponibles' => count($stickmenDisponibles),
+            'limite_puissance' => $scorePuissanceService
+                ->limiteEquipePourElo($utilisateur->getElo()),
         ]);
     }
 
@@ -175,6 +191,8 @@ final class EquipeController extends AbstractController
         FormInterface $form,
         Equipe $equipe,
         EquipeRepository $equipeRepository,
+        ScorePuissanceService $scorePuissanceService,
+        User $joueur,
     ): void {
         $identifiants = array_map(
             static fn (?Stickman $stickman): ?int => $stickman?->getId(),
@@ -190,6 +208,29 @@ final class EquipeController extends AbstractController
             $form->addError(new FormError(
                 'Chaque emplacement doit contenir un Stickman différent.'
             ));
+        }
+
+        if (count(array_filter(
+            [
+                $equipe->getStickmanA(),
+                $equipe->getStickmanB(),
+                $equipe->getStickmanC(),
+                $equipe->getStickmanD(),
+            ],
+            static fn (?Stickman $stickman): bool => $stickman instanceof Stickman,
+        )) === 4) {
+            $puissance = $scorePuissanceService->calculerEquipe($equipe);
+            $limite = $scorePuissanceService
+                ->limiteEquipePourElo($joueur->getElo());
+
+            if ($puissance > $limite) {
+                $form->addError(new FormError(sprintf(
+                    'La puissance de cette équipe (%d) dépasse ta limite actuelle de %d pour un ELO de %d.',
+                    $puissance,
+                    $limite,
+                    $joueur->getElo(),
+                )));
+            }
         }
 
         $utilisateur = $equipe->getUtilisateur();

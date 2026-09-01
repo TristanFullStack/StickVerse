@@ -59,6 +59,17 @@ final class ScorePuissanceServiceTest extends TestCase
         );
     }
 
+    public function testCalculeLaLimiteDEquipeSelonLElo(): void
+    {
+        $service = new ScorePuissanceService();
+
+        self::assertSame(500, $service->limiteEquipePourElo(0));
+        self::assertSame(500, $service->limiteEquipePourElo(999));
+        self::assertSame(1000, $service->limiteEquipePourElo(1000));
+        self::assertSame(1000, $service->limiteEquipePourElo(1499));
+        self::assertSame(1500, $service->limiteEquipePourElo(1500));
+    }
+
     private function creerStickman(
         int $id,
         int $pv,

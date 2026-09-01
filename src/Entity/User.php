@@ -19,7 +19,8 @@ use InvalidArgumentException;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const PIECES_DEPART = 1000;
-    public const ELO_DEPART = 1000;
+    public const ELO_DEPART = 500;
+    public const CAISSES_PREMIERS_RENFORTS_DEPART = 5;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -37,6 +38,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(options: ['unsigned' => true, 'default' => self::ELO_DEPART])]
     private int $elo = self::ELO_DEPART;
+
+    #[ORM\Column(options: ['unsigned' => true, 'default' => self::CAISSES_PREMIERS_RENFORTS_DEPART])]
+    private int $caissesPremiersRenforts = self::CAISSES_PREMIERS_RENFORTS_DEPART;
 
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $dateDerniereRecompenseQuotidienne = null;
@@ -121,6 +125,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->pieces;
     }
 
+    public function setPieces(int $pieces): static
+    {
+        if ($pieces < 0) {
+            throw new InvalidArgumentException(
+                'Le nombre de pièces ne peut pas être négatif.'
+            );
+        }
+
+        $this->pieces = $pieces;
+
+        return $this;
+    }
+
     public function getElo(): int
     {
         return $this->elo ?? self::ELO_DEPART;
@@ -137,6 +154,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->elo = $elo;
 
         return $this;
+    }
+
+    public function getCaissesPremiersRenforts(): int
+    {
+        return $this->caissesPremiersRenforts;
+    }
+
+    public function setCaissesPremiersRenforts(int $quantite): static
+    {
+        if ($quantite < 0) {
+            throw new InvalidArgumentException(
+                'Le nombre de caisses offertes ne peut pas être négatif.'
+            );
+        }
+
+        $this->caissesPremiersRenforts = $quantite;
+
+        return $this;
+    }
+
+    public function consommerCaissePremiersRenforts(): bool
+    {
+        if ($this->caissesPremiersRenforts <= 0) {
+            return false;
+        }
+
+        --$this->caissesPremiersRenforts;
+
+        return true;
     }
 
     public function modifierElo(int $variation): static
@@ -176,6 +222,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $objectif,
             ];
         }
+
+        return $this;
+    }
+
+    public function reinitialiserObjectifsReclames(): static
+    {
+        $this->objectifsReclames = [];
 
         return $this;
     }

@@ -54,8 +54,8 @@ final class ClassementEloServiceTest extends TestCase
 
         (new ClassementEloService())->mettreAJourSiNecessaire($combat);
 
-        self::assertSame(984, $joueur1->getElo());
-        self::assertSame(1016, $joueur2->getElo());
+        self::assertSame(484, $joueur1->getElo());
+        self::assertSame(516, $joueur2->getElo());
     }
 
     public function testUnCombatPriveNeModifieJamaisLeClassement(): void
@@ -169,9 +169,9 @@ final class ClassementEloServiceTest extends TestCase
 
         self::assertSame(16, $variations['joueur1']);
         self::assertCount(2, $classements);
-        self::assertSame(1016, $classements[0]->getElo());
+        self::assertSame(516, $classements[0]->getElo());
         self::assertSame(1, $classements[0]->getVictoires());
-        self::assertSame(984, $classements[1]->getElo());
+        self::assertSame(484, $classements[1]->getElo());
         self::assertSame(1, $classements[1]->getDefaites());
         self::assertSame($saison, $classements[0]->getSaison());
     }

@@ -7962,6 +7962,66 @@ Les cartes de Stickman sont maintenant plus expressives et plus rapides à consu
 les cartes immédiatement, la rareté se distingue visuellement, et chaque carte donne un accès direct à sa fiche Wiki
 sans multiplier les liens dans l’interface.
 
+## J87 — Réinitialiser les comptes et encadrer la puissance de départ
+
+### Objectif
+
+J87 prépare une base saine pour les nouveaux joueurs et évite qu’un compte débutant soit désavantagé par des données
+de test ou une progression déjà existante.
+
+### Départ d’un nouveau joueur
+
+Un nouveau compte commence désormais avec :
+
+- 0 Stickman dans son inventaire ;
+- 0 équipe précomposée ;
+- 1 000 pièces ;
+- 500 ELO ;
+- 5 caisses gratuites « Saison 1 — Premiers Renforts ».
+
+Les cinq caisses gratuites sont consommées avant toute dépense de pièces. Une ouverture gratuite ne crée aucun
+mouvement négatif dans l’historique des pièces ; les ouvertures payantes restent débitées et historisées comme avant.
+
+### Limite de puissance par ELO
+
+La puissance maximale d’une équipe est calculée automatiquement depuis l’ELO du joueur :
+
+- de 0 à 999 ELO : 500 de puissance maximum ;
+- de 1 000 à 1 499 ELO : 1 000 maximum ;
+- de 1 500 à 1 999 ELO : 1 500 maximum ;
+- puis un palier supplémentaire de 500 par tranche de 500 ELO.
+
+La règle est centralisée dans `ScorePuissanceService` et vérifiée lors de la création ou de la modification d’une
+équipe. L’interface affiche le palier courant afin que le joueur connaisse immédiatement la limite à respecter.
+
+### Réinitialisation contrôlée
+
+La commande `app:joueurs:reinitialiser` permet à l’administration de remettre un ou plusieurs comptes dans cet état
+de départ. Elle exige explicitement `--confirm` et au moins une adresse `--email`, afin d’éviter un effacement global
+accidentel.
+
+Pour chaque compte ciblé, la commande supprime les inventaires et les équipes, remet les pièces, l’ELO, les caisses
+gratuites, la récompense quotidienne et les objectifs à leur valeur initiale. Les combats actifs du joueur sont
+annulés proprement ; les combats terminés et l’historique des mouvements de pièces sont conservés.
+
+La migration `Version20260901140000` ajoute le compteur de caisses gratuites et aligne les valeurs par défaut de l’ELO
+sur 500 pour les futurs enregistrements.
+
+### Vérifications automatiques
+
+- Migration appliquée aux bases de développement et de test.
+- Conteneur Symfony, mapping Doctrine et templates Twig validés.
+- Tests du parcours d’inscription adaptés à l’absence de cartes de départ.
+- Tests des paliers de puissance ajoutés.
+- Suite complète validée : 249 tests et 1 964 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse offre maintenant un départ identique et lisible à chaque nouveau joueur, cinq ouvertures gratuites pour
+commencer sa collection et une limite d’équipe cohérente avec son ELO. La remise à zéro des comptes existants est
+disponible via une commande protégée, sans supprimer l’historique utile du jeu.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

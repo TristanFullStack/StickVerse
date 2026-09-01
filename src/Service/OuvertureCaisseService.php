@@ -91,8 +91,11 @@ final class OuvertureCaisseService
                 }
 
                 $prix = max(0, (int) $caisse->getPrix());
+                $caisseGratuite = $caisse->getSlug()
+                    === Caisse::SLUG_PREMIERS_RENFORTS
+                    && $joueurVerrouille->consommerCaissePremiersRenforts();
 
-                if (!$joueurVerrouille->debiterPieces($prix)) {
+                if (!$caisseGratuite && !$joueurVerrouille->debiterPieces($prix)) {
                     throw new SoldePiecesInsuffisantException(
                         'Tu ne possèdes pas assez de pièces pour cette caisse.'
                     );
@@ -103,7 +106,7 @@ final class OuvertureCaisseService
                     $stickman,
                 );
 
-                if ($prix > 0) {
+                if (!$caisseGratuite && $prix > 0) {
                     $this->mouvementPiecesService?->enregistrer(
                         $joueurVerrouille,
                         -$prix,
