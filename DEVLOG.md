@@ -7888,6 +7888,82 @@ StickVerse possède maintenant une progression classée lisible et motivante. Le
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J86 — Enrichir les cartes et simplifier l’accès aux fiches Wiki
+
+### Objectif
+
+J86 améliore la lecture des Stickmans dans le Wiki, la collection et la page de saison. Les cartes affichent
+maintenant leur puissance, utilisent des couleurs de rareté plus visibles et ouvrent directement leur fiche Wiki.
+
+### Cartes plus lisibles
+
+Les cartes de Stickman utilisent désormais une couleur plus marquée selon leur rareté :
+
+- rareté 1 : gris bleuté ;
+- rareté 2 : vert ;
+- rareté 3 : bleu ;
+- rareté 4 : violet ;
+- rareté 5 : doré.
+
+Le texte « Rareté » n’est plus affiché dans les cartes. La couleur devient l’indicateur visuel principal afin de
+libérer de la place pour les informations utiles.
+
+Un effet de survol agrandit légèrement la carte et renforce son ombre. Le même comportement est disponible au
+clavier avec le focus afin de conserver une navigation accessible.
+
+### Puissance des Stickmans
+
+Chaque carte affiche maintenant son score de puissance calculé par `ScorePuissanceService` à partir des statistiques
+de PV, d’attaque et de défense.
+
+Le calcul reste centralisé dans le service existant. Une méthode de tri commune garantit que les cartes utilisent la
+même règle partout, avec un classement décroissant par puissance puis un départage alphabétique uniquement en cas
+d’égalité.
+
+### Tri des listes
+
+Les Stickmans sont maintenant triés par puissance dans :
+
+- le Wiki ;
+- la collection du joueur ;
+- la page de la saison active ;
+- l’inventaire personnel lorsqu’il est affiché sans collection.
+
+Les services de collection et de saison transmettent également les scores calculés aux templates afin d’éviter de
+dupliquer la formule dans Twig.
+
+### Accès direct au Wiki
+
+La carte entière est désormais un lien vers la fiche Wiki du Stickman concerné.
+
+Le lien séparé « Voir la fiche » a été supprimé. Un clic n’importe où sur la carte ouvre directement la page
+correspondante, tandis qu’un contour de focus indique la carte active au clavier.
+
+La fiche Wiki affiche elle aussi la puissance du Stickman pour conserver les mêmes informations entre la liste et le
+détail.
+
+### Boutique de caisses
+
+Les images affichées dans la boutique « Les caisses StickVerse » ont été réduites et normalisées dans une zone de
+140 × 96 pixels. Les cartes de caisses prennent ainsi moins de place et la description, le prix et le bouton restent
+visibles sans agrandir inutilement chaque bloc.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée sur le service de puissance, les services de collection et de saison, ainsi que les contrôleurs Wiki et Collection.
+- Les 49 templates Twig sont valides.
+- Tests ciblés du calcul de puissance, des collections et de la saison validés : 7 tests et 28 assertions.
+- Suite complète validée : 249 tests et 1 985 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+Les cartes de Stickman sont maintenant plus expressives et plus rapides à consulter. La puissance permet de comparer
+les cartes immédiatement, la rareté se distingue visuellement, et chaque carte donne un accès direct à sa fiche Wiki
+sans multiplier les liens dans l’interface.
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

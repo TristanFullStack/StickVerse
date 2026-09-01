@@ -11,11 +11,12 @@ final class CollectionJoueurService
     public function __construct(
         private readonly CollectionJeuRepository $collectionRepository,
         private readonly InventaireRepository $inventaireRepository,
+        private readonly ?ScorePuissanceService $scorePuissanceService = null,
     ) {
     }
 
     /**
-     * @return array<int, array{collection: object, stickmen: array, inventaires: array, possedes: int, total: int, pourcentage: int}>
+     * @return array<int, array{collection: object, stickmen: array, inventaires: array, puissances: array, possedes: int, total: int, pourcentage: int}>
      */
     public function construire(User $joueur): array
     {
@@ -32,15 +33,23 @@ final class CollectionJoueurService
         $resultat = [];
         foreach ($this->collectionRepository->trouverDisponibles() as $collection) {
             $stickmen = $collection->getStickmen()->toArray();
-            usort($stickmen, static fn ($premier, $second): int => strcasecmp(
-                $premier->getNom() ?? '',
-                $second->getNom() ?? '',
-            ));
+            if ($this->scorePuissanceService !== null) {
+                $stickmen = $this->scorePuissanceService->trierStickmen($stickmen);
+            } else {
+                usort($stickmen, static fn ($premier, $second): int => strcasecmp(
+                    $premier->getNom() ?? '',
+                    $second->getNom() ?? '',
+                ));
+            }
 
             $inventairesCollection = [];
+            $puissances = [];
             foreach ($stickmen as $stickman) {
                 if ($stickman->getId() !== null && isset($inventairesParStickman[$stickman->getId()])) {
                     $inventairesCollection[$stickman->getId()] = $inventairesParStickman[$stickman->getId()];
+                }
+                if ($stickman->getId() !== null && $this->scorePuissanceService !== null) {
+                    $puissances[$stickman->getId()] = $this->scorePuissanceService->calculerStickman($stickman);
                 }
             }
 
@@ -50,6 +59,7 @@ final class CollectionJoueurService
                 'collection' => $collection,
                 'stickmen' => $stickmen,
                 'inventaires' => $inventairesCollection,
+                'puissances' => $puissances,
                 'possedes' => $possedes,
                 'total' => $total,
                 'pourcentage' => $total > 0 ? (int) round(($possedes / $total) * 100) : 0,

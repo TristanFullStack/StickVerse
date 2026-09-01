@@ -11,7 +11,10 @@
         <div class="stickmen-list">
 
             {% for stickman in stickmen %}
-                {% include 'stickman/_card.html.twig' with {stickman: stickman} %}
+                {% include 'stickman/_card.html.twig' with {
+                    stickman: stickman,
+                    puissance: puissances[stickman.id]|default(null),
+                } only %}
             {% endfor %}
 
         </div>

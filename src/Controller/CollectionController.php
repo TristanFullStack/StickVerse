@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\EquipeRepository;
 use App\Repository\InventaireRepository;
 use App\Service\CollectionJoueurService;
+use App\Service\ScorePuissanceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,6 +20,7 @@ final class CollectionController extends AbstractController
         InventaireRepository $inventaireRepository,
         EquipeRepository $equipeRepository,
         CollectionJoueurService $collectionJoueurService,
+        ScorePuissanceService $scorePuissanceService,
     ): Response {
         $utilisateur = $this->getUser();
 
@@ -29,6 +31,24 @@ final class CollectionController extends AbstractController
         $inventaires = $inventaireRepository->findBy([
             'utilisateur' => $utilisateur,
         ]);
+        usort($inventaires, static function ($premier, $second) use ($scorePuissanceService): int {
+            $difference = $scorePuissanceService->calculerStickman($second->getStickman())
+                <=> $scorePuissanceService->calculerStickman($premier->getStickman());
+
+            return $difference !== 0
+                ? $difference
+                : strcasecmp(
+                    $premier->getStickman()->getNom() ?? '',
+                    $second->getStickman()->getNom() ?? '',
+                );
+        });
+        $puissances = [];
+        foreach ($inventaires as $inventaire) {
+            $stickman = $inventaire->getStickman();
+            if ($stickman?->getId() !== null) {
+                $puissances[$stickman->getId()] = $scorePuissanceService->calculerStickman($stickman);
+            }
+        }
 
         return $this->render('collection/index.html.twig', [
             'inventaires' => $inventaires,
@@ -37,6 +57,7 @@ final class CollectionController extends AbstractController
                 'utilisateur' => $utilisateur,
             ]) !== null,
             'collections' => $collectionJoueurService->construire($utilisateur),
+            'puissances' => $puissances,
         ]);
     }
 }

@@ -14,6 +14,7 @@ final readonly class SaisonJoueurService
     public function __construct(
         private CollectionJeuRepository $collectionRepository,
         private InventaireRepository $inventaireRepository,
+        private ?ScorePuissanceService $scorePuissanceService = null,
     ) {
     }
 
@@ -22,6 +23,7 @@ final readonly class SaisonJoueurService
      *     collection: object,
      *     stickmen: list<Stickman>,
      *     inventaires: array<int, object>,
+     *     puissances: array<int, int>,
      *     caisses: list<Caisse>,
      *     possedes: int,
      *     total: int,
@@ -47,15 +49,23 @@ final readonly class SaisonJoueurService
             $collection->getStickmen()->toArray(),
             static fn (Stickman $stickman): bool => $stickman->isStatutActif() === true,
         ));
-        usort($stickmen, static fn (Stickman $premier, Stickman $second): int => strcasecmp(
-            $premier->getNom() ?? '',
-            $second->getNom() ?? '',
-        ));
+        if ($this->scorePuissanceService !== null) {
+            $stickmen = $this->scorePuissanceService->trierStickmen($stickmen);
+        } else {
+            usort($stickmen, static fn (Stickman $premier, Stickman $second): int => strcasecmp(
+                $premier->getNom() ?? '',
+                $second->getNom() ?? '',
+            ));
+        }
 
         $inventairesSaison = [];
+        $puissances = [];
         foreach ($stickmen as $stickman) {
             if ($stickman->getId() !== null && isset($inventairesParStickman[$stickman->getId()])) {
                 $inventairesSaison[$stickman->getId()] = $inventairesParStickman[$stickman->getId()];
+            }
+            if ($stickman->getId() !== null && $this->scorePuissanceService !== null) {
+                $puissances[$stickman->getId()] = $this->scorePuissanceService->calculerStickman($stickman);
             }
         }
 
@@ -75,6 +85,7 @@ final readonly class SaisonJoueurService
             'collection' => $collection,
             'stickmen' => $stickmen,
             'inventaires' => $inventairesSaison,
+            'puissances' => $puissances,
             'caisses' => $caisses,
             'possedes' => $possedes,
             'total' => $total,

@@ -1233,28 +1233,28 @@ body:has(#rapport-combat) {
 
 /* La rareté reste visible dans l’arène sans masquer les informations de combat. */
 #combat-en-ligne .carte-combattant[data-rarete="1"] {
-    border-color: #8fa3b8;
-    background: linear-gradient(145deg, #e5edf5, #cbd9e6);
+    border-color: #718293;
+    background: linear-gradient(145deg, #dce4eb, #b9c6d2);
 }
 
 #combat-en-ligne .carte-combattant[data-rarete="2"] {
-    border-color: #65a879;
-    background: linear-gradient(145deg, #e2f3e5, #b9dcbc);
+    border-color: #398b4f;
+    background: linear-gradient(145deg, #c9ecd1, #9dceaa);
 }
 
 #combat-en-ligne .carte-combattant[data-rarete="3"] {
-    border-color: #4f8fd1;
-    background: linear-gradient(145deg, #e1efff, #b8d5f2);
+    border-color: #3479c5;
+    background: linear-gradient(145deg, #c4ddfb, #98bee9);
 }
 
 #combat-en-ligne .carte-combattant[data-rarete="4"] {
-    border-color: #9466c4;
-    background: linear-gradient(145deg, #f0e1ff, #d4b8ef);
+    border-color: #7944aa;
+    background: linear-gradient(145deg, #e4c9fb, #be94df);
 }
 
 #combat-en-ligne .carte-combattant[data-rarete="5"] {
-    border-color: #c39320;
-    background: linear-gradient(145deg, #fff0be, #e9c96d);
+    border-color: #b37a00;
+    background: linear-gradient(145deg, #ffe6a0, #e8bd4d);
 }
 
 #combat-en-ligne .combat-arene .carte-combattant-titre {

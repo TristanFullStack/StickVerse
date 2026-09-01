@@ -52,9 +52,16 @@
                 <div class="stickmen-list">
                     {% for stickman in saison.stickmen %}
                         {% if saison.inventaires[stickman.id] is defined %}
-                            {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: saison.inventaires[stickman.id]} only %}
+                            {% include 'stickman/_card.html.twig' with {
+                                stickman: stickman,
+                                inventaire: saison.inventaires[stickman.id],
+                                puissance: saison.puissances[stickman.id]|default(null),
+                            } only %}
                         {% else %}
-                            {% include 'stickman/_card.html.twig' with {stickman: stickman} only %}
+                            {% include 'stickman/_card.html.twig' with {
+                                stickman: stickman,
+                                puissance: saison.puissances[stickman.id]|default(null),
+                            } only %}
                         {% endif %}
                     {% endfor %}
                 </div>

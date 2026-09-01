@@ -1,30 +1,32 @@
-<article
-    class="stickman-card stickman-card--rarete-{{ stickman.rarete|default(1) }}"
-    data-rarete="{{ stickman.rarete|default(1) }}"
+<a
+    class="stickman-card-link"
+    href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}"
+    aria-label="Voir la fiche de {{ stickman.nom }}"
 >
-    <h2>{{ stickman.nom }}</h2>
-
-    <img
-        class="stickman-card-image"
-        src="{{ asset('images/stickmen/' ~ stickman.image) }}"
-        alt="{{ stickman.nom }}"
+    <article
+        class="stickman-card stickman-card--rarete-{{ stickman.rarete|default(1) }}"
+        data-rarete="{{ stickman.rarete|default(1) }}"
     >
+        <h2>{{ stickman.nom }}</h2>
 
-    {% if inventaire is defined and inventaire is not null %}
-        <p>
-            <strong>Quantité : {{ inventaire.quantite }}</strong>
-        </p>
-    {% endif %}
+        <img
+            class="stickman-card-image"
+            src="{{ asset('images/stickmen/' ~ stickman.image) }}"
+            alt="{{ stickman.nom }}"
+        >
 
-    {% if stickman.collectionJeu is defined and stickman.collectionJeu is not null %}
-        <p>Collection : {{ stickman.collectionJeu.nom }}</p>
-    {% endif %}
-    <p>Rareté : {{ stickman.rarete }}</p>
-    <p>PV : {{ stickman.pv }}</p>
-    <p>Attaque : {{ stickman.attaque }}</p>
-    <p>Défense : {{ stickman.defense }}</p>
+        {% if inventaire is defined and inventaire is not null %}
+            <p>
+                <strong>Quantité : {{ inventaire.quantite }}</strong>
+            </p>
+        {% endif %}
 
-    <a href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}">
-        Voir la fiche
-    </a>
-</article>
+        {% if stickman.collectionJeu is defined and stickman.collectionJeu is not null %}
+            <p>Collection : {{ stickman.collectionJeu.nom }}</p>
+        {% endif %}
+        <p>Puissance : <strong>{{ puissance|default('—') }}</strong></p>
+        <p>PV : {{ stickman.pv }}</p>
+        <p>Attaque : {{ stickman.attaque }}</p>
+        <p>Défense : {{ stickman.defense }}</p>
+    </article>
+</a>

@@ -30,6 +30,23 @@ final class ScorePuissanceService
         return $this->calculerStatistiques($pv, $attaque, $defense);
     }
 
+    /**
+     * @param list<Stickman> $stickmen
+     * @return list<Stickman>
+     */
+    public function trierStickmen(array $stickmen): array
+    {
+        usort($stickmen, function (Stickman $premier, Stickman $second): int {
+            $difference = $this->calculerStickman($second) <=> $this->calculerStickman($premier);
+
+            return $difference !== 0
+                ? $difference
+                : strcasecmp($premier->getNom() ?? '', $second->getNom() ?? '');
+        });
+
+        return $stickmen;
+    }
+
     public function calculerStatistiques(
         int $pv,
         int $attaque,

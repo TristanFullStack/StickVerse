@@ -60,9 +60,16 @@
                         <div class="stickmen-list">
                             {% for stickman in groupe.stickmen %}
                                 {% if groupe.inventaires[stickman.id] is defined %}
-                                    {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: groupe.inventaires[stickman.id]} only %}
+                                    {% include 'stickman/_card.html.twig' with {
+                                        stickman: stickman,
+                                        inventaire: groupe.inventaires[stickman.id],
+                                        puissance: groupe.puissances[stickman.id]|default(null),
+                                    } only %}
                                 {% else %}
-                                    {% include 'stickman/_card.html.twig' with {stickman: stickman} only %}
+                                    {% include 'stickman/_card.html.twig' with {
+                                        stickman: stickman,
+                                        puissance: groupe.puissances[stickman.id]|default(null),
+                                    } only %}
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -85,7 +92,11 @@
 
             {% for inventaire in inventaires %}
                 {% set stickman = inventaire.stickman %}
-                {% include 'stickman/_card.html.twig' with {stickman: stickman, inventaire: inventaire} %}
+                {% include 'stickman/_card.html.twig' with {
+                    stickman: stickman,
+                    inventaire: inventaire,
+                    puissance: puissances[stickman.id]|default(null),
+                } only %}
             {% endfor %}
 
             </div>
