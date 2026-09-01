@@ -131,7 +131,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         self::assertSelectorNotExists('.flash-error');
         self::assertSelectorExists('form[name="equipe"]');
 
-        $this->client->submitForm('Sauvegarder mon équipe', [
+        $this->client->submitForm('Créer cette équipe', [
             'equipe[nom]' => 'Équipe de départ',
             'equipe[stickmanA]' => $identifiantsParSlug['guerrier'],
             'equipe[stickmanB]' => $identifiantsParSlug['archer'],
@@ -143,7 +143,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         $this->client->followRedirect();
         self::assertSelectorTextContains(
             '.flash-success',
-            'Ton équipe a bien été sauvegardée',
+            'La nouvelle équipe a bien été créée',
         );
         self::assertSelectorTextContains(
             'body',

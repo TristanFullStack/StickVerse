@@ -12,6 +12,7 @@ use App\Service\CreationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\LimitationTentativesInvitationCombatService;
 use App\Service\RejoindreCombatEnLigneService;
+use App\Service\ScorePuissanceService;
 use InvalidArgumentException;
 use JsonException;
 use LogicException;
@@ -41,6 +42,7 @@ final class SalonCombatEnLigneController extends AbstractController
         EquipeRepository $equipeRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
         ExpirationCombatEnAttenteService $expirationService,
+        ScorePuissanceService $scorePuissanceService,
     ): JsonResponse {
         $utilisateur = $this->getUser();
 
@@ -91,12 +93,13 @@ final class SalonCombatEnLigneController extends AbstractController
                 fn (
                     Equipe $equipe,
                 ): array => $this->serialiserEquipe(
-                    $equipe
+                    $equipe,
+                    $scorePuissanceService,
                 ),
                 $equipes,
             ),
             'combatsDisponibles' => array_map(
-                static fn (
+                fn (
                     Combat $combat,
                 ): array => [
                     'id' => $combat->getId(),
@@ -106,6 +109,14 @@ final class SalonCombatEnLigneController extends AbstractController
                     'joueur1Pseudo' => $combat
                         ->getJoueur1()
                         ->getPseudo(),
+                    'joueur1Elo' => $combat
+                        ->getJoueur1()
+                        ->getElo(),
+                    'puissanceEquipe' => $scorePuissanceService
+                        ->calculerCombatPourJoueur(
+                            $combat,
+                            $combat->getJoueur1(),
+                        ),
                     'statut' => $combat->getStatut(),
                     'prive' => $combat->estPrive(),
                     'numeroRound' => $combat
@@ -147,6 +158,7 @@ final class SalonCombatEnLigneController extends AbstractController
      * @return array{
      *     id: int|null,
      *     nom: string|null,
+     *     puissance: int,
      *     combattants: list<array{
      *         slot: string,
      *         stickmanId: int|null,
@@ -155,12 +167,14 @@ final class SalonCombatEnLigneController extends AbstractController
      *         rarete: int|null,
      *         pv: int|null,
      *         attaque: int|null,
-     *         defense: int|null
+     *         defense: int|null,
+     *         puissance: int
      *     }>
      * }
      */
     private function serialiserEquipe(
         Equipe $equipe,
+        ScorePuissanceService $scorePuissanceService,
     ): array {
         $combattants = [];
 
@@ -185,12 +199,15 @@ final class SalonCombatEnLigneController extends AbstractController
                 'pv' => $stickman->getPv(),
                 'attaque' => $stickman->getAttaque(),
                 'defense' => $stickman->getDefense(),
+                'puissance' => $scorePuissanceService
+                    ->calculerStickman($stickman),
             ];
         }
 
         return [
             'id' => $equipe->getId(),
             'nom' => $equipe->getNom(),
+            'puissance' => $scorePuissanceService->calculerEquipe($equipe),
             'combattants' => $combattants,
         ];
     }

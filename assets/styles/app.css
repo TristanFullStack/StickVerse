@@ -161,6 +161,50 @@ progress {
     height: 18px;
 }
 
+.team-saved-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.team-saved-card,
+.team-form-panel {
+    padding: 14px;
+    border: 1px solid #999;
+    background: #fff;
+}
+
+.team-saved-card header,
+.team-saved-actions,
+.team-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.team-saved-card header {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.team-saved-card h2,
+.team-form-panel h2 {
+    margin-top: 0;
+}
+
+.team-saved-actions {
+    align-items: center;
+}
+
+.team-saved-actions form {
+    margin: 0;
+}
+
+.team-group {
+    flex: 1 1 260px;
+}
+
 .admin-console {
     max-width: 760px;
 }

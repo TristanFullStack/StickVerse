@@ -8,6 +8,12 @@ use App\Entity\User;
 final class ClassementEloService
 {
     public const K_FACTOR = 32;
+    public const ECART_PUISSANCE_ELO_MAXIMUM = 300;
+
+    public function __construct(
+        private readonly ?ScorePuissanceService $scorePuissanceService = null,
+    ) {
+    }
 
     /**
      * @return array{joueur1: int, joueur2: int}
@@ -42,10 +48,27 @@ final class ClassementEloService
             ];
         }
 
+        if ($combat->estPrive()) {
+            $combat->marquerEloAttribuee();
+
+            return [
+                'joueur1' => 0,
+                'joueur2' => 0,
+            ];
+        }
+
         $scoreJoueur1 = $this->scorePour($combat, $joueur1);
+        $servicePuissance = $this->scorePuissanceService
+            ?? new ScorePuissanceService();
+        $puissanceJoueur1 = $servicePuissance
+            ->calculerCombatPourJoueur($combat, $joueur1);
+        $puissanceJoueur2 = $servicePuissance
+            ->calculerCombatPourJoueur($combat, $joueur2);
         $attenduJoueur1 = $this->scoreAttendu(
             $joueur1->getElo(),
             $joueur2->getElo(),
+            $puissanceJoueur1,
+            $puissanceJoueur2,
         );
         $variationJoueur1 = (int) round(
             self::K_FACTOR * ($scoreJoueur1 - $attenduJoueur1),
@@ -62,9 +85,32 @@ final class ClassementEloService
         ];
     }
 
-    private function scoreAttendu(int $eloJoueur, int $eloAdversaire): float
-    {
-        return 1 / (1 + 10 ** (($eloAdversaire - $eloJoueur) / 400));
+    private function scoreAttendu(
+        int $eloJoueur,
+        int $eloAdversaire,
+        int $puissanceJoueur,
+        int $puissanceAdversaire,
+    ): float {
+        $ecartPuissanceConvertiEnElo = 0.0;
+        $puissanceMaximum = max($puissanceJoueur, $puissanceAdversaire);
+
+        if ($puissanceMaximum > 0) {
+            $ecartRelatif = (
+                $puissanceAdversaire - $puissanceJoueur
+            ) / $puissanceMaximum;
+            $ecartPuissanceConvertiEnElo = max(
+                -self::ECART_PUISSANCE_ELO_MAXIMUM,
+                min(
+                    self::ECART_PUISSANCE_ELO_MAXIMUM,
+                    400 * $ecartRelatif,
+                ),
+            );
+        }
+
+        $ecartEffectif = ($eloAdversaire - $eloJoueur)
+            + $ecartPuissanceConvertiEnElo;
+
+        return 1 / (1 + 10 ** ($ecartEffectif / 400));
     }
 
     private function scorePour(Combat $combat, User $joueur): float

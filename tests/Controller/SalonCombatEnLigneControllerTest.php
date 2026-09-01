@@ -142,6 +142,11 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonJoueur1['equipes'][0]['nom'],
         );
 
+        self::assertSame(
+            32,
+            $salonJoueur1['equipes'][0]['puissance'],
+        );
+
         self::assertCount(
             4,
             $salonJoueur1['equipes'][0]['combattants'],
@@ -183,6 +188,11 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
         self::assertSame(
             1,
             $salonJoueur1['equipes'][0]['combattants'][0]['defense'],
+        );
+
+        self::assertSame(
+            8,
+            $salonJoueur1['equipes'][0]['combattants'][0]['puissance'],
         );
 
         self::assertIsInt(
@@ -569,6 +579,8 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $combatsDisponibles[0]['id'],
         );
         self::assertFalse($combatsDisponibles[0]['prive']);
+        self::assertSame(User::ELO_DEPART, $combatsDisponibles[0]['joueur1Elo']);
+        self::assertSame(0, $combatsDisponibles[0]['puissanceEquipe']);
     }
 
     public function testLimiteLesEssaisDeCodesInvitation(): void

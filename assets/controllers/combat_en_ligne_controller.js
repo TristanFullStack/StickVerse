@@ -2000,7 +2000,11 @@ export default class extends Controller {
 
             const option = document.createElement('option');
             option.value = String(equipeId);
-            option.textContent = equipe.nom ?? `Équipe #${equipeId}`;
+            const nom = equipe.nom ?? `Équipe #${equipeId}`;
+            const puissance = Number.isInteger(equipe.puissance)
+                ? equipe.puissance
+                : 0;
+            option.textContent = `${nom} — puissance ${puissance}`;
             this.equipeSelectTarget.append(option);
         }
 
@@ -2039,7 +2043,8 @@ export default class extends Controller {
         }
 
         const titre = document.createElement('h3');
-        titre.textContent = equipe.nom ?? `Équipe #${equipeId}`;
+        const nomEquipe = equipe.nom ?? `Équipe #${equipeId}`;
+        titre.textContent = `${nomEquipe} — puissance ${equipe.puissance ?? 0}`;
         titre.className = 'selection-equipe-titre';
         this.equipeApercuTarget.append(titre);
 
@@ -2189,10 +2194,16 @@ export default class extends Controller {
         vieBarre.append(vieRemplissage, viePrevisualisation);
         vie.append(vieInformations, vieBarre);
 
-        statistiques.textContent = [
+        const statistiquesCarte = [
             `ATQ ${combattant.attaque ?? '—'}`,
             `DÉF ${combattant.defense ?? '—'}`,
-        ].join(' · ');
+        ];
+
+        if (Number.isInteger(combattant.puissance)) {
+            statistiquesCarte.push(`PUI ${combattant.puissance}`);
+        }
+
+        statistiques.textContent = statistiquesCarte.join(' · ');
 
         carte.append(
             choixPlan,
@@ -2241,8 +2252,13 @@ export default class extends Controller {
 
             ligne.className = 'combat-disponible';
             titre.textContent = `Combat #${combatId}`;
-            details.textContent = combat.joueur1Pseudo
+            const pseudo = combat.joueur1Pseudo
                 ?? `Joueur #${combat.joueur1Id ?? '—'}`;
+            details.textContent = [
+                pseudo,
+                `ELO ${combat.joueur1Elo ?? '—'}`,
+                `Puissance ${combat.puissanceEquipe ?? '—'}`,
+            ].join(' · ');
             bouton.type = 'button';
             bouton.textContent = 'Rejoindre';
             bouton.dataset.combatId = String(combatId);

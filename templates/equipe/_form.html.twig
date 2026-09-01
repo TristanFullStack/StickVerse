@@ -1,0 +1,20 @@
+{{ form_start(form) }}
+    {{ form_errors(form) }}
+    {{ form_row(form.nom) }}
+
+    <div class="team-groups">
+        <fieldset class="team-group team-x">
+            <legend>Équipe X</legend>
+            {{ form_row(form.stickmanA) }}
+            {{ form_row(form.stickmanB) }}
+        </fieldset>
+
+        <fieldset class="team-group team-y">
+            <legend>Équipe Y</legend>
+            {{ form_row(form.stickmanC) }}
+            {{ form_row(form.stickmanD) }}
+        </fieldset>
+    </div>
+
+    <button type="submit">{{ button_label }}</button>
+{{ form_end(form) }}

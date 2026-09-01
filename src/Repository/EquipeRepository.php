@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Equipe;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,29 @@ class EquipeRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Equipe::class);
+    }
+
+    public function nomExistePourUtilisateur(
+        User $utilisateur,
+        string $nom,
+        ?Equipe $equipeIgnoree = null,
+    ): bool {
+        $constructeur = $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->andWhere('e.utilisateur = :utilisateur')
+            ->andWhere('LOWER(e.nom) = LOWER(:nom)')
+            ->setParameter('utilisateur', $utilisateur)
+            ->setParameter('nom', trim($nom));
+
+        if ($equipeIgnoree?->getId() !== null) {
+            $constructeur
+                ->andWhere('e.id != :equipeIgnoree')
+                ->setParameter('equipeIgnoree', $equipeIgnoree->getId());
+        }
+
+        return (int) $constructeur
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
     }
 
     //    /**

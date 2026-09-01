@@ -1,67 +1,83 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon équipe - StickVerse{% endblock %}
+{% block title %}Mes équipes - StickVerse{% endblock %}
 
 {% block body %}
     <section class="team-builder">
-        <h1>Composer mon équipe</h1>
+        <h1>Mes équipes</h1>
 
         <p>
-            Les Stickmans A et B forment l’équipe X.<br>
-            Les Stickmans C et D forment l’équipe Y.
+            Crée plusieurs compositions selon la puissance recherchée.
+            Les Stickmans A et B forment l’équipe X, les Stickmans C et D l’équipe Y.
         </p>
 
         {% for message in app.flashes('success') %}
-            <p class="flash-success">
-                {{ message }}
-            </p>
+            <p class="flash-success">{{ message }}</p>
+        {% endfor %}
+
+        {% if equipes is empty %}
+            <p>Tu n’as encore enregistré aucune équipe.</p>
+        {% else %}
+            <div class="team-saved-list">
+                {% for equipe in equipes %}
+                    <article class="team-saved-card">
+                        <header>
+                            <h2>{{ equipe.nom }}</h2>
+                            <strong>Puissance {{ puissances[equipe.id] }}</strong>
+                        </header>
+
+                        <ol>
+                            <li>A — {{ equipe.stickmanA.nom }}</li>
+                            <li>B — {{ equipe.stickmanB.nom }}</li>
+                            <li>C — {{ equipe.stickmanC.nom }}</li>
+                            <li>D — {{ equipe.stickmanD.nom }}</li>
+                        </ol>
+
+                        <div class="team-saved-actions">
+                            <a href="{{ path('app_equipe_modifier', {id: equipe.id}) }}">
+                                Modifier
+                            </a>
+
+                            <form
+                                method="post"
+                                action="{{ path('app_equipe_supprimer', {id: equipe.id}) }}"
+                                onsubmit="return confirm('Supprimer cette équipe ?');"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="_token"
+                                    value="{{ csrf_token('supprimer-equipe-' ~ equipe.id) }}"
+                                >
+                                <button type="submit">Supprimer</button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
 
             <p>
                 <a href="{{ path('app_combats_en_ligne') }}">
                     Accéder aux combats en ligne
                 </a>
             </p>
-        {% endfor %}
-
-        {% if nombre_stickmen_disponibles < 4 %}
-            <p class="flash-error">
-                Tu possèdes seulement
-                {{ nombre_stickmen_disponibles }}
-                Stickman(s) différent(s).
-                Il en faut au moins 4 pour composer une équipe.
-            </p>
-
-            <a href="{{ path('app_caisse_publique') }}">
-                Ouvrir des caisses
-            </a>
-        {% else %}
-            {{ form_start(form) }}
-
-                {{ form_errors(form) }}
-
-                {{ form_row(form.nom) }}
-
-                <div class="team-groups">
-                    <fieldset class="team-group team-x">
-                        <legend>Équipe X</legend>
-
-                        {{ form_row(form.stickmanA) }}
-                        {{ form_row(form.stickmanB) }}
-                    </fieldset>
-
-                    <fieldset class="team-group team-y">
-                        <legend>Équipe Y</legend>
-
-                        {{ form_row(form.stickmanC) }}
-                        {{ form_row(form.stickmanD) }}
-                    </fieldset>
-                </div>
-
-                <button type="submit">
-                    Sauvegarder mon équipe
-                </button>
-
-            {{ form_end(form) }}
         {% endif %}
+
+        <section class="team-form-panel" aria-labelledby="nouvelle-equipe-titre">
+            <h2 id="nouvelle-equipe-titre">Créer une équipe</h2>
+
+            {% if nombre_stickmen_disponibles < 4 %}
+                <p class="flash-error">
+                    Tu possèdes seulement {{ nombre_stickmen_disponibles }} Stickman(s) différent(s).
+                    Il en faut au moins 4 pour composer une équipe.
+                </p>
+
+                <a href="{{ path('app_caisse_publique') }}">Ouvrir des caisses</a>
+            {% else %}
+                {% include 'equipe/_form.html.twig' with {
+                    form: form,
+                    button_label: 'Créer cette équipe'
+                } only %}
+            {% endif %}
+        </section>
     </section>
 {% endblock %}

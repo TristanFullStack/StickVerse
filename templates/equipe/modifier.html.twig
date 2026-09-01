@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ equipe.nom }} - StickVerse{% endblock %}
+
+{% block body %}
+    <section class="team-builder">
+        <p><a href="{{ path('app_equipe') }}">← Retour à mes équipes</a></p>
+        <h1>Modifier {{ equipe.nom }}</h1>
+        <p>Puissance actuelle : <strong>{{ puissance }}</strong></p>
+
+        {% include 'equipe/_form.html.twig' with {
+            form: form,
+            button_label: 'Enregistrer les modifications'
+        } only %}
+    </section>
+{% endblock %}

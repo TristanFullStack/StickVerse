@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\EquipeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EquipeRepository::class)]
 class Equipe
@@ -14,6 +15,11 @@ class Equipe
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de l’équipe est obligatoire.')]
+    #[Assert\Length(
+        max: 80,
+        maxMessage: 'Le nom de l’équipe ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $nom = null;
 
     #[ORM\ManyToOne(inversedBy: 'equipes')]
@@ -48,7 +54,7 @@ class Equipe
 
     public function setNom(string $nom): static
     {
-        $this->nom = $nom;
+        $this->nom = trim($nom);
 
         return $this;
     }

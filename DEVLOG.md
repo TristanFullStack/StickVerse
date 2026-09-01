@@ -7393,6 +7393,136 @@ La résolution serveur reste la source officielle des dégâts réellement appli
 
 Le combat en ligne de StickVerse possède maintenant une arène compacte et dynamique proche de la V24, tout en conservant les règles sécurisées et persistantes de la version Symfony.
 
+## J81 — Équilibrer les combats par la puissance des équipes
+
+### Objectif
+
+J81 permet aux joueurs de préparer plusieurs équipes de niveaux différents et de comparer leur puissance avant d’accepter un combat.
+
+Le classement ELO tient maintenant compte à la fois du niveau des joueurs et de la puissance réellement engagée, uniquement pendant les combats publics.
+
+### Score de puissance d’un Stickman
+
+Chaque Stickman possède un score calculé automatiquement depuis ses statistiques :
+
+`puissance = arrondi(PV × 0,20 + attaque × 2 + défense × 1,5)`
+
+Le score minimum est fixé à 1.
+
+La rareté n’ajoute aucun bonus direct afin de ne pas compter deux fois la valeur d’une carte : elle est déjà représentée par ses PV, son attaque et sa défense.
+
+La puissance n’est pas enregistrée dans une colonne séparée. Toute modification des statistiques d’un Stickman recalcule donc automatiquement sa puissance partout dans l’application.
+
+### Puissance d’une équipe
+
+La puissance totale d’une équipe correspond à l’addition des scores de ses quatre Stickmans.
+
+Le même service central calcule :
+
+- la puissance affichée pendant la composition d’une équipe ;
+- la puissance des équipes proposées dans le salon ;
+- la puissance de chaque carte dans l’aperçu du salon ;
+- la puissance de l’équipe ayant créé un combat public ;
+- la puissance utilisée par le calcul ELO à la fin du combat.
+
+Les statistiques copiées dans les combattants du combat servent de référence définitive. Une modification ultérieure d’une carte ou d’une équipe ne peut donc pas changer rétroactivement la puissance engagée dans un combat commencé.
+
+### Gestion de plusieurs équipes
+
+La page des équipes ne remplace plus automatiquement la première composition du joueur.
+
+Le joueur peut maintenant :
+
+- créer autant d’équipes que nécessaire ;
+- attribuer un nom différent à chaque équipe ;
+- consulter la puissance de toutes ses équipes ;
+- modifier le nom ou les quatre Stickmans d’une équipe ;
+- supprimer n’importe quelle équipe avec une confirmation et un jeton CSRF ;
+- réutiliser un même Stickman dans plusieurs équipes ;
+- préparer volontairement une équipe plus faible pour jouer avec un débutant.
+
+Deux équipes d’un même joueur ne peuvent pas utiliser le même nom, sans distinction entre les majuscules et les minuscules.
+
+Les quatre emplacements d’une équipe doivent toujours contenir quatre Stickmans différents appartenant à l’inventaire du joueur.
+
+### Comparaison avant un combat
+
+Dans le salon de combat :
+
+- chaque option de la liste affiche le nom et la puissance de l’équipe ;
+- l’aperçu de l’équipe sélectionnée affiche sa puissance totale ;
+- chaque Stickman de l’aperçu affiche sa puissance individuelle ;
+- chaque combat public disponible affiche le pseudo, l’ELO et la puissance de l’équipe du créateur.
+
+Le joueur peut ainsi comparer sa composition avec celle de son adversaire avant de rejoindre le combat.
+
+### ELO réservé aux combats publics
+
+Les combats privés ne donnent et ne retirent désormais aucun point ELO.
+
+Ils continuent de distribuer les récompenses prévues, mais leur classement est marqué comme traité avec une variation nulle afin d’éviter toute attribution tardive ou répétée.
+
+Les combats publics terminés, abandonnés ou gagnés par forfait restent éligibles au classement.
+
+### Formule ELO pondérée
+
+Le calcul reste à somme nulle : chaque point gagné par un joueur est retiré à son adversaire.
+
+L’écart relatif de puissance est d’abord converti en équivalent ELO :
+
+`écart puissance ELO = 400 × (puissance adverse - puissance joueur) / puissance maximale des deux équipes`
+
+Cette valeur est limitée entre -300 et +300 points afin que la puissance influence fortement le résultat sans remplacer entièrement le niveau réel des joueurs.
+
+L’écart utilisé par la formule devient ensuite :
+
+`écart effectif = ELO adverse - ELO joueur + écart puissance ELO`
+
+Le résultat attendu du joueur est calculé avec la formule ELO classique :
+
+`résultat attendu = 1 / (1 + 10^(écart effectif / 400))`
+
+La variation finale utilise un facteur K de 32 :
+
+`variation = arrondi(32 × (résultat réel - résultat attendu))`
+
+Le résultat réel vaut 1 pour une victoire, 0,5 pour un match nul et 0 pour une défaite.
+
+### Bonus et malus
+
+Le système applique automatiquement les effets suivants :
+
+- un joueur avec moins d’ELO reçoit un bonus s’il gagne ;
+- une équipe moins puissante reçoit un bonus si elle gagne ;
+- les deux bonus se cumulent lorsque le joueur est outsider sur les deux critères ;
+- un joueur favori en ELO gagne moins de points lors d’une victoire attendue ;
+- une équipe beaucoup plus puissante gagne moins de points contre une équipe faible ;
+- le favori perd davantage s’il est battu par un outsider ;
+- l’outsider perd moins lorsque la défaite était statistiquement probable ;
+- les variations restent plafonnées par le facteur K et ne créent aucun point ELO supplémentaire entre les deux joueurs.
+
+Cette pondération limite l’intérêt du farming contre des joueurs faibles, du boost par combats privés et des affrontements volontairement déséquilibrés.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée sur les nouveaux services, contrôleurs et tests.
+- Syntaxe JavaScript vérifiée avec le runtime Node.js fourni par Codex.
+- Ensemble des templates Twig validé.
+- Conteneur Symfony validé.
+- Schémas Doctrine de développement et de test synchronisés.
+- Tests du calcul de puissance ajoutés.
+- Tests des bonus et malus ELO ajoutés.
+- Test de l’exclusion ELO des combats privés ajouté.
+- Tests HTTP de création, modification et suppression de plusieurs équipes ajoutés.
+- Tests HTTP du salon complétés avec les puissances et l’ELO visibles.
+- Parcours du nouveau joueur adapté à la création de plusieurs équipes.
+- Suite complète validée : 230 tests et 1 869 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse permet maintenant de préparer plusieurs équipes clairement identifiées, de connaître leur puissance réelle avant un combat et d’utiliser un classement ELO public qui récompense les performances en tenant compte du niveau et du matériel engagé.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
