@@ -2,6 +2,8 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\ClassementSaisonJoueur;
+use App\Entity\CollectionJeu;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
@@ -63,12 +65,44 @@ final class ClassementControllerTest extends WebTestCase
 
         $this->entityManager->persist($joueurMoinsClasse);
         $this->entityManager->persist($joueurMieuxClasse);
+
+        $saison = (new CollectionJeu())
+            ->setNom('Saison de classement')
+            ->setSlug('saison-classement-'.bin2hex(random_bytes(4)))
+            ->setDescription('Saison utilisée par le test du classement.')
+            ->setSaison(99)
+            ->setStatutActif(true);
+        $classementHaut = (new ClassementSaisonJoueur(
+            $joueurMieuxClasse,
+            $saison,
+        ))->enregistrerResultat(25, 1.0);
+        $classementBas = (new ClassementSaisonJoueur(
+            $joueurMoinsClasse,
+            $saison,
+        ))->enregistrerResultat(-25, 0.0);
+
+        $this->entityManager->persist($saison);
+        $this->entityManager->persist($classementHaut);
+        $this->entityManager->persist($classementBas);
         $this->entityManager->flush();
 
         $this->client->request('GET', '/classement');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Classement ELO');
+        self::assertSelectorTextContains(
+            '#classement-saison-titre',
+            'Saison 99',
+        );
+        self::assertSelectorCount(2, '[data-classement-saison] tbody tr');
+        self::assertSame(
+            $joueurMieuxClasse->getPseudo(),
+            $this->client->getCrawler()->filter('[data-classement-saison] tbody tr')->eq(0)->filter('td')->eq(1)->text(),
+        );
+        self::assertSame(
+            '1025',
+            $this->client->getCrawler()->filter('[data-classement-saison] tbody tr')->eq(0)->filter('td')->eq(2)->text(),
+        );
         self::assertSelectorCount(2, '[data-classement] tbody tr');
         self::assertSame(
             $joueurMieuxClasse->getPseudo(),

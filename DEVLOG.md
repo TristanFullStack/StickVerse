@@ -7642,6 +7642,126 @@ Aucune migration Doctrine n’est nécessaire pour J82 : les participants, les s
 
 StickVerse possède maintenant un matchmaking public classé qui rapproche automatiquement des équipes comparables, s’assouplit progressivement lorsque l’attente augmente et empêche le choix manuel d’un adversaire facile. Les combats privés restent libres et séparés du classement.
 
+## J83 — Créer le classement ELO saisonnier
+
+### Objectif
+
+J83 sépare la progression classée de chaque saison du classement ELO général du joueur.
+
+Le classement général continue de représenter l’expérience accumulée sur toute la durée de vie du compte, tandis que chaque nouvelle saison commence avec un classement indépendant à 1 000 points.
+
+Cette séparation permet de relancer la compétition régulièrement sans supprimer l’historique des saisons précédentes.
+
+### Saison enregistrée sur le combat
+
+Chaque combat public créé pendant une saison mémorise désormais la saison classée à laquelle il appartient.
+
+La saison est enregistrée au moment de la création du combat et ne dépend donc plus de la saison active au moment où le résultat est calculé.
+
+Cette règle protège les combats qui commencent juste avant un changement de saison : leur résultat reste attribué à la saison pendant laquelle ils ont été lancés.
+
+Les combats privés ne reçoivent aucune saison classée et continuent de ne modifier aucun ELO.
+
+Les anciens combats qui ne possèdent pas de saison restent compatibles : leur ELO général peut toujours être traité sans créer artificiellement un résultat saisonnier.
+
+### Classement indépendant par joueur et par saison
+
+Une nouvelle entité `ClassementSaisonJoueur` conserve, pour chaque couple joueur/saison :
+
+- l’ELO saisonnier, initialisé à 1 000 points ;
+- le nombre total de parties classées ;
+- le nombre de victoires ;
+- le nombre de défaites ;
+- le nombre de matchs nuls ;
+- la date de la dernière mise à jour.
+
+Une contrainte unique interdit la création de plusieurs lignes de classement pour le même joueur pendant la même saison.
+
+L’ELO saisonnier ne peut pas devenir négatif et seuls les scores de victoire, nul ou défaite sont acceptés par l’entité.
+
+### Calcul de l’ELO saisonnier
+
+À la fin d’un combat public, le service ELO effectue maintenant deux calculs distincts :
+
+- le calcul du classement général à partir des ELO généraux des deux joueurs ;
+- le calcul du classement de la saison à partir de leurs ELO saisonniers.
+
+Les deux calculs utilisent toujours les règles d’équilibrage de J81 :
+
+- facteur ELO de 32 ;
+- résultat réel du combat ;
+- différence entre les ELO concernés ;
+- différence entre les scores de puissance des deux équipes ;
+- bonus pour l’outsider ;
+- réduction du gain attendu pour le favori.
+
+Les variations saisonnières sont calculées depuis les ELO de la saison et ne copient pas la variation générale. Un joueur peut ainsi occuper une position différente dans les deux classements.
+
+Le traitement reste idempotent grâce au marqueur ELO du combat : une seconde exécution ne peut pas attribuer deux fois les points ou les statistiques.
+
+### Statistiques de saison
+
+Chaque résultat public met automatiquement à jour les statistiques des deux participants.
+
+Une victoire ajoute une partie et une victoire au gagnant, puis une partie et une défaite au perdant.
+
+Un match nul ajoute une partie et un nul à chacun des deux joueurs.
+
+Les abandons et forfaits utilisent le gagnant déjà déterminé par le combat et sont donc comptabilisés comme une victoire et une défaite normales.
+
+### Page de classement
+
+La page de classement présente maintenant deux blocs complémentaires.
+
+Le premier affiche la saison sélectionnée avec :
+
+- le rang ;
+- le pseudo ;
+- l’ELO de la saison ;
+- le nombre de parties ;
+- les victoires ;
+- les défaites ;
+- les matchs nuls.
+
+Le tri privilégie l’ELO le plus élevé, puis le nombre de victoires, le plus petit nombre de parties et enfin le pseudo.
+
+Le second bloc conserve le classement ELO général existant afin de ne perdre aucune information historique.
+
+La saison active est sélectionnée automatiquement. Une navigation simple permet aussi de consulter les classements des saisons précédentes sans effacer leurs résultats.
+
+Une saison sans combat affiche un message explicite au lieu d’un tableau vide.
+
+### Migration de la base de données
+
+La migration `Version20260901120000` :
+
+- crée la table `classement_saison_joueur` ;
+- ajoute ses index et sa contrainte unique joueur/saison ;
+- relie les classements aux joueurs et aux collections avec suppression en cascade ;
+- ajoute la saison classée facultative sur les combats ;
+- conserve le combat si une saison est retirée en remplaçant la relation par `NULL`.
+
+La migration a été appliquée aux bases de développement et de test.
+
+### Vérifications automatiques
+
+- Syntaxe PHP vérifiée sur les entités, repositories, services, contrôleur, migration et tests de J83.
+- Template du classement validé avec le linter Twig.
+- Conteneur Symfony validé.
+- Mapping Doctrine validé.
+- Schémas des bases de développement et de test synchronisés avec le mapping.
+- Tests de l’entité de classement saisonnier ajoutés.
+- Test de l’association automatique de la saison à un combat public ajouté.
+- Test du calcul ELO indépendant et des statistiques saisonnières ajouté.
+- Test HTTP de l’affichage simultané des classements saisonnier et général ajouté.
+- Tests ciblés validés : 15 tests et 95 assertions.
+- Suite complète validée : 237 tests et 1 937 assertions.
+- Vérification `git diff --check` effectuée.
+
+### Résultat
+
+StickVerse possède maintenant un classement compétitif renouvelé à chaque saison, tout en conservant l’ELO général et les archives des saisons terminées. Chaque combat public est rattaché à sa saison dès sa création, les résultats mettent à jour automatiquement les points et les statistiques, et les combats privés restent entièrement exclus du classement.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

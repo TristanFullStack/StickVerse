@@ -6,33 +6,102 @@
     <h1>Classement ELO</h1>
 
     <p>
-        Tous les joueurs sont classés selon leur cote ELO.
+        Compare le classement de la saison et la progression générale des joueurs.
     </p>
 
-    {% if joueurs is empty %}
-        <p>Aucun joueur inscrit pour le moment.</p>
-    {% else %}
-        <table data-classement>
-            <thead>
-                <tr>
-                    <th>Rang</th>
-                    <th>Pseudo</th>
-                    <th>ELO</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for joueur in joueurs %}
-                    <tr
-                        {% if app.user and app.user.id == joueur.id %}
-                            data-classement-joueur
+    <section class="dashboard-section" aria-labelledby="classement-saison-titre">
+        <h2 id="classement-saison-titre">
+            {% if saisonSelectionnee %}
+                Saison {{ saisonSelectionnee.saison }} — {{ saisonSelectionnee.nom }}
+            {% else %}
+                Classement saisonnier
+            {% endif %}
+        </h2>
+
+        {% if saisons is not empty %}
+            <nav aria-label="Archives des classements saisonniers">
+                {% for saison in saisons %}
+                    <a
+                        href="{{ path('app_classement', {saison: saison.saison}) }}"
+                        {% if saisonSelectionnee and saisonSelectionnee.id == saison.id %}
+                            aria-current="page"
                         {% endif %}
                     >
-                        <td>{{ loop.index }}</td>
-                        <td>{{ joueur.pseudo }}</td>
-                        <td>{{ joueur.elo }}</td>
-                    </tr>
+                        Saison {{ saison.saison }}
+                        {% if saisonActive and saisonActive.id == saison.id %}(active){% endif %}
+                    </a>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+            </nav>
+        {% endif %}
+
+        {% if saisonSelectionnee is null %}
+            <p>Aucune saison classée n’est disponible.</p>
+        {% elseif classementSaison is empty %}
+            <p>Aucun combat classé n’a encore été terminé pendant cette saison.</p>
+        {% else %}
+            <table data-classement-saison>
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Pseudo</th>
+                        <th>ELO saison</th>
+                        <th>Parties</th>
+                        <th>Victoires</th>
+                        <th>Défaites</th>
+                        <th>Nuls</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for classement in classementSaison %}
+                        <tr
+                            {% if app.user and app.user.id == classement.joueur.id %}
+                                data-classement-joueur
+                            {% endif %}
+                        >
+                            <td>{{ loop.index }}</td>
+                            <td>{{ classement.joueur.pseudo }}</td>
+                            <td>{{ classement.elo }}</td>
+                            <td>{{ classement.parties }}</td>
+                            <td>{{ classement.victoires }}</td>
+                            <td>{{ classement.defaites }}</td>
+                            <td>{{ classement.matchsNuls }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+
+    <section class="dashboard-section" aria-labelledby="classement-global-titre">
+        <h2 id="classement-global-titre">Classement général</h2>
+
+        <p>L’ELO général conserve les résultats de toutes les saisons.</p>
+
+        {% if joueurs is empty %}
+            <p>Aucun joueur inscrit pour le moment.</p>
+        {% else %}
+            <table data-classement>
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Pseudo</th>
+                        <th>ELO général</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for joueur in joueurs %}
+                        <tr
+                            {% if app.user and app.user.id == joueur.id %}
+                                data-classement-joueur
+                            {% endif %}
+                        >
+                            <td>{{ loop.index }}</td>
+                            <td>{{ joueur.pseudo }}</td>
+                            <td>{{ joueur.elo }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
 {% endblock %}

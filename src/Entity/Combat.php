@@ -100,6 +100,10 @@ class Combat
     #[ORM\Column(options: ['default' => false])]
     private bool $eloAttribuee = false;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CollectionJeu $saisonClassement = null;
+
     /**
      * @var Collection<int, CombattantCombat>
      */
@@ -158,6 +162,28 @@ class Combat
     public function getJoueur2(): ?User
     {
         return $this->joueur2;
+    }
+
+    public function getSaisonClassement(): ?CollectionJeu
+    {
+        return $this->saisonClassement;
+    }
+
+    public function setSaisonClassement(
+        ?CollectionJeu $saisonClassement,
+    ): static {
+        if (
+            $saisonClassement !== null
+            && ($saisonClassement->getSaison() ?? 0) <= 0
+        ) {
+            throw new InvalidArgumentException(
+                'Le combat classé doit appartenir à une saison numérotée.'
+            );
+        }
+
+        $this->saisonClassement = $saisonClassement;
+
+        return $this;
     }
 
     public function setJoueur2(?User $joueur2): static

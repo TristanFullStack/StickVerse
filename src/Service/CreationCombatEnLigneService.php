@@ -6,6 +6,7 @@ use App\Entity\Combat;
 use App\Entity\Equipe;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\CollectionJeuRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
@@ -17,6 +18,7 @@ final class CreationCombatEnLigneService
         private readonly CombatRepository $combatRepository,
         private readonly UserRepository $userRepository,
         private readonly CreationCombattantsCombatService $creationCombattantsService,
+        private readonly ?CollectionJeuRepository $collectionJeuRepository = null,
     ) {
     }
 
@@ -66,6 +68,13 @@ final class CreationCombatEnLigneService
                     ->setCodeInvitation(
                         $this->genererCodeInvitation()
                     );
+
+                if (!$prive) {
+                    $combat->setSaisonClassement(
+                        $this->collectionJeuRepository
+                            ?->trouverSaisonActive(),
+                    );
+                }
 
                 $this->creationCombattantsService
                     ->creerPourJoueur(

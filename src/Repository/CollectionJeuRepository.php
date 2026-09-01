@@ -53,4 +53,17 @@ class CollectionJeuRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<CollectionJeu>
+     */
+    public function trouverSaisonsClassees(): array
+    {
+        return $this->createQueryBuilder('collection')
+            ->andWhere('collection.saison > 0')
+            ->orderBy('collection.saison', 'DESC')
+            ->addOrderBy('collection.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

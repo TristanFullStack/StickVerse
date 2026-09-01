@@ -3,10 +3,12 @@
 namespace App\Tests\Service;
 
 use App\Entity\Combat;
+use App\Entity\CollectionJeu;
 use App\Entity\Equipe;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\CollectionJeuRepository;
 use App\Repository\UserRepository;
 use App\Service\CreationCombatEnLigneService;
 use App\Service\CreationCombattantsCombatService;
@@ -28,6 +30,11 @@ final class CreationCombatEnLigneServiceTest extends TestCase
             10,
             $joueur,
         );
+        $saison = (new CollectionJeu())
+            ->setNom('Saison 1')
+            ->setSlug('saison-1')
+            ->setDescription('Saison classée de test.')
+            ->setSaison(1);
 
         $entityManager =
             $this->creerEntityManagerTransactionnel();
@@ -41,6 +48,7 @@ final class CreationCombatEnLigneServiceTest extends TestCase
                         object $entite,
                     ) use (
                         $joueur,
+                        $saison,
                     ): bool {
                         self::assertInstanceOf(
                             Combat::class,
@@ -72,6 +80,10 @@ final class CreationCombatEnLigneServiceTest extends TestCase
                         );
 
                         self::assertFalse($entite->estPrive());
+                        self::assertSame(
+                            $saison,
+                            $entite->getSaisonClassement(),
+                        );
 
                         self::assertCount(
                             4,
@@ -90,12 +102,20 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         $combatRepository
             ->method('trouverActifPourJoueur')
             ->willReturn(null);
+        $collectionRepository = $this->createMock(
+            CollectionJeuRepository::class,
+        );
+        $collectionRepository
+            ->expects(self::once())
+            ->method('trouverSaisonActive')
+            ->willReturn($saison);
 
         $service = new CreationCombatEnLigneService(
             $entityManager,
             $combatRepository,
             $this->creerUserRepository($joueur, true),
             new CreationCombattantsCombatService(),
+            $collectionRepository,
         );
 
         $combat = $service->creer(
@@ -128,6 +148,7 @@ final class CreationCombatEnLigneServiceTest extends TestCase
         );
 
         self::assertFalse($combat->estPrive());
+        self::assertSame($saison, $combat->getSaisonClassement());
 
         self::assertCount(
             4,
