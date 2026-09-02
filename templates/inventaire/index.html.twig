@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon inventaire - StickVerse{% endblock %}
+
+{% block body %}
+<div data-controller="caisse-ouverture{% if mode_vente %} inventory-sale{% endif %}" data-inventory-page>
+    <div class="page-heading inventory-heading">
+        <div>
+            <p class="page-kicker">INVENTAIRE</p>
+            <h1>Mon inventaire</h1>
+            <p>Retrouve tes caisses et toutes les cartes que tu possèdes, classées de la plus puissante à la plus faible.</p>
+        </div>
+        <div class="page-actions">
+            <a class="button-link" href="{{ path('app_boutique') }}">Boutique</a>
+            <a class="button-link" href="{{ path('app_equipe') }}">Mes équipes</a>
+            <a class="button-link{% if mode_vente %} button-link--active{% endif %}" href="{{ path('app_inventaire', mode_vente ? {} : {vente: 1}) }}">
+                {{ mode_vente ? 'Quitter la vente' : 'Vendre des cartes' }}
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}<p class="flash-success" role="status">{{ message }}</p>{% endfor %}
+    {% for message in app.flashes('error') %}<p class="flash-error" role="alert">{{ message }}</p>{% endfor %}
+
+    <section class="inventory-crates-section" aria-labelledby="inventaire-caisses-titre">
+        <div class="section-heading">
+            <h2 id="inventaire-caisses-titre">Mes caisses</h2>
+            <strong>{{ caisses|length + caisses_legacy|length }} caisse(s)</strong>
+        </div>
+        {% if caisses is empty and caisses_legacy is empty %}
+            <p class="empty-state">Tu ne possèdes aucune caisse. Rendez-vous dans la boutique pour en acheter.</p>
+        {% else %}
+            <div class="inventory-crates-list">
+                {% for possession in caisses %}
+                    {% set caisse = possession.caisse %}
+                    <article class="inventory-crate-card">
+                        <a href="{{ path('app_caisse_publique_show', {id: caisse.id}) }}" class="inventory-crate-link">
+                            <img src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}">
+                            <h3>{{ caisse.nom }}</h3>
+                        </a>
+                        <form method="post" action="{{ path('app_caisse_ouvrir', {id: caisse.id}) }}" data-action="submit->caisse-ouverture#ouvrir" data-caisse-ouverture-target="form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse.id) }}">
+                            <input type="hidden" name="_ouverture" value="{{ jetons_ouverture[possession.id] }}">
+                            <button type="submit" data-opening-submit>Ouvrir</button>
+                        </form>
+                    </article>
+                {% endfor %}
+                {% for _ in caisses_legacy %}
+                    <article class="inventory-crate-card">
+                        <a href="{{ path('app_caisse_publique_show', {id: caisse_depart.id}) }}" class="inventory-crate-link">
+                            <img src="{{ asset('images/caisses/' ~ caisse_depart.image) }}" alt="{{ caisse_depart.nom }}">
+                            <h3>{{ caisse_depart.nom }}</h3>
+                        </a>
+                        <form method="post" action="{{ path('app_caisse_ouvrir', {id: caisse_depart.id}) }}" data-action="submit->caisse-ouverture#ouvrir" data-caisse-ouverture-target="form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse_depart.id) }}">
+                            <input type="hidden" name="_ouverture" value="{{ jetons_ouverture['legacy-' ~ loop.index0] }}">
+                            <button type="submit" data-opening-submit>Ouvrir</button>
+                        </form>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    {% if mode_vente %}
+        <section class="inventory-sale-cart" data-inventory-sale-target="cart" aria-live="polite">
+            <div><strong>Panier de vente</strong> <span data-inventory-sale-target="count">0 carte</span></div>
+            <strong class="inventory-sale-total"><span data-inventory-sale-target="total">0</span> pièces</strong>
+            <div class="inventory-sale-basket" data-inventory-sale-target="basket" aria-label="Cartes sélectionnées"></div>
+            <form method="post" action="{{ path('app_inventaire_vendre') }}" data-action="submit->inventory-sale#submit">
+                <input type="hidden" name="_token" value="{{ csrf_token('vendre-inventaire') }}">
+                <div data-inventory-sale-target="inputs"></div>
+                <button type="submit" data-inventory-sale-target="submit" disabled>Vendre la sélection</button>
+            </form>
+        </section>
+    {% endif %}
+
+    <section class="inventory-cards-section" aria-labelledby="inventaire-cartes-titre">
+        <div class="section-heading">
+            <h2 id="inventaire-cartes-titre">Mes Stickmans</h2>
+            <strong>{{ inventaires|length }} carte(s) différentes</strong>
+        </div>
+        {% if inventaires is empty %}
+            <p class="empty-state">Tu ne possèdes encore aucune carte. Ouvre une caisse pour commencer ta collection.</p>
+        {% elseif mode_vente %}
+            <p class="sale-hint">Clique plusieurs fois sur une carte pour ajouter plusieurs exemplaires au panier.</p>
+            <div class="inventory-cards-grid" data-inventory-sale-target="cards">
+                {% for inventaire in inventaires %}
+                    {% set stickman = inventaire.stickman %}
+                    {% set equipeProtegee = stickman.id in stickman_ids_equipes %}
+                    <button
+                        type="button"
+                        class="inventory-sale-card stickman-card stickman-card--rarete-{{ stickman.rarete|default(1) }}{% if equipeProtegee %} inventory-sale-card--team-protected{% endif %}"
+                        data-inventory-sale-target="card"
+                        data-action="click->inventory-sale#toggle"
+                        data-inventory-id="{{ inventaire.id }}"
+                        data-unit-price="{{ prix_vente[inventaire.id]|default(0) }}"
+                        data-max-quantity="{{ inventaire.quantite }}"
+                        data-protected-quantity="{{ equipeProtegee ? 1 : 0 }}"
+                        {% if equipeProtegee %}title="Dernier exemplaire réservé à une équipe"{% endif %}
+                        {% if equipeProtegee and inventaire.quantite <= 1 %}disabled aria-disabled="true"{% endif %}
+                    >
+                        <h3>{{ stickman.nom }}</h3>
+                        <img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
+                        <p>Quantité : {{ inventaire.quantite }}</p>
+                        <p>Puissance : {{ puissances[stickman.id]|default('—') }}</p>
+                        <span class="inventory-sale-price">{{ prix_vente[inventaire.id]|default(0) }} pièces / carte</span>
+                        {% if equipeProtegee %}<span class="inventory-sale-protection">1 exemplaire réservé à une équipe</span>{% endif %}
+                        <span class="inventory-sale-selected" data-inventory-sale-quantity>0 vendu</span>
+                    </button>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="stickmen-list inventory-cards-grid">
+                {% for inventaire in inventaires %}
+                    {% include 'stickman/_card.html.twig' with {
+                        stickman: inventaire.stickman,
+                        inventaire: inventaire,
+                        puissance: puissances[inventaire.stickman.id]|default(null),
+                    } only %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    {% include 'caisse_publique/_ouverture_overlay.html.twig' %}
+</div>
+{% endblock %}

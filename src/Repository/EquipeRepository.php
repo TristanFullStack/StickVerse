@@ -40,6 +40,36 @@ class EquipeRepository extends ServiceEntityRepository
             ->getSingleScalarResult() > 0;
     }
 
+    /** @return list<int> */
+    public function stickmanIdsUtilisesPourUtilisateur(User $utilisateur): array
+    {
+        $equipes = $this->createQueryBuilder('e')
+            ->andWhere('e.utilisateur = :utilisateur')
+            ->setParameter('utilisateur', $utilisateur)
+            ->getQuery()
+            ->getResult();
+
+        $ids = [];
+        foreach ($equipes as $equipe) {
+            if (!$equipe instanceof Equipe) {
+                continue;
+            }
+            foreach ([
+                $equipe->getStickmanA(),
+                $equipe->getStickmanB(),
+                $equipe->getStickmanC(),
+                $equipe->getStickmanD(),
+            ] as $stickman) {
+                $id = $stickman?->getId();
+                if ($id !== null) {
+                    $ids[$id] = true;
+                }
+            }
+        }
+
+        return array_map('intval', array_keys($ids));
+    }
+
     //    /**
     //     * @return Equipe[] Returns an array of Equipe objects
     //     */

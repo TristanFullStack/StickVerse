@@ -37,19 +37,19 @@
                     {% if navigation_route starts with 'app_wiki' %}aria-current="page"{% endif %}
                 >Wiki</a>
                 <a
-                    href="{{ path('app_classement') }}"
-                    {% if navigation_route == 'app_classement' %}aria-current="page"{% endif %}
-                >Classement</a>
-                <a
                     href="{{ path('app_caisse_publique') }}"
-                    {% if navigation_route == 'app_caisse_publique' %}aria-current="page"{% endif %}
-                >Caisses</a>
+                    {% if navigation_route in ['app_boutique', 'app_caisse_publique'] %}aria-current="page"{% endif %}
+                >Boutique</a>
                 <a
                     href="{{ path('app_actualite_index') }}"
                     {% if navigation_route starts with 'app_actualite' %}aria-current="page"{% endif %}
                 >Actualités</a>
 
                 {% if app.user %}
+                    <a
+                        href="{{ path('app_inventaire') }}"
+                        {% if navigation_route == 'app_inventaire' %}aria-current="page"{% endif %}
+                    >Inventaire</a>
                     <a
                         href="{{ path('app_collection') }}"
                         {% if navigation_route == 'app_collection' %}aria-current="page"{% endif %}

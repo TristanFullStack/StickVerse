@@ -12,6 +12,7 @@ use InvalidArgumentException;
 class MouvementPieces
 {
     public const TYPE_ACHAT_CAISSE = 'achat_caisse';
+    public const TYPE_VENTE_STICKMAN = 'vente_stickman';
     public const TYPE_RECOMPENSE_COMBAT = 'recompense_combat';
     public const TYPE_RECOMPENSE_QUOTIDIENNE = 'recompense_quotidienne';
     public const TYPE_RECOMPENSE_HORAIRE = 'recompense_horaire';
@@ -21,6 +22,7 @@ class MouvementPieces
 
     private const TYPES_VALIDES = [
         self::TYPE_ACHAT_CAISSE,
+        self::TYPE_VENTE_STICKMAN,
         self::TYPE_RECOMPENSE_COMBAT,
         self::TYPE_RECOMPENSE_QUOTIDIENNE,
         self::TYPE_RECOMPENSE_HORAIRE,

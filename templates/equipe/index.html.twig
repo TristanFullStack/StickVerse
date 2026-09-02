@@ -28,15 +28,32 @@
                     <article class="team-saved-card">
                         <header>
                             <h2>{{ equipe.nom }}</h2>
-                            <strong>Puissance {{ puissances[equipe.id] }}</strong>
+                            <strong class="team-saved-power">Puissance {{ puissances[equipe.id] }}</strong>
                         </header>
 
-                        <ol>
-                            <li>A — {{ equipe.stickmanA.nom }}</li>
-                            <li>B — {{ equipe.stickmanB.nom }}</li>
-                            <li>C — {{ equipe.stickmanC.nom }}</li>
-                            <li>D — {{ equipe.stickmanD.nom }}</li>
-                        </ol>
+                        {% set resume = resumes[equipe.id] %}
+                        <div class="team-saved-members" aria-label="Composition de {{ equipe.nom }}">
+                            {% for membre in resume.slots %}
+                                <article class="team-member-mini team-member-mini--rarete-{{ membre.stickman.rarete|default(1) }}">
+                                    <div class="team-member-mini-heading">
+                                        <span>{{ membre.slot }}</span>
+                                        <strong>{{ membre.stickman.nom }}</strong>
+                                    </div>
+                                    <img
+                                        src="{{ asset('images/stickmen/' ~ membre.stickman.image) }}"
+                                        alt=""
+                                    >
+                                    <small>Puissance {{ membre.puissance }}</small>
+                                    <small>PV {{ membre.stickman.pv }} · ATQ {{ membre.stickman.attaque }} · DÉF {{ membre.stickman.defense }}</small>
+                                </article>
+                            {% endfor %}
+                        </div>
+
+                        <div class="team-saved-summary">
+                            <span>Équipe X : <strong>{{ resume.groupes.X.attaque }} ATQ</strong> · <strong>{{ resume.groupes.X.defense }} DÉF</strong></span>
+                            <span>Équipe Y : <strong>{{ resume.groupes.Y.attaque }} ATQ</strong> · <strong>{{ resume.groupes.Y.defense }} DÉF</strong></span>
+                            <span>{{ resume.total.pv }} PV au total</span>
+                        </div>
 
                         <div class="team-saved-actions">
                             <a href="{{ path('app_equipe_modifier', {id: equipe.id}) }}">
@@ -80,7 +97,10 @@
             {% else %}
                 {% include 'equipe/_form.html.twig' with {
                     form: form,
-                    button_label: 'Créer cette équipe'
+                    button_label: 'Créer cette équipe',
+                    stickmen_disponibles: stickmen_disponibles,
+                    puissances_stickmen: puissances_stickmen,
+                    limite_puissance: limite_puissance
                 } only %}
             {% endif %}
         </section>

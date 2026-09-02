@@ -8294,6 +8294,40 @@ L’ouverture d’une caisse est désormais une séquence de jeu complète, flui
 vérité vers le navigateur. Une récompense est choisie, payée et enregistrée une seule fois côté Symfony avant sa
 révélation, même en cas de double clic, de requête répétée ou de tentative de falsification du résultat.
 
+## J91 — Protéger les cartes utilisées par une équipe
+
+### Objectif
+
+J91 empêche la vente accidentelle d’une carte encore nécessaire à l’une des équipes du joueur.
+
+### Règle de vente
+
+Le service de vente vérifie les quatre emplacements de toutes les équipes appartenant au joueur avant de modifier son
+inventaire :
+
+- si une carte équipée est possédée en un seul exemplaire, sa vente est refusée côté serveur ;
+- les doublons restent vendables, mais un exemplaire est toujours conservé pour l’équipe ;
+- une sélection contenant une carte protégée est rejetée intégralement dans la transaction ;
+- aucune pièce n’est créditée partiellement si l’une des cartes demandées est protégée.
+
+### Interface d’inventaire
+
+Le mode vente signale les cartes utilisées par une équipe et indique qu’un exemplaire est réservé. La carte est
+désactivée lorsqu’elle ne possède aucun doublon vendable. Lorsqu’il existe plusieurs exemplaires, le compteur et le
+panier limitent automatiquement la quantité vendable afin de préserver le dernier exemplaire.
+
+Après suppression ou modification de l’équipe, la carte n’est plus protégée et peut être vendue normalement.
+
+### Vérifications
+
+- Mapping Doctrine, conteneur Symfony et templates Twig validés.
+- Suite complète validée : 266 tests et 2 066 assertions.
+
+### Résultat
+
+Une carte ne peut plus disparaître de l’inventaire alors qu’elle est encore équipée. Le joueur peut vendre ses
+doublons tout en conservant systématiquement les cartes nécessaires à ses compositions.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

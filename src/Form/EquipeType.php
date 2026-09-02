@@ -28,6 +28,7 @@ class EquipeType extends AbstractType
                 'choices' => $stickmenDisponibles,
                 'choice_label' => fn (Stickman $stickman): string =>
                     $this->libelleStickman($stickman),
+                'placeholder' => 'Choisir une carte',
                 'label' => 'Stickman A — Équipe X',
             ])
             ->add('stickmanB', EntityType::class, [
@@ -35,6 +36,7 @@ class EquipeType extends AbstractType
                 'choices' => $stickmenDisponibles,
                 'choice_label' => fn (Stickman $stickman): string =>
                     $this->libelleStickman($stickman),
+                'placeholder' => 'Choisir une carte',
                 'label' => 'Stickman B — Équipe X',
             ])
             ->add('stickmanC', EntityType::class, [
@@ -42,6 +44,7 @@ class EquipeType extends AbstractType
                 'choices' => $stickmenDisponibles,
                 'choice_label' => fn (Stickman $stickman): string =>
                     $this->libelleStickman($stickman),
+                'placeholder' => 'Choisir une carte',
                 'label' => 'Stickman C — Équipe Y',
             ])
             ->add('stickmanD', EntityType::class, [
@@ -49,6 +52,7 @@ class EquipeType extends AbstractType
                 'choices' => $stickmenDisponibles,
                 'choice_label' => fn (Stickman $stickman): string =>
                     $this->libelleStickman($stickman),
+                'placeholder' => 'Choisir une carte',
                 'label' => 'Stickman D — Équipe Y',
             ])
         ;

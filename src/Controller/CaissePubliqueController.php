@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Exception\OuvertureCaisseImpossibleException;
 use App\Exception\SoldePiecesInsuffisantException;
 use App\Repository\CaisseRepository;
+use App\Service\BoutiqueService;
 use App\Service\OuvertureCaisseService;
 use App\Service\ScorePuissanceService;
 use DateTimeImmutable;
@@ -22,14 +23,56 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class CaissePubliqueController extends AbstractController
 {
     #[Route('/caisses', name: 'app_caisse_publique', methods: ['GET'])]
-    public function index(CaisseRepository $caisseRepository): Response
+    #[Route('/boutique', name: 'app_boutique', methods: ['GET'])]
+    public function index(CaisseRepository $caisseRepository, Request $request): Response
     {
         $caisses = $caisseRepository->trouverDisponibles();
 
         return $this->sansCache($this->render('caisse_publique/index.html.twig', [
             'caisses' => $caisses,
             'jetons_ouverture' => $this->genererJetons($caisses),
+            'boutique' => $request->attributes->get('_route') === 'app_boutique',
         ]));
+    }
+
+    #[Route('/boutique/{id}/acheter', name: 'app_boutique_acheter', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function acheter(
+        Request $request,
+        Caisse $caisse,
+        BoutiqueService $boutiqueService,
+    ): Response {
+        $this->verifierDisponibilite($caisse);
+        if (!$this->isCsrfTokenValid(
+            'acheter-caisse-'.$caisse->getId(),
+            $request->getPayload()->getString('_token'),
+        )) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $joueur = $this->getUser();
+        if (!$joueur instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $quantite = filter_var(
+            $request->getPayload()->get('quantite', 1),
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1, 'max_range' => 100]],
+        );
+        if ($quantite === false) {
+            $this->addFlash('error', 'La quantité demandée est invalide.');
+            return $this->redirectToRoute('app_boutique');
+        }
+
+        try {
+            $boutiqueService->acheter($joueur, $caisse, $quantite);
+            $this->addFlash('success', 'La caisse a été ajoutée à ton inventaire.');
+        } catch (SoldePiecesInsuffisantException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_boutique');
     }
 
     #[Route('/caisses/{id}', name: 'app_caisse_publique_show', methods: ['GET'])]
@@ -164,6 +207,7 @@ final class CaissePubliqueController extends AbstractController
             'crate' => [
                 'id' => $resultat->caisse->getId(),
                 'name' => $resultat->caisse->getNom(),
+                'price' => max(0, (int) $resultat->caisse->getPrix()),
             ],
             'roulette' => array_map(
                 fn (Stickman $stickman): array => $this->normaliserStickman(
@@ -188,10 +232,11 @@ final class CaissePubliqueController extends AbstractController
             'wallet' => [
                 'pieces' => $resultat->soldePieces,
                 'freeCrates' => $resultat->caissesOffertesRestantes,
+                'ownedCrates' => $resultat->caissesPossedeesRestantes,
             ],
             'canOpenAgain' => $resultat->peutOuvrirEncore,
             'nextOpeningToken' => bin2hex(random_bytes(32)),
-            'inventoryUrl' => $this->generateUrl('app_collection'),
+            'inventoryUrl' => $this->generateUrl('app_inventaire'),
         ];
     }
 

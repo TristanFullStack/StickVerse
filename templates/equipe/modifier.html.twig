@@ -6,12 +6,20 @@
     <section class="team-builder">
         <p><a href="{{ path('app_equipe') }}">← Retour à mes équipes</a></p>
         <h1>Modifier {{ equipe.nom }}</h1>
-        <p>Puissance actuelle : <strong>{{ puissance }}</strong></p>
-        <p>Limite selon ton ELO : <strong>{{ limite_puissance }}</strong></p>
+        <div class="team-edit-summary">
+            <p>Puissance actuelle : <strong>{{ puissance }}</strong> / {{ limite_puissance }}</p>
+            <div class="team-edit-summary-groups">
+                <span>Équipe X : <strong>{{ resume.groupes.X.attaque }} ATQ</strong> · <strong>{{ resume.groupes.X.defense }} DÉF max</strong></span>
+                <span>Équipe Y : <strong>{{ resume.groupes.Y.attaque }} ATQ</strong> · <strong>{{ resume.groupes.Y.defense }} DÉF max</strong></span>
+            </div>
+        </div>
 
         {% include 'equipe/_form.html.twig' with {
             form: form,
-            button_label: 'Enregistrer les modifications'
+            button_label: 'Enregistrer les modifications',
+            stickmen_disponibles: stickmen_disponibles,
+            puissances_stickmen: puissances_stickmen,
+            limite_puissance: limite_puissance
         } only %}
     </section>
 {% endblock %}

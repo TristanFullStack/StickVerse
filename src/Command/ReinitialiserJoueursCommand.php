@@ -3,9 +3,12 @@
 namespace App\Command;
 
 use App\Entity\Combat;
+use App\Entity\Caisse;
 use App\Entity\User;
 use App\Repository\CombatRepository;
+use App\Repository\CaisseRepository;
 use App\Repository\UserRepository;
+use App\Service\InventaireCaisseService;
 use Doctrine\ORM\EntityManagerInterface;
 use DateTimeImmutable;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -24,6 +27,8 @@ final class ReinitialiserJoueursCommand extends Command
         private readonly UserRepository $userRepository,
         private readonly CombatRepository $combatRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ?CaisseRepository $caisseRepository = null,
+        private readonly ?InventaireCaisseService $inventaireCaisseService = null,
     ) {
         parent::__construct();
     }
@@ -88,6 +93,10 @@ final class ReinitialiserJoueursCommand extends Command
                 $this->entityManager->remove($equipe);
             }
 
+            foreach ($joueur->getCaissesPossedees()->toArray() as $caissePossedee) {
+                $this->entityManager->remove($caissePossedee);
+            }
+
             $combatActif = $this->combatRepository
                 ->trouverActifPourJoueur($joueur);
 
@@ -101,12 +110,23 @@ final class ReinitialiserJoueursCommand extends Command
             $joueur
                 ->setPieces(User::PIECES_DEPART)
                 ->setElo(User::ELO_DEPART)
-                ->setCaissesPremiersRenforts(
-                    User::CAISSES_PREMIERS_RENFORTS_DEPART,
-                )
                 ->setDateDerniereRecompenseHoraire(new DateTimeImmutable())
                 ->setDateDerniereRecompenseQuotidienne(null)
                 ->reinitialiserObjectifsReclames();
+
+            $caisseDepart = $this->caisseRepository?->findOneBy([
+                'slug' => Caisse::SLUG_PREMIERS_RENFORTS,
+            ]);
+            if ($caisseDepart !== null && $this->inventaireCaisseService !== null) {
+                $joueur->setCaissesPremiersRenforts(0);
+                $this->inventaireCaisseService->ajouter(
+                    $joueur,
+                    $caisseDepart,
+                    User::CAISSES_PREMIERS_RENFORTS_DEPART,
+                );
+            } else {
+                $joueur->setCaissesPremiersRenforts(User::CAISSES_PREMIERS_RENFORTS_DEPART);
+            }
         }
 
         $this->entityManager->flush();

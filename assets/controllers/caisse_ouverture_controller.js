@@ -7,6 +7,7 @@ export default class extends Controller {
         'overlay',
         'title',
         'status',
+        'crateCount',
         'loadingPhase',
         'roulettePhase',
         'viewport',
@@ -38,6 +39,7 @@ export default class extends Controller {
         this.activeCanOpenAgain = true;
         this.lastFocusedElement = null;
         this.requestController = null;
+        this.lastPayload = null;
         this.handleKeydown = (event) => {
             if (event.key === 'Escape' && !this.overlayTarget.hidden) {
                 this.fermer();
@@ -103,6 +105,10 @@ export default class extends Controller {
 
             this.mettreAJourPage(payload);
             this.mettreAJourJeton(payload.nextOpeningToken);
+            this.lastPayload = payload;
+            if (this.activeForm?.closest('[data-inventory-page]')) {
+                this.activeForm.dataset.openingConsumed = 'true';
+            }
             this.activeCanOpenAgain = Boolean(payload.canOpenAgain);
             if (ouvertureGeneration !== this.animationGeneration) {
                 return;
@@ -151,6 +157,9 @@ export default class extends Controller {
         this.trackTarget.style.transform = 'translate3d(0, 0, 0)';
         this.titleTarget.textContent = 'Préparation de la caisse…';
         this.statusTarget.textContent = 'Préparation du rouleau…';
+        if (this.hasCrateCountTarget) {
+            this.crateCountTarget.textContent = '';
+        }
         this.overlayTarget.className = 'crate-opening-overlay';
         document.body.classList.add('crate-opening-active');
         this.overlayTarget.querySelector('.crate-opening-close')?.focus();
@@ -282,6 +291,13 @@ export default class extends Controller {
         );
         this.openAgainButtonTarget.hidden = !payload.canOpenAgain;
         this.openAgainButtonTarget.disabled = !payload.canOpenAgain;
+        if (payload.canOpenAgain && payload.wallet?.ownedCrates === 0 && Number(payload.crate?.price || 0) > 0) {
+            this.openAgainButtonTarget.textContent = `Ouvrir avec ${payload.crate.price} pièces`;
+            this.openAgainButtonTarget.title = 'Tu n’as plus de caisse de ce type : cette ouverture utilisera tes pièces.';
+        } else {
+            this.openAgainButtonTarget.textContent = 'Ouvrir une autre caisse';
+            this.openAgainButtonTarget.removeAttribute('title');
+        }
         this.inventoryLinkTarget.href = payload.inventoryUrl;
         this.creerParticules(Number(gain.rarity));
         this.revealTarget.classList.remove('crate-reveal--visible');
@@ -348,6 +364,12 @@ export default class extends Controller {
         document.querySelectorAll('[data-caisses-premiers-renforts-page] strong').forEach((element) => {
             element.textContent = String(payload.wallet.freeCrates);
         });
+        if (this.hasCrateCountTarget && this.activeForm?.closest('[data-inventory-page]')) {
+            const restantes = Number(payload.wallet?.ownedCrates ?? 0);
+            this.crateCountTarget.textContent = restantes > 0
+                ? `Caisses restantes de ce type : ${restantes}`
+                : 'Aucune caisse de ce type restante — les prochaines ouvertures utiliseront tes pièces.';
+        }
     }
 
     afficherErreur(message) {
@@ -376,12 +398,30 @@ export default class extends Controller {
             return;
         }
 
+        const payload = this.lastPayload;
+        if (
+            payload?.wallet?.ownedCrates === 0
+            && Number(payload?.crate?.price || 0) > 0
+            && Number(payload?.wallet?.pieces || 0) >= Number(payload.crate.price)
+            && !window.confirm(`Tu n’as plus de caisse. Utiliser ${payload.crate.price} pièces pour cette ouverture ?`)
+        ) {
+            return;
+        }
+
         const form = this.activeForm;
-        this.fermer();
+        this.fermer(false);
         requestAnimationFrame(() => form.requestSubmit());
     }
 
-    fermer() {
+    fermer(rafraichir = true) {
+        if (typeof rafraichir !== 'boolean') {
+            rafraichir = true;
+        }
+        const pageInventaire = this.activeForm?.closest('[data-inventory-page]');
+        const rechargerInventaire = rafraichir
+            && this.activeForm?.dataset.openingConsumed === 'true'
+            && pageInventaire;
+
         this.animationGeneration += 1;
         this.requestController?.abort();
         this.requestController = null;
@@ -393,6 +433,9 @@ export default class extends Controller {
 
         if (this.lastFocusedElement instanceof HTMLElement) {
             this.lastFocusedElement.focus();
+        }
+        if (rechargerInventaire) {
+            window.setTimeout(() => window.location.reload(), 0);
         }
     }
 

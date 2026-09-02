@@ -38,7 +38,7 @@
             {% else %}
                 <ul>
                     {% for caisse in saison.caisses %}
-                        <li><a href="{{ path('app_caisse_publique') }}#caisse-{{ caisse.slug }}">{{ caisse.nom }}</a> — {{ caisse.prix }} pièces</li>
+                        <li><a href="{{ path('app_boutique') }}#caisse-{{ caisse.slug }}">{{ caisse.nom }}</a> — {{ caisse.prix }} pièces</li>
                     {% endfor %}
                 </ul>
             {% endif %}

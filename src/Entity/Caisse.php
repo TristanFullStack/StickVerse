@@ -46,9 +46,14 @@ class Caisse
     #[ORM\OneToMany(targetEntity: CaisseStickman::class, mappedBy: 'caisse', orphanRemoval: true)]
     private Collection $contenus;
 
+    /** @var Collection<int, CaissePossedee> */
+    #[ORM\OneToMany(targetEntity: CaissePossedee::class, mappedBy: 'caisse')]
+    private Collection $possessions;
+
     public function __construct()
     {
         $this->contenus = new ArrayCollection();
+        $this->possessions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -179,5 +184,11 @@ class Caisse
         }
 
         return $this;
+    }
+
+    /** @return Collection<int, CaissePossedee> */
+    public function getPossessions(): Collection
+    {
+        return $this->possessions;
     }
 }

@@ -1,18 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Caisses - StickVerse{% endblock %}
+{% block title %}Boutique - StickVerse{% endblock %}
 
 {% block body %}
 <div data-controller="caisse-ouverture">
-    <h1>Les caisses StickVerse</h1>
+    <h1>Boutique StickVerse</h1>
+    <p class="page-intro">Achète ici les caisses disponibles. Elles apparaîtront ensuite une par une dans ton inventaire.</p>
 
     {% if app.user %}
         <p data-solde-pieces-page>
             Ton solde : <strong>{{ app.user.pieces }} pièces</strong>
-        </p>
-        <p data-caisses-premiers-renforts-page>
-            Caisses Premiers Renforts offertes :
-            <strong>{{ app.user.caissesPremiersRenforts }}</strong>
         </p>
     {% endif %}
 
@@ -30,42 +27,65 @@
     {% else %}
         <div class="caisses-list">
             {% for caisse in caisses %}
-                {% set caisseOfferte = app.user and caisse.slug == constant('App\\Entity\\Caisse::SLUG_PREMIERS_RENFORTS') and app.user.caissesPremiersRenforts > 0 %}
                 <article class="caisse-card" id="caisse-{{ caisse.slug }}">
                     <a class="caisse-card-main" href="{{ path('app_caisse_publique_show', {'id': caisse.id}) }}">
                         <h2>{{ caisse.nom }}</h2>
                         <img src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}" width="250">
                         <p>{{ caisse.description }}</p>
                         <p>Collection : {{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Catalogue général' }}</p>
-                        {% if caisseOfferte %}
-                            <p>Ouverture offerte — caisse de départ</p>
-                        {% else %}
-                            <p>Prix : {{ caisse.prix }} pièces</p>
-                        {% endif %}
+                        <p>Prix : <strong>{{ caisse.prix }} pièces</strong></p>
                     </a>
 
                     {% if app.user %}
+                        <form
+                            method="post"
+                            action="{{ path('app_boutique_acheter', {'id': caisse.id}) }}"
+                            class="caisse-buy-form"
+                            data-controller="shop"
+                            data-shop-balance-value="{{ app.user ? app.user.pieces : 0 }}"
+                            data-action="submit->shop#confirm"
+                        >
+                            <input type="hidden" name="_token" value="{{ csrf_token('acheter-caisse-' ~ caisse.id) }}">
+                            <label class="caisse-buy-quantity">
+                                Quantité
+                                <input
+                                    type="number"
+                                    name="quantite"
+                                    value="1"
+                                    min="1"
+                                    max="100"
+                                    inputmode="numeric"
+                                    data-shop-target="quantity"
+                                    data-shop-unit-price="{{ caisse.prix }}"
+                                    data-action="input->shop#update"
+                                >
+                            </label>
+                            <p class="caisse-buy-total">Total : <strong data-shop-target="total">{{ caisse.prix }}</strong> pièces</p>
+                            <button
+                                type="submit"
+                                data-shop-target="submit"
+                                data-shop-enabled-label="Acheter"
+                                {% if not app.user or app.user.pieces < caisse.prix %}disabled{% endif %}
+                            >{% if app.user and app.user.pieces >= caisse.prix %}Acheter{% else %}Solde insuffisant{% endif %}</button>
+                        </form>
+                        {# Route conservée pour les anciennes pages et signets ; les
+                           ouvertures normales se font désormais depuis l’inventaire. #}
                         <form
                             method="post"
                             action="{{ path('app_caisse_ouvrir', {'id': caisse.id}) }}"
                             data-action="submit->caisse-ouverture#ouvrir"
                             data-caisse-ouverture-target="form"
                             data-caisse-id="{{ caisse.id }}"
+                            class="caisse-legacy-open-form"
                         >
                             <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse.id) }}">
                             <input type="hidden" name="_ouverture" value="{{ jetons_ouverture[caisse.id] }}">
                             <button
                                 type="submit"
                                 data-opening-submit
-                                {% if not caisseOfferte and app.user.pieces < caisse.prix %}disabled{% endif %}
+                                {% if app.user.pieces < caisse.prix %}disabled{% endif %}
                             >
-                                {% if caisseOfferte %}
-                                    Ouvrir une caisse offerte
-                                {% elseif app.user.pieces < caisse.prix %}
-                                    Solde insuffisant
-                                {% else %}
-                                    Ouvrir la caisse
-                                {% endif %}
+                                Ouvrir
                             </button>
                         </form>
                     {% else %}

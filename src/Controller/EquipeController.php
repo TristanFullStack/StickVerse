@@ -9,6 +9,7 @@ use App\Form\EquipeType;
 use App\Repository\EquipeRepository;
 use App\Repository\InventaireRepository;
 use App\Service\ScorePuissanceService;
+use App\Service\EquipeCompositionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -28,12 +29,13 @@ final class EquipeController extends AbstractController
         EquipeRepository $equipeRepository,
         EntityManagerInterface $entityManager,
         ScorePuissanceService $scorePuissanceService,
+        EquipeCompositionService $equipeCompositionService,
     ): Response {
         $utilisateur = $this->utilisateurConnecte();
-        $stickmenDisponibles = $this->stickmenDisponibles(
+        $stickmenDisponibles = $scorePuissanceService->trierStickmen($this->stickmenDisponibles(
             $inventaireRepository,
             $utilisateur,
-        );
+        ));
         $equipe = (new Equipe())->setUtilisateur($utilisateur);
 
         $form = $this->createForm(EquipeType::class, $equipe, [
@@ -66,11 +68,22 @@ final class EquipeController extends AbstractController
             ['id' => 'ASC'],
         );
         $puissances = [];
+        $resumes = [];
+        $puissancesStickmen = [];
+
+        foreach ($stickmenDisponibles as $stickman) {
+            if ($stickman->getId() !== null) {
+                $puissancesStickmen[$stickman->getId()] =
+                    $scorePuissanceService->calculerStickman($stickman);
+            }
+        }
 
         foreach ($equipes as $equipeExistante) {
             if ($equipeExistante->getId() !== null) {
                 $puissances[$equipeExistante->getId()] =
                     $scorePuissanceService->calculerEquipe($equipeExistante);
+                $resumes[$equipeExistante->getId()] =
+                    $equipeCompositionService->resumer($equipeExistante);
             }
         }
 
@@ -78,6 +91,9 @@ final class EquipeController extends AbstractController
             'form' => $form,
             'equipes' => $equipes,
             'puissances' => $puissances,
+            'resumes' => $resumes,
+            'stickmen_disponibles' => $stickmenDisponibles,
+            'puissances_stickmen' => $puissancesStickmen,
             'nombre_stickmen_disponibles' => count($stickmenDisponibles),
             'limite_puissance' => $scorePuissanceService
                 ->limiteEquipePourElo($utilisateur->getElo()),
@@ -92,13 +108,22 @@ final class EquipeController extends AbstractController
         EquipeRepository $equipeRepository,
         EntityManagerInterface $entityManager,
         ScorePuissanceService $scorePuissanceService,
+        EquipeCompositionService $equipeCompositionService,
     ): Response {
         $utilisateur = $this->utilisateurConnecte();
         $this->verifierProprietaire($equipe, $utilisateur);
-        $stickmenDisponibles = $this->stickmenDisponibles(
+        $stickmenDisponibles = $scorePuissanceService->trierStickmen($this->stickmenDisponibles(
             $inventaireRepository,
             $utilisateur,
-        );
+        ));
+        $puissancesStickmen = [];
+
+        foreach ($stickmenDisponibles as $stickman) {
+            if ($stickman->getId() !== null) {
+                $puissancesStickmen[$stickman->getId()] =
+                    $scorePuissanceService->calculerStickman($stickman);
+            }
+        }
         $form = $this->createForm(EquipeType::class, $equipe, [
             'stickmen_disponibles' => $stickmenDisponibles,
         ]);
@@ -125,6 +150,9 @@ final class EquipeController extends AbstractController
             'form' => $form,
             'equipe' => $equipe,
             'puissance' => $scorePuissanceService->calculerEquipe($equipe),
+            'resume' => $equipeCompositionService->resumer($equipe),
+            'stickmen_disponibles' => $stickmenDisponibles,
+            'puissances_stickmen' => $puissancesStickmen,
             'nombre_stickmen_disponibles' => count($stickmenDisponibles),
             'limite_puissance' => $scorePuissanceService
                 ->limiteEquipePourElo($utilisateur->getElo()),

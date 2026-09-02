@@ -5,6 +5,7 @@
 {% block body %}
     <main class="combat-page">
         <h1>Combat local</h1>
+        <p class="combat-context-links"><a href="{{ path('app_classement') }}">Voir le classement</a></p>
 
         {% for message in app.flashes('success') %}
             <p class="message-success">

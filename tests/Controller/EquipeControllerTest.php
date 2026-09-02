@@ -79,6 +79,10 @@ final class EquipeControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/equipe');
 
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('.team-composer');
+        self::assertSelectorCount(4, '.team-slot');
+        self::assertSelectorCount(4, '.team-inventory-card');
+        self::assertSelectorTextContains('.team-summary', 'Dégâts totaux');
         self::assertSelectorCount(2, '.team-saved-card');
         self::assertSelectorTextContains('.team-saved-list', 'Puissance 300');
 

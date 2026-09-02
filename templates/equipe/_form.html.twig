@@ -1,20 +1,161 @@
-{{ form_start(form) }}
+{{ form_start(form, {
+    attr: {
+        'data-controller': 'team-composer',
+        'data-team-composer-limit-value': limite_puissance
+    }
+}) }}
     {{ form_errors(form) }}
-    {{ form_row(form.nom) }}
 
-    <div class="team-groups">
-        <fieldset class="team-group team-x">
-            <legend>Équipe X</legend>
-            {{ form_row(form.stickmanA) }}
-            {{ form_row(form.stickmanB) }}
-        </fieldset>
+    <div class="team-composer">
+        <div class="team-composer-header">
+            <div>
+                <p class="team-composer-kicker">CONSTRUCTION DE L’ÉQUIPE</p>
+                <h3>Choisis tes quatre cartes</h3>
+                <p class="team-composer-help">
+                    Sélectionne un emplacement, puis une carte de ton inventaire.
+                    Chaque Stickman ne peut être utilisé qu’une seule fois.
+                </p>
+            </div>
+            <div class="team-composer-limit">
+                <span>Limite actuelle</span>
+                <strong>{{ limite_puissance }} puissance</strong>
+            </div>
+        </div>
 
-        <fieldset class="team-group team-y">
-            <legend>Équipe Y</legend>
-            {{ form_row(form.stickmanC) }}
-            {{ form_row(form.stickmanD) }}
-        </fieldset>
+        {{ form_row(form.nom) }}
+
+        <div class="team-composer-layout">
+            <section class="team-composition-panel" aria-labelledby="composition-titre">
+                <div class="team-panel-heading">
+                    <h3 id="composition-titre">Ta composition</h3>
+                    <span data-team-composer-target="selectionStatus" aria-live="polite">
+                        0 / 4 cartes sélectionnées
+                    </span>
+                </div>
+
+                <div class="team-composition-grid">
+                    {% for slot, groupe in {'A': 'X', 'B': 'X', 'C': 'Y', 'D': 'Y'} %}
+                        <article
+                            class="team-slot team-slot--groupe-{{ groupe }}"
+                            data-team-composer-target="slot"
+                            data-slot="{{ slot }}"
+                        >
+                            <button
+                                type="button"
+                                class="team-slot-select"
+                                data-action="team-composer#activerEmplacement"
+                                data-slot="{{ slot }}"
+                                aria-label="Choisir la carte de l’emplacement {{ slot }}"
+                            >
+                                <span class="team-slot-heading">
+                                    <strong>{{ slot }}</strong>
+                                    <small>Équipe {{ groupe }}</small>
+                                </span>
+                                <span class="team-slot-card" data-team-composer-slot-card>
+                                    <span class="team-slot-empty">Choisir une carte</span>
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                class="team-slot-remove"
+                                data-action="team-composer#retirerCarte"
+                                data-slot="{{ slot }}"
+                                hidden
+                            >
+                                Retirer
+                            </button>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <div class="team-summary" aria-live="polite">
+                    <div class="team-summary-heading">
+                        <h3>Résumé de la composition</h3>
+                        <strong><span data-team-composer-target="summaryPower">0</span> puissance</strong>
+                    </div>
+                    <div class="team-summary-groups">
+                        {% for groupe in ['X', 'Y'] %}
+                            <article class="team-summary-group team-summary-group--{{ groupe|lower }}">
+                                <h4>Équipe {{ groupe }}</h4>
+                                <dl>
+                                    <div><dt>Dégâts totaux</dt><dd><span data-summary="{{ groupe }}-attaque">0</span> ATQ</dd></div>
+                                    <div><dt>Défense max</dt><dd><span data-summary="{{ groupe }}-defense">0</span> DÉF</dd></div>
+                                    <div><dt>PV totaux</dt><dd><span data-summary="{{ groupe }}-pv">0</span> PV</dd></div>
+                                    <div><dt>Puissance</dt><dd><span data-summary="{{ groupe }}-puissance">0</span></dd></div>
+                                </dl>
+                            </article>
+                        {% endfor %}
+                    </div>
+                    <p class="team-composer-message" data-team-composer-target="message" aria-live="polite">
+                        Choisis quatre cartes pour enregistrer ton équipe.
+                    </p>
+                </div>
+            </section>
+
+            <section class="team-inventory-panel" data-team-composer-target="inventoryPanel" aria-labelledby="inventaire-equipe-titre">
+                <div class="team-panel-heading">
+                    <div>
+                        <h3 id="inventaire-equipe-titre">Ton inventaire</h3>
+                        <p data-team-composer-target="activeSlotLabel">Emplacement A sélectionné</p>
+                    </div>
+                    <span>{{ stickmen_disponibles|length }} cartes</span>
+                </div>
+
+                <div class="team-inventory-grid">
+                    {% for stickman in stickmen_disponibles %}
+                        {% set stickmanId = stickman.id %}
+                        <button
+                            type="button"
+                            class="team-inventory-card team-inventory-card--rarete-{{ stickman.rarete|default(1) }}"
+                            data-team-composer-target="inventoryCard"
+                            data-action="team-composer#selectionnerCarte"
+                            data-stickman-id="{{ stickmanId }}"
+                            data-stickman-name="{{ stickman.nom }}"
+                            data-stickman-image="{{ asset('images/stickmen/' ~ stickman.image) }}"
+                            data-stickman-rarete="{{ stickman.rarete|default(1) }}"
+                            data-stickman-pv="{{ stickman.pv|default(0) }}"
+                            data-stickman-attaque="{{ stickman.attaque|default(0) }}"
+                            data-stickman-defense="{{ stickman.defense|default(0) }}"
+                            data-stickman-puissance="{{ puissances_stickmen[stickmanId]|default(0) }}"
+                        >
+                            <span class="team-inventory-card-top">
+                                <strong>{{ stickman.nom }}</strong>
+                                <small>R{{ stickman.rarete|default(1) }}</small>
+                            </span>
+                            <img src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="">
+                            <span class="team-inventory-card-stats">
+                                <span>PV {{ stickman.pv }}</span>
+                                <span>ATQ {{ stickman.attaque }}</span>
+                                <span>DÉF {{ stickman.defense }}</span>
+                            </span>
+                            <span class="team-inventory-card-power">Puissance {{ puissances_stickmen[stickmanId]|default(0) }}</span>
+                            <span class="team-inventory-card-state" data-team-composer-card-state>Sélectionner</span>
+                        </button>
+                    {% else %}
+                        <p class="team-inventory-empty">Aucune carte disponible dans ton inventaire.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <div class="team-composer-native-fields" aria-label="Champs de composition">
+            {% for slot in ['A', 'B', 'C', 'D'] %}
+                {% set field = attribute(form, 'stickman' ~ slot) %}
+                <div class="team-native-field">
+                    {{ form_label(field) }}
+                    {{ form_widget(field, {
+                        attr: {
+                            'data-team-composer-target': 'select',
+                            'data-slot': slot
+                        }
+                    }) }}
+                    {{ form_errors(field) }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="team-composer-submit" data-team-composer-target="submit">
+            {{ button_label }}
+        </button>
     </div>
-
-    <button type="submit">{{ button_label }}</button>
 {{ form_end(form) }}

@@ -86,11 +86,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private Collection $mouvementsPieces;
 
+    /**
+     * @var Collection<int, CaissePossedee>
+     */
+    #[ORM\OneToMany(targetEntity: CaissePossedee::class, mappedBy: 'utilisateur', orphanRemoval: true)]
+    private Collection $caissesPossedees;
+
     public function __construct()
     {
         $this->inventaires = new ArrayCollection();
         $this->equipes = new ArrayCollection();
         $this->mouvementsPieces = new ArrayCollection();
+        $this->caissesPossedees = new ArrayCollection();
         $this->pseudo = 'Joueur-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
@@ -419,6 +426,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         MouvementPieces $mouvement,
     ): static {
         $this->mouvementsPieces->removeElement($mouvement);
+
+        return $this;
+    }
+
+    /** @return Collection<int, CaissePossedee> */
+    public function getCaissesPossedees(): Collection
+    {
+        return $this->caissesPossedees;
+    }
+
+    public function addCaissePossedee(CaissePossedee $caisse): static
+    {
+        if (!$this->caissesPossedees->contains($caisse)) {
+            $this->caissesPossedees->add($caisse);
+            $caisse->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCaissePossedee(CaissePossedee $caisse): static
+    {
+        $this->caissesPossedees->removeElement($caisse);
 
         return $this;
     }

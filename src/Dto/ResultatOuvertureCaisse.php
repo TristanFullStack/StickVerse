@@ -21,6 +21,7 @@ final readonly class ResultatOuvertureCaisse
         public int $caissesOffertesRestantes,
         public bool $peutOuvrirEncore,
         public bool $rejouee = false,
+        public int $caissesPossedeesRestantes = 0,
     ) {
     }
 }

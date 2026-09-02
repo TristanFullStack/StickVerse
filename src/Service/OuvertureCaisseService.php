@@ -29,6 +29,7 @@ final class OuvertureCaisseService
         private readonly TirageCaisseService $tirageCaisseService,
         private readonly EntityManagerInterface $entityManager,
         private readonly ?MouvementPiecesService $mouvementPiecesService = null,
+        private readonly ?InventaireCaisseService $inventaireCaisseService = null,
     ) {
     }
 
@@ -95,8 +96,14 @@ final class OuvertureCaisseService
                     ->tirer($caisse, $contenus);
 
                 $prix = max(0, (int) $caisse->getPrix());
-                $caisseOfferte = $caisse->getSlug() === Caisse::SLUG_PREMIERS_RENFORTS
-                    && $joueur->consommerCaissePremiersRenforts();
+                $caissePossedee = $this->inventaireCaisseService?->consommer(
+                    $joueur,
+                    $caisse,
+                ) ?? false;
+                $caisseOfferte = $caissePossedee || (
+                    $caisse->getSlug() === Caisse::SLUG_PREMIERS_RENFORTS
+                    && $joueur->consommerCaissePremiersRenforts()
+                );
 
                 if (!$caisseOfferte && !$joueur->debiterPieces($prix)) {
                     throw new SoldePiecesInsuffisantException(
@@ -290,8 +297,15 @@ final class OuvertureCaisseService
             }
         }
 
-        $peutOuvrirEncore = $stickmenDisponibles !== [] && (
+        $possessions = $this->inventaireCaisseService?->compterPourCaisse($joueur, $caisse) ?? 0;
+        $caissesRestantes = $possessions + (
             $caisse->getSlug() === Caisse::SLUG_PREMIERS_RENFORTS
+                ? $joueur->getCaissesPremiersRenforts()
+                : 0
+        );
+        $peutOuvrirEncore = $stickmenDisponibles !== [] && (
+            $possessions > 0
+            || $caisse->getSlug() === Caisse::SLUG_PREMIERS_RENFORTS
                 && $joueur->getCaissesPremiersRenforts() > 0
             || $joueur->getPieces() >= max(0, (int) $caisse->getPrix())
         );
@@ -309,6 +323,7 @@ final class OuvertureCaisseService
             $joueur->getCaissesPremiersRenforts(),
             $peutOuvrirEncore,
             $rejouee,
+            $caissesRestantes,
         );
     }
 }
