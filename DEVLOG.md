@@ -8178,6 +8178,122 @@ Le profil est désormais lisible et centré sur le joueur, toutes les récompens
 notification, les administrateurs peuvent préparer les annonces du jeu, et le catalogue explique clairement le
 contenu des caisses ainsi que l’origine de chaque Stickman.
 
+## J90 — Implémenter l’ouverture animée et sécurisée des caisses
+
+### Objectif
+
+J90 remplace l’ancienne ouverture immédiatement révélée par une vraie séquence de jeu. Le serveur choisit et attribue
+le Stickman avant l’animation, tandis que le navigateur se limite à présenter le résultat déjà enregistré.
+
+### Tirage autoritaire côté Symfony
+
+Le nouveau `TirageCaisseService` centralise la lecture du contenu réel de la caisse et le tirage pondéré :
+
+- seuls les Stickmans actifs, réellement rattachés à la caisse et associés à un poids positif sont éligibles ;
+- le poids total et le tirage restent exclusivement côté PHP avec `random_int` ;
+- aucun identifiant de récompense envoyé par le navigateur n’est lu par le serveur ;
+- les taux existants restent administrables depuis les associations caisse/Stickman et ne sont pas dupliqués dans le
+  JavaScript.
+
+La réponse d’ouverture transmet uniquement les données nécessaires à l’affichage : contenu du rouleau, carte gagnée,
+statistiques, puissance, état nouveau ou doublon, progression de collection et ressources restantes.
+
+### Transaction, verrou et protection contre les doublons
+
+L’achat, le tirage, la consommation d’une caisse offerte, le mouvement de pièces, l’ajout à l’inventaire et le reçu
+d’ouverture sont exécutés dans une transaction Doctrine unique.
+
+Le joueur est verrouillé en écriture pendant l’opération. Cette protection empêche deux ouvertures concurrentes de
+dépenser le même solde ou la même caisse offerte.
+
+Chaque formulaire reçoit également un jeton aléatoire de 64 caractères. La nouvelle entité `OuvertureCaisse` conserve
+ce jeton avec le résultat attribué. Si un double clic ou une répétition HTTP rejoue exactement la même demande :
+
+- le même reçu et le même résultat sont renvoyés ;
+- aucune pièce ou caisse supplémentaire n’est consommée ;
+- aucune quantité supplémentaire n’est ajoutée à l’inventaire ;
+- aucun second mouvement de pièces n’est créé.
+
+La route conserve l’authentification, la validation de disponibilité de la caisse et la protection CSRF. Les réponses
+JSON privées ainsi que les pages d’ouverture sont marquées `no-store` afin qu’un résultat personnel ne soit pas mis en
+cache et que le navigateur ne puisse pas mélanger un ancien HTML avec un nouveau contrôleur d’animation.
+
+### Rouleau d’ouverture
+
+Le contrôleur Stimulus `caisse_ouverture_controller.js` intercepte le formulaire puis attend la réponse définitive du
+serveur avant de lancer le rouleau.
+
+Une phase de chargement distincte reste visible pendant cette vérification, sans révéler au joueur le fonctionnement
+interne du tirage. Le rouleau demeure masqué tant que ses cartes ne sont pas entièrement construites, ce qui évite
+d’afficher un bandeau vide. Si la réponse dépasse quinze secondes, l’interface propose une reprise sûre avec le même
+jeton au lieu de rester bloquée indéfiniment.
+
+Les quatre phases de l’overlay (`overlay`, chargement, rouleau et révélation) possèdent une règle CSS explicite pour
+respecter l’attribut `hidden`. Le chargement, le défilement et le résultat ne peuvent ainsi plus rester visibles ou se
+superposer en dehors de leur étape.
+
+La séquence :
+
+- affiche uniquement les Stickmans disponibles dans la caisse ouverte ;
+- fait défiler les cartes horizontalement avec `translate3d` ;
+- démarre rapidement puis ralentit avec une courbe d’accélération dédiée ;
+- dure environ quatre à cinq secondes selon la rareté ;
+- calcule la position finale depuis la largeur réelle des cartes et du viewport ;
+- s’arrête exactement sur la récompense serveur sous un marqueur central fixe ;
+- n’utilise jamais `Math.random` et ne fabrique pas de faux résultat presque gagné.
+
+Une fermeture reste possible à tout moment. Fermer l’overlay ne rejoue pas l’ouverture et ne perd pas le gain déjà
+enregistré. Le bouton « Ouvrir une autre caisse » reçoit un nouveau jeton serveur avant de relancer une séquence.
+
+### Révélation et raretés
+
+À l’arrêt du rouleau, les cartes non gagnantes s’assombrissent et la gagnante est mise en avant. La révélation affiche :
+
+- l’illustration et le nom ;
+- la rareté R1 à R5 ;
+- le rôle actuellement non défini dans les données historiques ;
+- la puissance, les PV, l’attaque et la défense ;
+- les passifs lorsqu’ils seront renseignés, avec un état vide explicite aujourd’hui ;
+- `NOUVEAU !` pour une première obtention ou `POSSÉDÉ xN` pour un doublon ;
+- le nom et la progression de la collection après attribution ;
+- un message spécial lorsque la collection vient d’être complétée.
+
+Les révélations montent progressivement en intensité : neutre en R1, verte en R2, bleue en R3, violette avec
+particules en R4 et dorée avec flash, glow et particules renforcées en R5.
+
+### Responsive et actions finales
+
+L’overlay occupe le viewport sans créer de débordement horizontal. Les cartes du rouleau, la carte révélée et les
+boutons se réorganisent sous 700 pixels pour rester utilisables sur téléphone. Le marqueur reste centré quelle que soit
+la largeur disponible. Le réglage système de réduction des animations est également respecté.
+
+Après la révélation, le joueur peut :
+
+- continuer et fermer proprement la séquence ;
+- ouvrir une autre caisse s’il possède encore la ressource nécessaire ;
+- rejoindre directement sa collection.
+
+### Migration et vérifications
+
+La migration `Version20260902110000` crée la table des reçus d’ouverture et ses relations vers le joueur, la caisse et
+le Stickman obtenu.
+
+- Syntaxe PHP validée sur les nouveaux fichiers.
+- Syntaxe JavaScript validée avec Node.js.
+- Conteneur Symfony et 57 templates Twig validés.
+- Route d’ouverture et AssetMapper vérifiés.
+- Mapping et schéma Doctrine validés et synchronisés.
+- Migration appliquée aux bases de développement et de test.
+- Contrôle visuel effectué en format PC et téléphone 390 × 844 sans débordement horizontal.
+- Tests ajoutés pour le tirage éligible, le JSON d’animation, la falsification, l’idempotence et la collection complète.
+- Suite complète validée : 265 tests et 2 049 assertions.
+
+### Résultat
+
+L’ouverture d’une caisse est désormais une séquence de jeu complète, fluide et progressive, sans déplacer la source de
+vérité vers le navigateur. Une récompense est choisie, payée et enregistrée une seule fois côté Symfony avant sa
+révélation, même en cas de double clic, de requête répétée ou de tentative de falsification du résultat.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

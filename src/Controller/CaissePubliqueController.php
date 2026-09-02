@@ -2,12 +2,18 @@
 
 namespace App\Controller;
 
+use App\Dto\ResultatOuvertureCaisse;
 use App\Entity\Caisse;
+use App\Entity\Stickman;
 use App\Entity\User;
+use App\Exception\OuvertureCaisseImpossibleException;
 use App\Exception\SoldePiecesInsuffisantException;
 use App\Repository\CaisseRepository;
 use App\Service\OuvertureCaisseService;
+use App\Service\ScorePuissanceService;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,25 +26,25 @@ final class CaissePubliqueController extends AbstractController
     {
         $caisses = $caisseRepository->trouverDisponibles();
 
-        return $this->render('caisse_publique/index.html.twig', [
+        return $this->sansCache($this->render('caisse_publique/index.html.twig', [
             'caisses' => $caisses,
-        ]);
+            'jetons_ouverture' => $this->genererJetons($caisses),
+        ]));
     }
 
     #[Route('/caisses/{id}', name: 'app_caisse_publique_show', methods: ['GET'])]
     public function show(Caisse $caisse): Response
     {
-        if (!$caisse->isStatutActif() || ($caisse->getCollectionJeu() !== null && !$caisse->getCollectionJeu()->estDisponibleA(new \DateTimeImmutable()))) {
-            throw $this->createNotFoundException('Cette caisse est indisponible.');
-        }
+        $this->verifierDisponibilite($caisse);
 
         $contenus = $caisse->getContenus()->toArray();
         usort($contenus, static fn ($a, $b): int => ($b->getProbabilite() <=> $a->getProbabilite()));
 
-        return $this->render('caisse_publique/show.html.twig', [
+        return $this->sansCache($this->render('caisse_publique/show.html.twig', [
             'caisse' => $caisse,
             'contenus' => $contenus,
-        ]);
+            'jeton_ouverture' => bin2hex(random_bytes(32)),
+        ]));
     }
 
     #[Route('/caisses/{id}/ouvrir', name: 'app_caisse_ouvrir', methods: ['POST'])]
@@ -46,58 +52,193 @@ final class CaissePubliqueController extends AbstractController
     public function ouvrir(
         Request $request,
         Caisse $caisse,
-        OuvertureCaisseService $ouvertureCaisseService
+        OuvertureCaisseService $ouvertureCaisseService,
+        ScorePuissanceService $scorePuissanceService,
     ): Response {
-        if (!$caisse->isStatutActif()
-            || $caisse->getCollectionJeu() !== null
-            && !$caisse->getCollectionJeu()->estDisponibleA(new \DateTimeImmutable())) {
-            throw $this->createNotFoundException(
-                'Cette caisse est indisponible.'
-            );
-        }
+        $this->verifierDisponibilite($caisse);
+        $requeteJson = $request->isXmlHttpRequest()
+            || str_contains((string) $request->headers->get('Accept'), 'application/json');
 
         if (!$this->isCsrfTokenValid(
             'ouvrir'.$caisse->getId(),
-            $request->getPayload()->getString('_token')
+            $request->getPayload()->getString('_token'),
         )) {
-            throw $this->createAccessDeniedException(
-                'Jeton CSRF invalide.'
-            );
+            if ($requeteJson) {
+                return $this->reponseJsonErreur('Jeton CSRF invalide.', Response::HTTP_FORBIDDEN);
+            }
+
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
         $utilisateur = $this->getUser();
-
         if (!$utilisateur instanceof User) {
             throw $this->createAccessDeniedException();
         }
 
         try {
-            $stickman = $ouvertureCaisseService->ouvrir(
+            $resultat = $ouvertureCaisseService->ouvrirAvecJeton(
                 $caisse,
-                $utilisateur
+                $utilisateur,
+                $request->getPayload()->getString('_ouverture'),
             );
         } catch (SoldePiecesInsuffisantException $exception) {
+            if ($requeteJson) {
+                return $this->reponseJsonErreur($exception->getMessage(), Response::HTTP_CONFLICT);
+            }
+
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_caisse_publique');
+        } catch (OuvertureCaisseImpossibleException $exception) {
+            if ($requeteJson) {
+                return $this->reponseJsonErreur($exception->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
             $this->addFlash('error', $exception->getMessage());
 
             return $this->redirectToRoute('app_caisse_publique');
         }
 
-        if ($stickman === null) {
-            $this->addFlash(
-                'error',
-                'Cette caisse ne contient aucun Stickman.'
-            );
-        } else {
-            $this->addFlash(
-                'success',
-                sprintf(
-                    'Tu as obtenu : %s. Solde restant : %d pièces.',
-                    $stickman->getNom(),
-                    $utilisateur->getPieces(),
-                )
-            );
+        if ($requeteJson) {
+            $reponse = $this->json($this->normaliserResultat(
+                $resultat,
+                $scorePuissanceService,
+            ));
+            $reponse->setPrivate();
+            $reponse->setMaxAge(0);
+            $reponse->headers->addCacheControlDirective('no-store');
+
+            return $reponse;
         }
 
+        $this->addFlash(
+            'success',
+            'Caisse ouverte. Retrouve le résultat dans ta collection.',
+        );
+
         return $this->redirectToRoute('app_caisse_publique');
+    }
+
+    private function verifierDisponibilite(Caisse $caisse): void
+    {
+        if (
+            !$caisse->isStatutActif()
+            || $caisse->getCollectionJeu() !== null
+                && !$caisse->getCollectionJeu()->estDisponibleA(new DateTimeImmutable())
+        ) {
+            throw $this->createNotFoundException('Cette caisse est indisponible.');
+        }
+    }
+
+    /**
+     * @param list<Caisse> $caisses
+     * @return array<int, string>
+     */
+    private function genererJetons(array $caisses): array
+    {
+        if (!$this->getUser() instanceof User) {
+            return [];
+        }
+
+        $jetons = [];
+        foreach ($caisses as $caisse) {
+            if ($caisse->getId() !== null) {
+                $jetons[$caisse->getId()] = bin2hex(random_bytes(32));
+            }
+        }
+
+        return $jetons;
+    }
+
+    /** @return array<string, mixed> */
+    private function normaliserResultat(
+        ResultatOuvertureCaisse $resultat,
+        ScorePuissanceService $scorePuissanceService,
+    ): array {
+        $collection = $resultat->caisse->getCollectionJeu();
+
+        return [
+            'ok' => true,
+            'openingId' => $resultat->ouvertureId,
+            'replayed' => $resultat->rejouee,
+            'crate' => [
+                'id' => $resultat->caisse->getId(),
+                'name' => $resultat->caisse->getNom(),
+            ],
+            'roulette' => array_map(
+                fn (Stickman $stickman): array => $this->normaliserStickman(
+                    $stickman,
+                    $scorePuissanceService,
+                ),
+                $resultat->stickmenDisponibles,
+            ),
+            'reward' => [
+                ...$this->normaliserStickman($resultat->stickman, $scorePuissanceService),
+                'isNew' => $resultat->nouveau,
+                'quantity' => $resultat->quantiteApres,
+            ],
+            'collection' => [
+                'name' => $collection?->getNom() ?? 'Catalogue général',
+                'owned' => $resultat->collectionPossedes,
+                'total' => $resultat->collectionTotal,
+                'complete' => $resultat->nouveau
+                    && $resultat->collectionTotal > 0
+                    && $resultat->collectionPossedes >= $resultat->collectionTotal,
+            ],
+            'wallet' => [
+                'pieces' => $resultat->soldePieces,
+                'freeCrates' => $resultat->caissesOffertesRestantes,
+            ],
+            'canOpenAgain' => $resultat->peutOuvrirEncore,
+            'nextOpeningToken' => bin2hex(random_bytes(32)),
+            'inventoryUrl' => $this->generateUrl('app_collection'),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function normaliserStickman(
+        Stickman $stickman,
+        ScorePuissanceService $scorePuissanceService,
+    ): array {
+        return [
+            'id' => $stickman->getId(),
+            'name' => $stickman->getNom(),
+            'slug' => $stickman->getSlug(),
+            'image' => '/images/stickmen/'.rawurlencode((string) $stickman->getImage()),
+            'rarity' => max(1, min(5, (int) $stickman->getRarete())),
+            'role' => 'Non défini',
+            'power' => $scorePuissanceService->calculerStickman($stickman),
+            'hp' => $stickman->getPv(),
+            'attack' => $stickman->getAttaque(),
+            'defense' => $stickman->getDefense(),
+            'passives' => [],
+            'wikiUrl' => $this->generateUrl('app_wiki_show', [
+                'slug' => $stickman->getSlug(),
+            ]),
+        ];
+    }
+
+    private function reponseJsonErreur(string $message, int $statut): JsonResponse
+    {
+        $reponse = $this->json([
+            'ok' => false,
+            'error' => $message,
+        ], $statut);
+        $reponse->setPrivate();
+        $reponse->setMaxAge(0);
+        $reponse->headers->addCacheControlDirective('no-store');
+
+        return $reponse;
+    }
+
+    private function sansCache(Response $reponse): Response
+    {
+        $reponse->setPrivate();
+        $reponse->setMaxAge(0);
+        $reponse->setSharedMaxAge(0);
+        $reponse->headers->addCacheControlDirective('no-store');
+        $reponse->headers->addCacheControlDirective('must-revalidate');
+
+        return $reponse;
     }
 }

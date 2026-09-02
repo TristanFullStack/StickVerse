@@ -1,10 +1,70 @@
 {% extends 'base.html.twig' %}
+
 {% block title %}{{ caisse.nom }} — StickVerse{% endblock %}
+
 {% block body %}
+<div data-controller="caisse-ouverture">
     <p><a href="{{ path('app_caisse_publique') }}">← Retour aux caisses</a></p>
+
     <section class="catalogue-detail caisse-detail">
-        <div><h1>{{ caisse.nom }}</h1><img class="caisse-detail-image" src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}"></div>
-        <div><p>{{ caisse.description }}</p><p><strong>Collection :</strong> {{ caisse.collectionJeu ? caisse.collectionJeu.nom ~ ' (saison ' ~ caisse.collectionJeu.saison ~ ')' : 'Catalogue général' }}</p><p><strong>Prix :</strong> {{ caisse.prix }} pièces</p></div>
+        <div>
+            <h1>{{ caisse.nom }}</h1>
+            <img class="caisse-detail-image" src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}">
+        </div>
+        <div>
+            <p>{{ caisse.description }}</p>
+            <p><strong>Collection :</strong> {{ caisse.collectionJeu ? caisse.collectionJeu.nom ~ ' (saison ' ~ caisse.collectionJeu.saison ~ ')' : 'Catalogue général' }}</p>
+            <p><strong>Prix :</strong> {{ caisse.prix }} pièces</p>
+
+            {% if app.user %}
+                {% set caisseOfferte = caisse.slug == constant('App\\Entity\\Caisse::SLUG_PREMIERS_RENFORTS') and app.user.caissesPremiersRenforts > 0 %}
+                <form
+                    method="post"
+                    action="{{ path('app_caisse_ouvrir', {'id': caisse.id}) }}"
+                    data-action="submit->caisse-ouverture#ouvrir"
+                    data-caisse-ouverture-target="form"
+                    data-caisse-id="{{ caisse.id }}"
+                >
+                    <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse.id) }}">
+                    <input type="hidden" name="_ouverture" value="{{ jeton_ouverture }}">
+                    <button
+                        type="submit"
+                        data-opening-submit
+                        {% if not caisseOfferte and app.user.pieces < caisse.prix %}disabled{% endif %}
+                    >
+                        {% if caisseOfferte %}Ouvrir une caisse offerte{% elseif app.user.pieces < caisse.prix %}Solde insuffisant{% else %}Ouvrir la caisse{% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <p><a href="{{ path('app_login') }}">Connecte-toi pour ouvrir cette caisse</a></p>
+            {% endif %}
+        </div>
     </section>
-    <section class="profile-section"><h2>Stickmans obtenables</h2><p>Chaque ouverture sélectionne un Stickman selon ces probabilités.</p><div class="caisse-contents-list">{% for contenu in contenus %}<article class="caisse-content-row"><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}"><img src="{{ asset('images/stickmen/' ~ contenu.stickman.image) }}" alt="{{ contenu.stickman.nom }}"></a><div><h3><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">{{ contenu.stickman.nom }}</a></h3><p>Probabilité : {{ contenu.probabilite|number_format(2, ',', ' ') }} %</p></div></article>{% else %}<p>Cette caisse est vide.</p>{% endfor %}</div></section>
+
+    <div class="crate-opening-page-error" data-caisse-ouverture-target="pageError" role="alert" hidden></div>
+
+    <section class="profile-section">
+        <h2>Stickmans obtenables</h2>
+        <p>Chaque ouverture sélectionne un Stickman selon ces probabilités.</p>
+        <div class="caisse-contents-list">
+            {% for contenu in contenus %}
+                <article class="caisse-content-row">
+                    <a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">
+                        <img src="{{ asset('images/stickmen/' ~ contenu.stickman.image) }}" alt="{{ contenu.stickman.nom }}">
+                    </a>
+                    <div>
+                        <h3><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">{{ contenu.stickman.nom }}</a></h3>
+                        <p>Probabilité : {{ contenu.probabilite|number_format(2, ',', ' ') }} %</p>
+                    </div>
+                </article>
+            {% else %}
+                <p>Cette caisse est vide.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% if app.user %}
+        {% include 'caisse_publique/_ouverture_overlay.html.twig' %}
+    {% endif %}
+</div>
 {% endblock %}

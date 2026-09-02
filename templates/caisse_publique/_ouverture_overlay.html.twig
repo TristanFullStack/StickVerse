@@ -1,0 +1,78 @@
+<div
+    class="crate-opening-overlay"
+    data-caisse-ouverture-target="overlay"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="crate-opening-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="crate-opening-title"
+    >
+        <button
+            class="crate-opening-close"
+            type="button"
+            data-action="caisse-ouverture#fermer"
+            aria-label="Fermer l'ouverture"
+        >×</button>
+
+        <header class="crate-opening-heading">
+            <p class="crate-opening-kicker">OUVERTURE STICKVERSE</p>
+            <h2 id="crate-opening-title" data-caisse-ouverture-target="title">Préparation de la caisse…</h2>
+            <p data-caisse-ouverture-target="status" role="status">Le serveur sécurise ton tirage.</p>
+        </header>
+
+        <div class="crate-opening-loading" data-caisse-ouverture-target="loadingPhase">
+            <span class="crate-opening-spinner" aria-hidden="true"></span>
+            <strong>Ouverture de la caisse…</strong>
+            <p>Préparation des cartes du rouleau.</p>
+        </div>
+
+        <div class="crate-roulette-phase" data-caisse-ouverture-target="roulettePhase" hidden>
+            <div class="crate-roulette-shell">
+                <div class="crate-roulette-marker" aria-hidden="true"><span></span></div>
+                <div class="crate-roulette-viewport" data-caisse-ouverture-target="viewport">
+                    <div class="crate-roulette-track" data-caisse-ouverture-target="track"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="crate-reveal" data-caisse-ouverture-target="reveal" hidden>
+            <div class="crate-reveal-particles" data-caisse-ouverture-target="particles" aria-hidden="true"></div>
+            <p class="crate-reveal-status" data-caisse-ouverture-target="acquisitionStatus"></p>
+            <article class="crate-reveal-card" data-caisse-ouverture-target="resultCard">
+                <div class="crate-reveal-visual">
+                    <span class="crate-reveal-rarity" data-caisse-ouverture-target="rarity"></span>
+                    <img data-caisse-ouverture-target="image" src="" alt="">
+                </div>
+                <div class="crate-reveal-details">
+                    <h3 data-caisse-ouverture-target="name"></h3>
+                    <p>Rôle : <strong data-caisse-ouverture-target="role"></strong></p>
+                    <p>Puissance : <strong data-caisse-ouverture-target="power"></strong></p>
+                    <dl class="crate-reveal-stats">
+                        <div><dt>PV</dt><dd data-caisse-ouverture-target="hp"></dd></div>
+                        <div><dt>ATK</dt><dd data-caisse-ouverture-target="attack"></dd></div>
+                        <div><dt>DEF</dt><dd data-caisse-ouverture-target="defense"></dd></div>
+                    </dl>
+                    <div class="crate-reveal-passives">
+                        <strong>Passifs</strong>
+                        <div data-caisse-ouverture-target="passives"></div>
+                    </div>
+                </div>
+            </article>
+
+            <p class="crate-collection-progress" data-caisse-ouverture-target="collectionProgress"></p>
+
+            <div class="crate-opening-actions">
+                <button type="button" data-action="caisse-ouverture#fermer">Continuer</button>
+                <button
+                    type="button"
+                    data-caisse-ouverture-target="openAgainButton"
+                    data-action="caisse-ouverture#ouvrirEncore"
+                >Ouvrir une autre caisse</button>
+                <a data-caisse-ouverture-target="inventoryLink" href="">Voir dans l'inventaire</a>
+            </div>
+        </div>
+    </section>
+</div>

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\CollectionJeu;
 use App\Entity\Stickman;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -15,6 +16,14 @@ class StickmanRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Stickman::class);
+    }
+
+    public function compterActifsPourCollection(CollectionJeu $collection): int
+    {
+        return $this->count([
+            'collectionJeu' => $collection,
+            'statutActif' => true,
+        ]);
     }
 
     /**

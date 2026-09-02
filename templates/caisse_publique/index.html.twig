@@ -3,6 +3,7 @@
 {% block title %}Caisses - StickVerse{% endblock %}
 
 {% block body %}
+<div data-controller="caisse-ouverture">
     <h1>Les caisses StickVerse</h1>
 
     {% if app.user %}
@@ -16,47 +17,46 @@
     {% endif %}
 
     {% for message in app.flashes('success') %}
-        <div class="flash-success">
-            {{ message }}
-        </div>
+        <div class="flash-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="flash-error">{{ message }}</div>
     {% endfor %}
 
-    {% for message in app.flashes('error') %}
-        <div class="flash-error">
-            {{ message }}
-        </div>
-    {% endfor %}
+    <div class="crate-opening-page-error" data-caisse-ouverture-target="pageError" role="alert" hidden></div>
 
     {% if caisses is empty %}
         <p>Aucune caisse disponible pour le moment.</p>
     {% else %}
         <div class="caisses-list">
-
             {% for caisse in caisses %}
+                {% set caisseOfferte = app.user and caisse.slug == constant('App\\Entity\\Caisse::SLUG_PREMIERS_RENFORTS') and app.user.caissesPremiersRenforts > 0 %}
                 <article class="caisse-card" id="caisse-{{ caisse.slug }}">
-
-                    {% set caisseOfferte = app.user and caisse.slug == constant('App\\Entity\\Caisse::SLUG_PREMIERS_RENFORTS') and app.user.caissesPremiersRenforts > 0 %}
                     <a class="caisse-card-main" href="{{ path('app_caisse_publique_show', {'id': caisse.id}) }}">
                         <h2>{{ caisse.nom }}</h2>
                         <img src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}" width="250">
                         <p>{{ caisse.description }}</p>
                         <p>Collection : {{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Catalogue général' }}</p>
-                        {% if caisseOfferte %}<p>Ouverture offerte — caisse de départ</p>{% else %}<p>Prix : {{ caisse.prix }} pièces</p>{% endif %}
+                        {% if caisseOfferte %}
+                            <p>Ouverture offerte — caisse de départ</p>
+                        {% else %}
+                            <p>Prix : {{ caisse.prix }} pièces</p>
+                        {% endif %}
                     </a>
 
                     {% if app.user %}
                         <form
                             method="post"
                             action="{{ path('app_caisse_ouvrir', {'id': caisse.id}) }}"
+                            data-action="submit->caisse-ouverture#ouvrir"
+                            data-caisse-ouverture-target="form"
+                            data-caisse-id="{{ caisse.id }}"
                         >
-                            <input
-                                type="hidden"
-                                name="_token"
-                                value="{{ csrf_token('ouvrir' ~ caisse.id) }}"
-                            >
-
+                            <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse.id) }}">
+                            <input type="hidden" name="_ouverture" value="{{ jetons_ouverture[caisse.id] }}">
                             <button
                                 type="submit"
+                                data-opening-submit
                                 {% if not caisseOfferte and app.user.pieces < caisse.prix %}disabled{% endif %}
                             >
                                 {% if caisseOfferte %}
@@ -69,16 +69,15 @@
                             </button>
                         </form>
                     {% else %}
-                        <p>
-                            <a href="{{ path('app_login') }}">
-                                Connecte-toi pour ouvrir cette caisse
-                            </a>
-                        </p>
+                        <p><a href="{{ path('app_login') }}">Connecte-toi pour ouvrir cette caisse</a></p>
                     {% endif %}
-
                 </article>
             {% endfor %}
-
         </div>
     {% endif %}
+
+    {% if app.user %}
+        {% include 'caisse_publique/_ouverture_overlay.html.twig' %}
+    {% endif %}
+</div>
 {% endblock %}

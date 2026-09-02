@@ -4,12 +4,14 @@ namespace App\Tests\Controller;
 
 use App\Entity\Caisse;
 use App\Entity\CaisseStickman;
+use App\Entity\CollectionJeu;
 use App\Entity\Inventaire;
 use App\Entity\MouvementPieces;
 use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\InventaireRepository;
 use App\Repository\MouvementPiecesRepository;
+use App\Repository\OuvertureCaisseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -100,7 +102,7 @@ final class CaissePubliqueControllerTest extends WebTestCase
         $this->client->followRedirect();
         self::assertSelectorTextContains(
             '.flash-success',
-            'Solde restant : 880 pièces',
+            'Caisse ouverte. Retrouve le résultat dans ta collection.',
         );
         self::assertSelectorTextContains(
             '[data-solde-pieces-page]',
@@ -170,6 +172,159 @@ final class CaissePubliqueControllerTest extends WebTestCase
             'ne contient aucun Stickman',
         );
         self::assertSame(1000, $this->lireSolde($joueur));
+    }
+
+    public function testRetourneUnTirageServeurCompletPourLAnimation(): void
+    {
+        $joueur = $this->creerJoueur();
+        $caisse = $this->creerCaisse(120);
+
+        $resultat = $this->ouvrirJsonDepuisLaPage($joueur, $caisse);
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('content-type', 'application/json');
+        self::assertTrue(
+            $this->client->getResponse()->headers->hasCacheControlDirective('no-store')
+        );
+        self::assertTrue($resultat['ok']);
+        self::assertFalse($resultat['replayed']);
+        self::assertSame(880, $resultat['wallet']['pieces']);
+        self::assertTrue($resultat['reward']['isNew']);
+        self::assertSame(1, $resultat['reward']['quantity']);
+        self::assertSame($resultat['reward']['id'], $resultat['roulette'][0]['id']);
+        self::assertArrayHasKey('power', $resultat['reward']);
+        self::assertArrayHasKey('passives', $resultat['reward']);
+        self::assertArrayNotHasKey('weight', $resultat['roulette'][0]);
+        self::assertMatchesRegularExpression(
+            '/^[a-f0-9]{64}$/',
+            $resultat['nextOpeningToken'],
+        );
+    }
+
+    public function testRejouerLaMemeRequeteNeDebiteEtNeRecompenseQuUneFois(): void
+    {
+        $joueur = $this->creerJoueur();
+        $caisse = $this->creerCaisse(120);
+        $caisseId = $caisse->getId();
+        self::assertNotNull($caisseId);
+
+        $this->client->loginUser($joueur);
+        $page = $this->client->request('GET', '/caisses');
+        $formulaire = $page
+            ->filter(sprintf('form[action="/caisses/%d/ouvrir"]', $caisseId))
+            ->form();
+        $donnees = $formulaire->getPhpValues();
+
+        $this->client->submit($formulaire, [], [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]);
+        $premier = json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        $this->client->request(
+            'POST',
+            '/caisses/'.$caisseId.'/ouvrir',
+            $donnees,
+            [],
+            [
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+            ],
+        );
+        $second = json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame($premier['openingId'], $second['openingId']);
+        self::assertTrue($second['replayed']);
+        self::assertSame(880, $this->lireSolde($joueur));
+
+        $inventaire = $this->trouverInventaire($joueur, $caisse);
+        self::assertInstanceOf(Inventaire::class, $inventaire);
+        self::assertSame(1, $inventaire->getQuantite());
+        self::assertCount(1, static::getContainer()
+            ->get(MouvementPiecesRepository::class)
+            ->findBy(['utilisateur' => $joueur]));
+        self::assertCount(1, static::getContainer()
+            ->get(OuvertureCaisseRepository::class)
+            ->findBy(['utilisateur' => $joueur]));
+    }
+
+    public function testLeNavigateurNePeutPasImposerLaRecompense(): void
+    {
+        $joueur = $this->creerJoueur();
+        $caisse = $this->creerCaisse(120);
+        $stickmanAttendu = $caisse->getContenus()->first()->getStickman();
+        self::assertInstanceOf(Stickman::class, $stickmanAttendu);
+
+        $resultat = $this->ouvrirJsonDepuisLaPage(
+            $joueur,
+            $caisse,
+            ['reward_id' => '999999', 'stickman' => '999999'],
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame($stickmanAttendu->getId(), $resultat['reward']['id']);
+    }
+
+    public function testLaPagePrepareUnJetonUniqueEtLOverlayAccessible(): void
+    {
+        $joueur = $this->creerJoueur();
+        $caisse = $this->creerCaisse(120);
+        $this->client->loginUser($joueur);
+
+        $page = $this->client->request('GET', '/caisses');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString(
+            'no-store',
+            (string) $this->client->getResponse()->headers->get('Cache-Control'),
+        );
+        self::assertSelectorExists('[data-controller="caisse-ouverture"]');
+        self::assertSelectorExists('[data-caisse-ouverture-target="overlay"]');
+        self::assertSelectorExists('.crate-opening-dialog[role="dialog"]');
+        self::assertSelectorExists('[data-caisse-ouverture-target="loadingPhase"]');
+        self::assertSelectorExists('[data-caisse-ouverture-target="roulettePhase"][hidden]');
+        $jeton = $page->filter(sprintf(
+            'form[action="/caisses/%d/ouvrir"] input[name="_ouverture"]',
+            $caisse->getId(),
+        ))->attr('value');
+        self::assertMatchesRegularExpression('/^[a-f0-9]{64}$/', (string) $jeton);
+    }
+
+    public function testRetourneLaProgressionEtLaCompletionDeCollection(): void
+    {
+        $joueur = $this->creerJoueur();
+        $caisse = $this->creerCaisse(120);
+        $suffixe = bin2hex(random_bytes(5));
+        $collection = (new CollectionJeu())
+            ->setNom('Collection test '.$suffixe)
+            ->setSlug('collection-test-'.$suffixe)
+            ->setDescription('Collection terminée par une ouverture de test.')
+            ->setSaison(1)
+            ->setStatutActif(true);
+        $stickman = $caisse->getContenus()->first()->getStickman();
+        self::assertInstanceOf(Stickman::class, $stickman);
+        $caisse->setCollectionJeu($collection);
+        $stickman->setCollectionJeu($collection);
+        $this->entityManager->persist($collection);
+        $this->entityManager->flush();
+
+        $resultat = $this->ouvrirJsonDepuisLaPage($joueur, $caisse);
+
+        self::assertSame($collection->getNom(), $resultat['collection']['name']);
+        self::assertSame(1, $resultat['collection']['owned']);
+        self::assertSame(1, $resultat['collection']['total']);
+        self::assertTrue($resultat['collection']['complete']);
     }
 
     private function creerJoueur(int $pieces = 1000): User
@@ -249,6 +404,49 @@ final class CaissePubliqueControllerTest extends WebTestCase
             ->form();
 
         $this->client->submit($formulaire);
+    }
+
+    /**
+     * @param array<string, string> $donneesSupplementaires
+     * @return array<string, mixed>
+     */
+    private function ouvrirJsonDepuisLaPage(
+        User $joueur,
+        Caisse $caisse,
+        array $donneesSupplementaires = [],
+    ): array {
+        $caisseId = $caisse->getId();
+        self::assertNotNull($caisseId);
+
+        $this->client->loginUser($joueur);
+        $page = $this->client->request('GET', '/caisses');
+        $formulaire = $page
+            ->filter(sprintf('form[action="/caisses/%d/ouvrir"]', $caisseId))
+            ->form();
+
+        $entetes = [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ];
+
+        if ($donneesSupplementaires === []) {
+            $this->client->submit($formulaire, [], $entetes);
+        } else {
+            $this->client->request(
+                'POST',
+                '/caisses/'.$caisseId.'/ouvrir',
+                array_replace($formulaire->getPhpValues(), $donneesSupplementaires),
+                [],
+                $entetes,
+            );
+        }
+
+        return json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
     }
 
     private function trouverInventaire(
