@@ -6,6 +6,7 @@ use App\Repository\CaisseRepository;
 use App\Repository\CaisseStickmanRepository;
 use App\Repository\StickmanRepository;
 use App\Repository\UserRepository;
+use App\Repository\MouvementPiecesRepository;
 use App\Service\ConsoleAdministrationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,6 +47,14 @@ final class AdministrationController extends AbstractController
             'nombre_joueurs' => $userRepository->count([]),
             'commande' => $commande,
             'resultat' => $resultat,
+        ]);
+    }
+
+    #[Route('/recompenses', name: 'app_admin_recompenses', methods: ['GET'])]
+    public function recompenses(MouvementPiecesRepository $mouvementPiecesRepository): Response
+    {
+        return $this->render('admin/recompenses.html.twig', [
+            'mouvements' => $mouvementPiecesRepository->trouverRecompenses(),
         ]);
     }
 }

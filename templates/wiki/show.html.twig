@@ -3,20 +3,20 @@
 {% block title %}{{ stickman.nom }} - StickVerse{% endblock %}
 
 {% block body %}
+    <p><a href="{{ path('app_wiki') }}">← Retour au wiki</a></p>
     <h1>{{ stickman.nom }}</h1>
-
-    <img
-        src="{{ asset('images/stickmen/' ~ stickman.image) }}"
-        alt="{{ stickman.nom }}"
-        width="300"
-    >
-
-    <p>{{ stickman.description }}</p>
-
-    <p>Puissance : {{ puissance }}</p>
-    <p>PV : {{ stickman.pv }}</p>
-    <p>Attaque : {{ stickman.attaque }}</p>
-    <p>Défense : {{ stickman.defense }}</p>
-
-    <a href="{{ path('app_wiki') }}">Retour au wiki</a>
+    <section class="wiki-detail-grid">
+        <article class="stickman-card stickman-card--rarete-{{ stickman.rarete }} wiki-detail-card">
+            <h2>{{ stickman.nom }}</h2>
+            <img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
+            <p><strong>Puissance : {{ puissance }}</strong></p>
+            <p>PV : {{ stickman.pv }}</p><p>Attaque : {{ stickman.attaque }}</p><p>Défense : {{ stickman.defense }}</p>
+        </article>
+        <div class="wiki-detail-content">
+            <h2>Description</h2><p>{{ stickman.description }}</p>
+            <h2>Saison</h2><p>{{ stickman.collectionJeu ? 'Saison '~stickman.collectionJeu.saison~' — '~stickman.collectionJeu.nom : 'Catalogue général' }}</p>
+            <h2>Caisses disponibles</h2>
+            <ul>{% for contenu in caisses %}<li><a href="{{ path('app_caisse_publique_show', {id: contenu.caisse.id}) }}">{{ contenu.caisse.nom }}</a> — {{ contenu.probabilite|number_format(2, ',', ' ') }} %</li>{% else %}<li>Ce Stickman n’est associé à aucune caisse active.</li>{% endfor %}</ul>
+        </div>
+    </section>
 {% endblock %}

@@ -75,6 +75,20 @@ final class CaissePubliqueControllerTest extends WebTestCase
         self::assertNotNull($caisse->getId());
     }
 
+    public function testAfficheLeDetailEtLesProbabilitesDUneCaisse(): void
+    {
+        $caisse = $this->creerCaisse(120);
+        self::assertNotNull($caisse->getId());
+
+        $this->client->request('GET', '/caisses/'.$caisse->getId());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', (string) $caisse->getNom());
+        self::assertSelectorTextContains('.caisse-content-row', 'Probabilité : 100,00 %');
+        self::assertSelectorTextNotContains('.caisse-content-row', 'Poids');
+        self::assertSelectorExists('.caisse-content-row a[href^="/wiki/"]');
+    }
+
     public function testPayeLaCaisseEtAjouteLeStickman(): void
     {
         $joueur = $this->creerJoueur();

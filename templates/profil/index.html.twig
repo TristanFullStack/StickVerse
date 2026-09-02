@@ -57,6 +57,10 @@
 
     <section class="profile-section" aria-labelledby="statistiques-titre">
         <h2 id="statistiques-titre">Statistiques des combats</h2>
+        <nav class="profile-season-tabs" aria-label="Filtrer les statistiques par saison">
+            <a href="{{ path('app_profil') }}"{% if saisonSelectionnee is null %} aria-current="page"{% endif %}>Toutes les saisons</a>
+            {% for saison in saisonsDisponibles %}<a href="{{ path('app_profil', {saison: saison}) }}"{% if saisonSelectionnee == saison %} aria-current="page"{% endif %}>Saison {{ saison }}</a>{% endfor %}
+        </nav>
         <dl class="profile-stats">
             <div data-profile-stat="total">
                 <dt>Combats joués</dt>
@@ -83,6 +87,7 @@
         <p><a href="{{ path('app_modifier_mot_de_passe') }}">Modifier mon mot de passe</a></p>
     </section>
 
+    {% if false %}
     <section class="profile-section" aria-labelledby="mouvements-pieces-titre">
         <h2 id="mouvements-pieces-titre">Mouvements de pièces</h2>
         {% if profil.mouvementsPieces is empty %}
@@ -108,7 +113,9 @@
             </table>
         {% endif %}
     </section>
+    {% endif %}
 
+    {% if false %}
     <section class="profile-section profile-rewards" aria-labelledby="recompenses-titre" data-profile-recompenses>
         <h2 id="recompenses-titre">Récompenses</h2>
 
@@ -207,4 +214,5 @@
         {% endif %}
     </section>
     </section>
+    {% endif %}
 {% endblock %}

@@ -127,14 +127,9 @@ final class ProfilControllerTest extends WebTestCase
             '[data-profile-pieces]',
             '1000 pièces',
         );
-        self::assertSelectorTextContains(
-            '[data-profile-mouvements]',
-            'Ouverture de la caisse Origine',
-        );
-        self::assertSelectorTextContains(
-            '[data-profile-mouvements]',
-            '-120 pièces',
-        );
+        self::assertSelectorNotExists('[data-profile-mouvements]');
+        self::assertSelectorNotExists('[data-profile-recompenses]');
+        self::assertSelectorExists('.site-navigation a[href="/recompenses"]');
         self::assertSelectorExists('a[href="/profil/pseudo"]');
         self::assertSelectorTextContains(
             '[data-profile-account-type]',
@@ -192,18 +187,14 @@ final class ProfilControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         $this->client->loginUser($joueur);
-        $crawler = $this->client->request('GET', '/profil');
+        $crawler = $this->client->request('GET', '/recompenses');
         $form = $crawler->filter('[data-profile-recompense-quotidienne]')->form();
 
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/profil');
+        self::assertResponseRedirects('/recompenses');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('[data-profile-pieces]', '1100 pièces');
-        self::assertSelectorTextContains(
-            '[data-profile-mouvements]',
-            'Récompense quotidienne',
-        );
+        self::assertSelectorTextContains('[data-solde-pieces]', '1100 pièces');
         self::assertSelectorTextContains(
             '.alert-success',
             'Récompense quotidienne récupérée',
@@ -221,7 +212,7 @@ final class ProfilControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         $this->client->loginUser($joueur);
-        $this->client->request('GET', '/profil');
+        $this->client->request('GET', '/recompenses');
 
         self::assertSelectorNotExists('[data-profile-recompense-quotidienne]');
         self::assertSelectorTextContains(
@@ -249,16 +240,16 @@ final class ProfilControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         $this->client->loginUser($joueur);
-        $crawler = $this->client->request('GET', '/profil');
+        $crawler = $this->client->request('GET', '/recompenses');
         $form = $crawler
             ->filter('[data-profile-objectif="premier_combat"] form')
             ->form();
 
         $this->client->submit($form);
-        self::assertResponseRedirects('/profil');
+        self::assertResponseRedirects('/recompenses');
         $this->client->followRedirect();
 
-        self::assertSelectorTextContains('[data-profile-pieces]', '1050 pièces');
+        self::assertSelectorTextContains('[data-solde-pieces]', '1050 pièces');
         self::assertSelectorTextContains(
             '[data-profile-objectif="premier_combat"]',
             'Réclamé',

@@ -1,4 +1,4 @@
-{% set carteObtenue = possede is defined ? possede : (inventaire is defined and inventaire is not null) %}
+{% set carteObtenue = possede is defined ? possede : true %}
 <a
     class="stickman-card-link{{ carteObtenue ? '' : ' stickman-card-link--non-obtenue' }}"
     href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}"

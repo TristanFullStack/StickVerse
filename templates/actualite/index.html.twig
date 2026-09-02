@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}Actualités — StickVerse{% endblock %}
+{% block body %}
+    <h1>Actualités StickVerse</h1>
+    <p>Les nouveautés, saisons et évolutions du jeu.</p>
+    <div class="actualite-list">{% for actualite in actualites %}<article class="actualite-card"><h2><a href="{{ path('app_actualite_show', {slug: actualite.slug}) }}">{{ actualite.titre }}</a></h2><p class="actualite-meta">{{ actualite.datePublication ? actualite.datePublication|date('d/m/Y') : 'Annonce' }}{% if actualite.saison %} · Saison {{ actualite.saison.saison }}{% endif %}</p><p>{{ actualite.contenu|striptags|slice(0, 240) }}{% if actualite.contenu|length > 240 %}…{% endif %}</p><a href="{{ path('app_actualite_show', {slug: actualite.slug}) }}">Lire la suite</a></article>{% else %}<p>Aucune actualité publiée pour le moment.</p>{% endfor %}</div>
+{% endblock %}

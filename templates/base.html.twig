@@ -44,6 +44,10 @@
                     href="{{ path('app_caisse_publique') }}"
                     {% if navigation_route == 'app_caisse_publique' %}aria-current="page"{% endif %}
                 >Caisses</a>
+                <a
+                    href="{{ path('app_actualite_index') }}"
+                    {% if navigation_route starts with 'app_actualite' %}aria-current="page"{% endif %}
+                >Actualités</a>
 
                 {% if app.user %}
                     <a
@@ -62,6 +66,11 @@
                         href="{{ path('app_combats_en_ligne') }}"
                         {% if navigation_route == 'app_combats_en_ligne' or navigation_route == 'app_rapport_combat_en_ligne' or navigation_route starts with 'app_combat_en_ligne_' %}aria-current="page"{% endif %}
                     >Combats</a>
+                    <a
+                        href="{{ path('app_recompenses') }}"
+                        class="site-rewards-link"
+                        {% if navigation_route == 'app_recompenses' %}aria-current="page"{% endif %}
+                    >Récompenses{% if recompenses_disponibles(app.user) %} <span class="notification-bubble" title="Récompense disponible">!</span>{% endif %}</a>
                 {% endif %}
             </nav>
 
@@ -93,6 +102,8 @@
                         <a href="{{ path('app_caisse_index') }}" {% if navigation_route starts with 'app_caisse_' and navigation_route != 'app_caisse_stickman_index' and navigation_route != 'app_caisse_stickman_new' and navigation_route != 'app_caisse_stickman_show' and navigation_route != 'app_caisse_stickman_edit' and navigation_route != 'app_caisse_stickman_delete' %}aria-current="page"{% endif %}>Caisses</a>
                         <a href="{{ path('app_collection_jeu_index') }}" {% if navigation_route starts with 'app_collection_jeu_' %}aria-current="page"{% endif %}>Collections</a>
                         <a href="{{ path('app_caisse_stickman_index') }}" {% if navigation_route starts with 'app_caisse_stickman_' %}aria-current="page"{% endif %}>Contenu des caisses</a>
+                        <a href="{{ path('app_actualite_admin_index') }}" {% if navigation_route starts with 'app_actualite_admin_' %}aria-current="page"{% endif %}>Actualités</a>
+                        <a href="{{ path('app_admin_recompenses') }}" {% if navigation_route == 'app_admin_recompenses' %}aria-current="page"{% endif %}>Historique récompenses</a>
                     </div>
                 </nav>
             {% endif %}

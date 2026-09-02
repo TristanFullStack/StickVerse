@@ -203,6 +203,30 @@ class CombatRepository extends ServiceEntityRepository
         ];
     }
 
+    /** @return array{total:int, victoires:int, defaites:int, matchsNuls:int} */
+    public function calculerStatistiquesPourJoueurEtSaison(User $joueur, int $numeroSaison): array
+    {
+        $resultat = $this->createQueryBuilder('combat')
+            ->select('COUNT(combat.id) AS total')
+            ->addSelect('SUM(CASE WHEN combat.gagnant = :joueur THEN 1 ELSE 0 END) AS victoires')
+            ->addSelect('SUM(CASE WHEN combat.statut = :termine AND combat.gagnant IS NULL THEN 1 ELSE 0 END) AS matchsNuls')
+            ->innerJoin('combat.saisonClassement', 'saison')
+            ->andWhere('(combat.joueur1 = :joueur OR combat.joueur2 = :joueur)')
+            ->andWhere('saison.saison = :numeroSaison')
+            ->andWhere('combat.statut IN (:statuts)')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('numeroSaison', $numeroSaison)
+            ->setParameter('termine', Combat::STATUT_TERMINE)
+            ->setParameter('statuts', [Combat::STATUT_TERMINE, Combat::STATUT_ABANDONNE, Combat::STATUT_FORFAIT])
+            ->getQuery()->getSingleResult();
+
+        $total = (int) $resultat['total'];
+        $victoires = (int) $resultat['victoires'];
+        $matchsNuls = (int) $resultat['matchsNuls'];
+
+        return ['total' => $total, 'victoires' => $victoires, 'defaites' => max(0, $total - $victoires - $matchsNuls), 'matchsNuls' => $matchsNuls];
+    }
+
     public function compterDepuisPourJoueur(
         User $joueur,
         DateTimeImmutable $debut,

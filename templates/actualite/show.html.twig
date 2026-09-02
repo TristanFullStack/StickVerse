@@ -1,0 +1,3 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ actualite.titre }} — StickVerse{% endblock %}
+{% block body %}<article class="actualite-detail"><p><a href="{{ path('app_actualite_index') }}">← Toutes les actualités</a></p><h1>{{ actualite.titre }}</h1><p class="actualite-meta">{{ actualite.datePublication ? actualite.datePublication|date('d/m/Y H:i') : 'Annonce' }}{% if actualite.saison %} · Saison {{ actualite.saison.saison }} — {{ actualite.saison.nom }}{% endif %}</p><div class="actualite-content">{{ actualite.contenu|nl2br }}</div></article>{% endblock %}

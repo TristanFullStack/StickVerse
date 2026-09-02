@@ -8082,6 +8082,102 @@ Le joueur voit désormais toutes ses récompenses dans un espace unique, peut r�
 jusqu’à 100 pièces grâce au temps écoulé, puis compléter des missions quotidiennes et hebdomadaires. Sa collection
 montre clairement les cartes encore à obtenir sans masquer leur existence.
 
+## J89 — Séparer le profil, les récompenses et l’actualité
+
+### Objectif
+
+J89 clarifie les espaces destinés au joueur, centralise réellement toutes les récompenses et enrichit la consultation
+du catalogue StickVerse.
+
+### Profil consacré au joueur
+
+Le profil ne mélange plus les informations personnelles avec les récompenses. Il reste consacré au compte :
+
+- pseudo public et adresse électronique ;
+- solde et cote ELO ;
+- progression de la collection et accès aux équipes ;
+- modification du pseudo et du mot de passe ;
+- statistiques des combats.
+
+Les statistiques peuvent être consultées globalement ou filtrées grâce à un onglet par saison. La Saison 1 est le
+premier filtre disponible. Le calcul repose sur la saison réellement enregistrée sur les combats classés.
+
+### Onglet Récompenses et notification
+
+Un onglet `Récompenses` est ajouté à la navigation des joueurs. Une bulle de notification apparaît lorsqu’au moins
+une récompense peut être récupérée.
+
+La nouvelle page rassemble désormais :
+
+- la récompense quotidienne ;
+- le cumul horaire ;
+- les missions quotidiennes ;
+- les missions hebdomadaires ;
+- les objectifs permanents ;
+- les récompenses de fin de saison.
+
+Les formulaires de récupération redirigent vers cette page. Le classement conserve les informations de division,
+mais renvoie vers l’onglet Récompenses lorsqu’un gain de saison est prêt.
+
+Les récupérations sont maintenant envoyées en arrière-plan. Le contenu des récompenses, le solde et la bulle de
+notification sont actualisés sans recharger la page, ce qui conserve exactement la position de lecture du joueur.
+
+Le grisage des cartes manquantes est limité à `Ma collection`, où il sert réellement à visualiser les éléments encore
+à obtenir. Le Wiki et la page Saison conservent toutes les couleurs de rareté, que le joueur possède la carte ou non.
+
+L’historique des récompenses n’est plus exposé aux joueurs ordinaires. Une page dédiée, protégée par `ROLE_ADMIN`,
+permet aux administrateurs de consulter les cent derniers crédits de récompense avec leur date, leur joueur, leur
+type, leur libellé et leur montant.
+
+### Actualités publiques et administration
+
+Une rubrique `Actualités` est accessible depuis la navigation publique. Elle affiche les annonces publiées, leur date
+et leur saison éventuelle, puis permet d’ouvrir une page détaillée.
+
+L’administration dispose d’un outil complet pour créer, modifier, planifier, publier, mettre en brouillon ou supprimer
+une actualité. Une annonce peut être rattachée à une collection de saison afin de présenter les nouveaux Stickmans,
+les nouvelles caisses et les évolutions des systèmes de jeu.
+
+### Détail public des caisses
+
+Les informations d’une caisse sont maintenant cliquables indépendamment du bouton d’ouverture. La page détaillée
+présente son image, sa description, sa collection, sa saison, son prix et tous les Stickmans obtenables.
+
+Chaque contenu affiche sa probabilité calculée. Le nom et l’image du Stickman conduisent directement à
+sa fiche Wiki. Le bouton d’ouverture reste séparé afin d’éviter une dépense involontaire.
+
+Le poids reste une donnée technique réservée à l’administration : seule la probabilité compréhensible est présentée
+au joueur. Les cartes de caisse reprennent également l’agrandissement léger au survol utilisé par les Stickmans.
+
+### Fiche Wiki des Stickmans
+
+La fiche publique d’un Stickman est réorganisée en deux colonnes :
+
+- à gauche, la vraie carte avec sa couleur de rareté, son image, sa puissance, ses PV, son attaque et sa défense ;
+- à droite, sa description, sa saison et la liste des caisses actives dans lesquelles il peut être obtenu.
+
+Les caisses indisponibles ou appartenant à une collection inactive ne sont pas proposées au joueur.
+
+### Migration et vérifications
+
+La migration `Version20260902100000` crée la table des actualités et son lien optionnel vers une collection de jeu.
+
+- Conteneur Symfony validé.
+- 56 templates Twig validés.
+- Routes publiques et administratives vérifiées.
+- Mapping et schémas Doctrine de développement et de test synchronisés.
+- Migration appliquée aux bases de développement et de test.
+- Tests HTTP ajoutés pour les actualités, leur protection administrative et le détail des caisses.
+- Tests du profil, des récompenses et du classement adaptés à la nouvelle organisation.
+- Suite complète validée : 258 tests et 1 999 assertions.
+- Vérification `git diff --check` effectuée ; seuls les avertissements LF/CRLF habituels restent affichés.
+
+### Résultat
+
+Le profil est désormais lisible et centré sur le joueur, toutes les récompenses possèdent un espace unique avec une
+notification, les administrateurs peuvent préparer les annonces du jeu, et le catalogue explique clairement le
+contenu des caisses ainsi que l’origine de chaque Stickman.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

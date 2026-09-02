@@ -41,7 +41,7 @@ final readonly class ProfilJoueurService
      *     missions: array{quotidiennes: list<array<string, mixed>>, hebdomadaires: list<array<string, mixed>>}
      * }
      */
-    public function construire(User $joueur): array
+    public function construire(User $joueur, ?int $saison = null): array
     {
         return [
             'nombreStickmen' => $this->inventaireRepository->count([
@@ -51,8 +51,9 @@ final readonly class ProfilJoueurService
             'equipe' => $this->equipeRepository->findOneBy([
                 'utilisateur' => $joueur,
             ]),
-            'statistiques' => $this->combatRepository
-                ->calculerStatistiquesPourJoueur($joueur),
+            'statistiques' => $saison === null
+                ? $this->combatRepository->calculerStatistiquesPourJoueur($joueur)
+                : $this->combatRepository->calculerStatistiquesPourJoueurEtSaison($joueur, $saison),
             'mouvementsPieces' => $this->mouvementPiecesRepository?->trouverPourJoueur(
                 $joueur,
             ) ?? [],

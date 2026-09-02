@@ -106,8 +106,6 @@ final class ClassementController extends AbstractController
             );
         }
 
-        return $this->redirectToRoute('app_classement', [
-            'saison' => $saison->getSaison(),
-        ]);
+        return $this->redirectToRoute('app_recompenses');
     }
 }

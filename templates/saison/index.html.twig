@@ -61,7 +61,7 @@
                         {% else %}
                             {% include 'stickman/_card.html.twig' with {
                                 stickman: stickman,
-                                possede: false,
+                                possede: true,
                                 puissance: saison.puissances[stickman.id]|default(null),
                             } only %}
                         {% endif %}

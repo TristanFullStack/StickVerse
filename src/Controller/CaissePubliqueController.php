@@ -25,6 +25,22 @@ final class CaissePubliqueController extends AbstractController
         ]);
     }
 
+    #[Route('/caisses/{id}', name: 'app_caisse_publique_show', methods: ['GET'])]
+    public function show(Caisse $caisse): Response
+    {
+        if (!$caisse->isStatutActif() || ($caisse->getCollectionJeu() !== null && !$caisse->getCollectionJeu()->estDisponibleA(new \DateTimeImmutable()))) {
+            throw $this->createNotFoundException('Cette caisse est indisponible.');
+        }
+
+        $contenus = $caisse->getContenus()->toArray();
+        usort($contenus, static fn ($a, $b): int => ($b->getProbabilite() <=> $a->getProbabilite()));
+
+        return $this->render('caisse_publique/show.html.twig', [
+            'caisse' => $caisse,
+            'contenus' => $contenus,
+        ]);
+    }
+
     #[Route('/caisses/{id}/ouvrir', name: 'app_caisse_ouvrir', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function ouvrir(

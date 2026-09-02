@@ -35,22 +35,14 @@
             {% for caisse in caisses %}
                 <article class="caisse-card" id="caisse-{{ caisse.slug }}">
 
-                    <h2>{{ caisse.nom }}</h2>
-
-                    <img
-                        src="{{ asset('images/caisses/' ~ caisse.image) }}"
-                        alt="{{ caisse.nom }}"
-                        width="250"
-                    >
-
-                    <p>{{ caisse.description }}</p>
-                    <p>Collection : {{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Catalogue général' }}</p>
                     {% set caisseOfferte = app.user and caisse.slug == constant('App\\Entity\\Caisse::SLUG_PREMIERS_RENFORTS') and app.user.caissesPremiersRenforts > 0 %}
-                    {% if caisseOfferte %}
-                        <p>Ouverture offerte — caisse de départ</p>
-                    {% else %}
-                        <p>Prix : {{ caisse.prix }} pièces</p>
-                    {% endif %}
+                    <a class="caisse-card-main" href="{{ path('app_caisse_publique_show', {'id': caisse.id}) }}">
+                        <h2>{{ caisse.nom }}</h2>
+                        <img src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}" width="250">
+                        <p>{{ caisse.description }}</p>
+                        <p>Collection : {{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Catalogue général' }}</p>
+                        {% if caisseOfferte %}<p>Ouverture offerte — caisse de départ</p>{% else %}<p>Prix : {{ caisse.prix }} pièces</p>{% endif %}
+                    </a>
 
                     {% if app.user %}
                         <form

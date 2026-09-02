@@ -145,12 +145,12 @@ final class ClassementControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         $this->client->loginUser($joueur);
-        $page = $this->client->request('GET', '/classement?saison=98');
+        $page = $this->client->request('GET', '/recompenses');
         $formulaire = $page->filter('[data-recompense-saison]')->form();
 
         $this->client->submit($formulaire);
 
-        self::assertResponseRedirects('/classement?saison=98');
+        self::assertResponseRedirects('/recompenses');
         $this->client->followRedirect();
         self::assertSame(
             1100,

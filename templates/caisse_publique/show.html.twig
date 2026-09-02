@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ caisse.nom }} — StickVerse{% endblock %}
+{% block body %}
+    <p><a href="{{ path('app_caisse_publique') }}">← Retour aux caisses</a></p>
+    <section class="catalogue-detail caisse-detail">
+        <div><h1>{{ caisse.nom }}</h1><img class="caisse-detail-image" src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}"></div>
+        <div><p>{{ caisse.description }}</p><p><strong>Collection :</strong> {{ caisse.collectionJeu ? caisse.collectionJeu.nom ~ ' (saison ' ~ caisse.collectionJeu.saison ~ ')' : 'Catalogue général' }}</p><p><strong>Prix :</strong> {{ caisse.prix }} pièces</p></div>
+    </section>
+    <section class="profile-section"><h2>Stickmans obtenables</h2><p>Chaque ouverture sélectionne un Stickman selon ces probabilités.</p><div class="caisse-contents-list">{% for contenu in contenus %}<article class="caisse-content-row"><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}"><img src="{{ asset('images/stickmen/' ~ contenu.stickman.image) }}" alt="{{ contenu.stickman.nom }}"></a><div><h3><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">{{ contenu.stickman.nom }}</a></h3><p>Probabilité : {{ contenu.probabilite|number_format(2, ',', ' ') }} %</p></div></article>{% else %}<p>Cette caisse est vide.</p>{% endfor %}</div></section>
+{% endblock %}

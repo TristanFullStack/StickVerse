@@ -67,7 +67,12 @@
             <a href="{{ path('app_collection_jeu_index') }}">Gérer les collections</a>
         </section>
         <section class="admin-tool-card">
-            <div class="admin-tool-card-title"><span class="admin-tool-number">05</span><h2>Comptes</h2></div>
+            <div class="admin-tool-card-title"><span class="admin-tool-number">05</span><h2>Actualités</h2></div>
+            <p>Rédige les annonces de saison et les nouveautés visibles par les joueurs.</p>
+            <a href="{{ path('app_actualite_admin_index') }}">Gérer les actualités</a>
+        </section>
+        <section class="admin-tool-card">
+            <div class="admin-tool-card-title"><span class="admin-tool-number">06</span><h2>Comptes</h2></div>
             <p>{{ nombre_joueurs }} joueur{% if nombre_joueurs != 1 %}s{% endif %} inscrit{% if nombre_joueurs != 1 %}s{% endif %}.</p>
             <span class="admin-tool-muted">Consultation depuis les profils.</span>
         </section>

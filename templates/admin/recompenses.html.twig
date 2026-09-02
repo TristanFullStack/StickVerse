@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des récompenses — Administration{% endblock %}
+
+{% block body %}
+    <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Suivi</p><h1>Historique des récompenses</h1><p>Cette page est réservée aux administrateurs.</p></div></div>
+    <section class="admin-list-panel">
+        <div class="admin-list-heading"><strong>{{ mouvements|length }} mouvement{% if mouvements|length != 1 %}s{% endif %}</strong><span>Les dernières récompenses créditées aux joueurs.</span></div>
+        <div class="admin-table-scroll"><table class="admin-resource-table"><thead><tr><th>Date</th><th>Joueur</th><th>Type</th><th>Libellé</th><th>Montant</th></tr></thead><tbody>
+            {% for mouvement in mouvements %}<tr><td>{{ mouvement.dateCreation|date('d/m/Y H:i') }}</td><td>{{ mouvement.utilisateur.pseudo }}<small>{{ mouvement.utilisateur.userIdentifier }}</small></td><td>{{ mouvement.type }}</td><td>{{ mouvement.libelle }}</td><td>+{{ mouvement.montant }} pièces</td></tr>{% else %}<tr><td colspan="5">Aucune récompense enregistrée.</td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+{% endblock %}

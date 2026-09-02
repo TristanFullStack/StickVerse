@@ -63,4 +63,19 @@ class MouvementPiecesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /** @return list<MouvementPieces> */
+    public function trouverRecompenses(int $limite = 100): array
+    {
+        return $this->createQueryBuilder('mouvement')
+            ->addSelect('utilisateur')
+            ->innerJoin('mouvement.utilisateur', 'utilisateur')
+            ->andWhere('mouvement.montant > 0')
+            ->andWhere('mouvement.type LIKE :type')
+            ->setParameter('type', 'recompense%')
+            ->orderBy('mouvement.dateCreation', 'DESC')
+            ->addOrderBy('mouvement.id', 'DESC')
+            ->setMaxResults(max(1, $limite))
+            ->getQuery()->getResult();
+    }
 }

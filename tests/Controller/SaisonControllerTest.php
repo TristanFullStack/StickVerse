@@ -65,6 +65,7 @@ final class SaisonControllerTest extends WebTestCase
         self::assertSelectorTextContains('h1', 'Saison en cours');
         self::assertSelectorTextContains('.site-content', 'Saison 1');
         self::assertSelectorExists('progress');
+        self::assertSelectorNotExists('.stickman-card-link--non-obtenue');
         self::assertSelectorExists('.site-navigation a[href="/saison"][aria-current="page"]');
     }
 }

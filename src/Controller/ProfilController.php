@@ -20,6 +20,7 @@ final class ProfilController extends AbstractController
     #[Route('/profil', name: 'app_profil', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function index(
+        Request $request,
         ProfilJoueurService $profilJoueurService,
     ): Response {
         $joueur = $this->getUser();
@@ -28,8 +29,13 @@ final class ProfilController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $saison = $request->query->getInt('saison', 0);
+        $saison = $saison > 0 ? $saison : null;
+
         return $this->render('profil/index.html.twig', [
-            'profil' => $profilJoueurService->construire($joueur),
+            'profil' => $profilJoueurService->construire($joueur, $saison),
+            'saisonSelectionnee' => $saison,
+            'saisonsDisponibles' => [1],
         ]);
     }
 
@@ -69,7 +75,7 @@ final class ProfilController extends AbstractController
             );
         }
 
-        return $this->redirectToRoute('app_profil');
+        return $this->redirectToRoute('app_recompenses');
     }
 
     #[Route('/profil/recompense-horaire', name: 'app_recompense_horaire', methods: ['POST'])]
@@ -98,7 +104,7 @@ final class ProfilController extends AbstractController
                 : 'Aucune récompense horaire disponible pour le moment.',
         );
 
-        return $this->redirectToRoute('app_profil');
+        return $this->redirectToRoute('app_recompenses');
     }
 
     #[Route('/profil/objectif/{objectif}/reclamer', name: 'app_objectif_reclamer', methods: ['POST'])]
@@ -139,7 +145,7 @@ final class ProfilController extends AbstractController
             );
         }
 
-        return $this->redirectToRoute('app_profil');
+        return $this->redirectToRoute('app_recompenses');
     }
 
     #[Route('/profil/mission/{periode}/{mission}/reclamer', name: 'app_mission_reclamer', methods: ['POST'])]
@@ -175,6 +181,6 @@ final class ProfilController extends AbstractController
                 : 'Cette mission n’est pas encore terminée ou a déjà été réclamée.',
         );
 
-        return $this->redirectToRoute('app_profil');
+        return $this->redirectToRoute('app_recompenses');
     }
 }

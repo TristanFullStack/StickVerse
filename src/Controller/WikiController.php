@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\StickmanRepository;
+use App\Repository\CaisseStickmanRepository;
 use App\Service\ScorePuissanceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,6 +37,7 @@ final class WikiController extends AbstractController
         string $slug,
         StickmanRepository $stickmanRepository,
         ScorePuissanceService $scorePuissanceService,
+        CaisseStickmanRepository $caisseStickmanRepository,
     ): Response {
         $stickman = $stickmanRepository->findOneBy([
             'slug' => $slug,
@@ -51,6 +53,7 @@ final class WikiController extends AbstractController
         return $this->render('wiki/show.html.twig', [
             'stickman' => $stickman,
             'puissance' => $scorePuissanceService->calculerStickman($stickman),
+            'caisses' => $caisseStickmanRepository->trouverDisponiblesPourStickman($stickman),
         ]);
     }
 

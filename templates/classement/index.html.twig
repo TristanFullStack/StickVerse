@@ -66,19 +66,7 @@
                         Récompense récupérée le {{ classementJoueur.dateRecompenseReclamee|date('d/m/Y') }}.
                     </p>
                 {% elseif recompenseJoueurDisponible %}
-                    <form
-                        method="post"
-                        action="{{ path('app_classement_saison_recompense', {saison: saisonSelectionnee.id}) }}"
-                    >
-                        <input
-                            type="hidden"
-                            name="_token"
-                            value="{{ csrf_token('recompense-saison-' ~ saisonSelectionnee.id) }}"
-                        >
-                        <button type="submit" data-recompense-saison>
-                            Récupérer {{ maDivision.recompense }} pièces
-                        </button>
-                    </form>
+                    <p>Cette récompense est prête dans l’onglet <a href="{{ path('app_recompenses') }}">Récompenses</a>.</p>
                 {% elseif saisonSelectionnee.dateFin %}
                     <p>
                         Récompense disponible après le

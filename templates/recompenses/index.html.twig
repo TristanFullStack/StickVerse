@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes récompenses — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Mes récompenses</h1>
+    <p>Retrouve ici toutes les pièces à récupérer grâce à ta connexion, tes missions et tes objectifs.</p>
+
+    <div data-rewards-page-root>
+
+    {% for message in app.flashes('success') %}<p class="alert-success" role="status">{{ message }}</p>{% endfor %}
+    {% for message in app.flashes('error') %}<p class="alert-error" role="alert">{{ message }}</p>{% endfor %}
+
+    <section class="profile-section reward-section" data-rewards-page>
+        <h2>Connexion</h2>
+        <div class="reward-grid">
+            <article class="reward-card">
+                <h3>Récompense quotidienne</h3>
+                <p>{{ constant('App\\Service\\RecompenseQuotidienneService::MONTANT') }} pièces une fois par jour.</p>
+                {% if profil.recompenseQuotidienneDisponible %}
+                    <form method="post" action="{{ path('app_recompense_quotidienne') }}"><input type="hidden" name="_token" value="{{ csrf_token('recompense-quotidienne') }}"><button type="submit" data-profile-recompense-quotidienne>Récupérer</button></form>
+                {% else %}<p data-profile-recompense-indisponible>Récompense déjà récupérée aujourd’hui.</p>{% endif %}
+            </article>
+            <article class="reward-card">
+                <h3>Récompense horaire</h3>
+                <p>{{ constant('App\\Service\\RecompenseHoraireService::MONTANT_PAR_HEURE') }} pièces par heure, cumulables jusqu’à {{ constant('App\\Service\\RecompenseHoraireService::MONTANT_MAXIMUM') }}.</p>
+                {% if profil.recompenseHoraireDisponible > 0 %}<p data-profile-recompense-horaire-disponible>{{ profil.recompenseHoraireDisponible }} pièces disponibles.</p><form method="post" action="{{ path('app_recompense_horaire') }}"><input type="hidden" name="_token" value="{{ csrf_token('recompense-horaire') }}"><button type="submit">Récupérer</button></form>{% else %}<p data-profile-recompense-horaire-indisponible>Rien à récupérer pour le moment.</p>{% endif %}
+            </article>
+        </div>
+    </section>
+
+    <section class="profile-section reward-section"><h2>Missions quotidiennes</h2>
+        {% for mission in profil.missions.quotidiennes %}<div class="reward-item" data-profile-mission="quotidiennes-{{ mission.id }}"><strong>{{ mission.libelle }}</strong> — {{ mission.description }} ({{ mission.progression }}/{{ mission.cible }}) — {{ mission.recompense }} pièces {% if mission.reclame %}<span>Réclamée</span>{% elseif mission.disponible %}<form method="post" action="{{ path('app_mission_reclamer', {periode:'quotidiennes', mission:mission.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('mission-quotidiennes-' ~ mission.id) }}"><button type="submit">Réclamer</button></form>{% endif %}</div>{% else %}<p>Aucune mission.</p>{% endfor %}
+    </section>
+    <section class="profile-section reward-section"><h2>Missions hebdomadaires</h2>
+        {% for mission in profil.missions.hebdomadaires %}<div class="reward-item" data-profile-mission="hebdomadaires-{{ mission.id }}"><strong>{{ mission.libelle }}</strong> — {{ mission.description }} ({{ mission.progression }}/{{ mission.cible }}) — {{ mission.recompense }} pièces {% if mission.reclame %}<span>Réclamée</span>{% elseif mission.disponible %}<form method="post" action="{{ path('app_mission_reclamer', {periode:'hebdomadaires', mission:mission.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('mission-hebdomadaires-' ~ mission.id) }}"><button type="submit">Réclamer</button></form>{% endif %}</div>{% else %}<p>Aucune mission.</p>{% endfor %}
+    </section>
+    <section class="profile-section reward-section"><h2>Objectifs permanents</h2>
+        {% for objectif in profil.objectifs %}<div class="reward-item" data-profile-objectif="{{ objectif.id }}"><strong>{{ objectif.libelle }}</strong> — {{ objectif.description }} ({{ objectif.progression }}/{{ objectif.cible }}) — {{ objectif.recompense }} pièces {% if objectif.reclame %}<span>Réclamé</span>{% elseif objectif.disponible %}<form method="post" action="{{ path('app_objectif_reclamer', {objectif:objectif.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('objectif-' ~ objectif.id) }}"><button type="submit">Réclamer</button></form>{% endif %}</div>{% else %}<p>Aucun objectif.</p>{% endfor %}
+    </section>
+    <section class="profile-section reward-section"><h2>Récompenses de saison</h2>
+        {% for recompense in recompensesSaison %}
+            <div class="reward-item"><strong>Saison {{ recompense.saison.saison }} — {{ recompense.division }}</strong> — {{ recompense.montant }} pièces
+                {% if recompense.classement.estRecompenseReclamee() %}<span data-recompense-saison-reclamee>Réclamée</span>{% elseif recompense.disponible %}<form method="post" action="{{ path('app_classement_saison_recompense', {saison: recompense.saison.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('recompense-saison-' ~ recompense.saison.id) }}"><button type="submit" data-recompense-saison>Réclamer</button></form>{% else %}<span>Disponible à la fin de la saison.</span>{% endif %}
+            </div>
+        {% else %}<p>Aucune récompense de saison enregistrée.</p>{% endfor %}
+    </section>
+    </div>
+{% endblock %}
