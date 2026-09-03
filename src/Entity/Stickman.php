@@ -51,6 +51,14 @@ class Stickman
     #[ORM\Column]
     private ?bool $statutActif = null;
 
+    /**
+     * Passifs configurables du Stickman.
+     *
+     * @var list<array<string, mixed>>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $passifs = null;
+
     #[ORM\ManyToOne(inversedBy: 'stickmen')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?CollectionJeu $collectionJeu = null;
@@ -164,6 +172,24 @@ class Stickman
     public function setStatutActif(bool $statutActif): static
     {
         $this->statutActif = $statutActif;
+
+        return $this;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getPassifs(): array
+    {
+        return $this->passifs ?? [];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $passifs
+     */
+    public function setPassifs(array $passifs): static
+    {
+        $this->passifs = array_values($passifs);
 
         return $this;
     }

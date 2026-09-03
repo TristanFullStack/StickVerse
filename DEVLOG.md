@@ -8370,6 +8370,37 @@ mission d’ouvertures ne progresse qu’au moment où une caisse payante est r�
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+## J93 — Renforcer le moteur de combat et préparer les passifs
+
+### Objectif
+
+J93 pose une base serveur fiable pour enrichir les combats sans modifier les règles existantes de sélection et de
+résolution simultanée.
+
+### Passifs configurables
+
+- Les Stickmans peuvent maintenant recevoir une liste de passifs JSON contrôlée.
+- Les passifs sont copiés dans le snapshot du combattant au début du combat afin de figer les règles de la partie.
+- Deux effets bornés sont disponibles : bonus d’attaque et bonus de défense en pourcentage.
+- Les bonus sont plafonnés à 50 % par groupe et les types inconnus sont ignorés.
+- L’administration peut renseigner les passifs depuis le formulaire Stickman avec un JSON validé.
+- Les passifs actifs sont renvoyés dans les résultats de round et affichés dans l’interface.
+
+### Anti-blocage
+
+- Un combat est limité à 20 rounds.
+- Si aucune équipe n’est éliminée à la limite, le gagnant est déterminé par le total de PV restants.
+- Une égalité parfaite reste un match nul.
+- L’interface affiche désormais le round courant et la limite.
+
+### Vérifications
+
+- Tests unitaires ajoutés pour les passifs, leurs plafonds et le départage aux PV.
+- Syntaxe PHP validée sur les fichiers modifiés.
+- Les tests unitaires combat ciblés passent avec 47 tests et 182 assertions.
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

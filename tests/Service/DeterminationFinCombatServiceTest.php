@@ -167,6 +167,29 @@ final class DeterminationFinCombatServiceTest extends TestCase
         self::assertNull($combat->getGagnant());
     }
 
+    public function testLeDernierRoundDepartageSelonLesPvRestants(): void
+    {
+        $joueur1 = new User();
+        $joueur2 = new User();
+
+        $combat = new Combat($joueur1);
+        $combat->setJoueur2($joueur2);
+        $combat->setStatut(Combat::STATUT_EN_COURS);
+        $combat->setNumeroRound(Combat::NOMBRE_MAX_ROUNDS);
+
+        $service = new DeterminationFinCombatService();
+
+        $termine = $service->terminerSiNecessaire(
+            combat: $combat,
+            combattantsJoueur1: $this->creerEquipeAvecPvRestants(12),
+            combattantsJoueur2: $this->creerEquipeAvecPvRestants(4),
+        );
+
+        self::assertTrue($termine);
+        self::assertTrue($combat->estTermine());
+        self::assertSame($joueur1, $combat->getGagnant());
+    }
+
     public function testUnRoundAvecDegatReinitialiseLaSerie(): void
     {
         $joueur1 = new User();
@@ -258,10 +281,24 @@ final class DeterminationFinCombatServiceTest extends TestCase
         ];
     }
 
+    /**
+     * @return list<CombattantCombat>
+     */
+    private function creerEquipeAvecPvRestants(int $pv): array
+    {
+        return [
+            $this->creerCombattant(true, 2, 2, $pv),
+            $this->creerCombattant(false),
+            $this->creerCombattant(false),
+            $this->creerCombattant(false),
+        ];
+    }
+
     private function creerCombattant(
         bool $vivant,
         int $attaque = 0,
         int $defense = 0,
+        int $pv = 5,
     ): CombattantCombat {
         $combattant = $this->createStub(
             CombattantCombat::class
@@ -278,6 +315,10 @@ final class DeterminationFinCombatServiceTest extends TestCase
         $combattant
             ->method('getDefenseSnapshot')
             ->willReturn($defense);
+
+        $combattant
+            ->method('getPvActuels')
+            ->willReturn($vivant ? $pv : 0);
 
         return $combattant;
     }

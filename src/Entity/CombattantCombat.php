@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\CombattantCombatRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use LogicException;
@@ -76,6 +77,12 @@ class CombattantCombat
     #[Assert\PositiveOrZero]
     private int $defenseSnapshot;
 
+    /**
+     * @var list<array<string, mixed>>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $passifsSnapshot = null;
+
     public function __construct(
         Combat $combat,
         User $joueur,
@@ -128,6 +135,7 @@ class CombattantCombat
         $this->pvActuels = $pv;
         $this->attaqueSnapshot = $attaque;
         $this->defenseSnapshot = $defense;
+        $this->passifsSnapshot = $stickman->getPassifs();
 
         $combat->addCombattant($this);
     }
@@ -210,6 +218,14 @@ class CombattantCombat
     public function getDefenseSnapshot(): int
     {
         return $this->defenseSnapshot;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getPassifsSnapshot(): array
+    {
+        return $this->passifsSnapshot ?? [];
     }
 
     public function estVivant(): bool

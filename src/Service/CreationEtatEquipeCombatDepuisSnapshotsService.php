@@ -126,6 +126,7 @@ final class CreationEtatEquipeCombatDepuisSnapshotsService
         $stickman->setDefense(
             $combattant->getDefenseSnapshot()
         );
+        $stickman->setPassifs($combattant->getPassifsSnapshot());
 
         return $stickman;
     }

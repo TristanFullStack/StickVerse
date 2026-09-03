@@ -10,6 +10,7 @@ use LogicException;
 final class DeterminationFinCombatService
 {
     public const NOMBRE_ROUNDS_SANS_DEGAT_AVANT_MATCH_NUL = 3;
+    public const NOMBRE_ROUNDS_MAX = Combat::NOMBRE_MAX_ROUNDS;
 
     public function __construct(
         private readonly ?RecompenseCombatService $recompenseService = null,
@@ -83,7 +84,47 @@ final class DeterminationFinCombatService
             );
         }
 
+        if ($combat->getNumeroRound() >= self::NOMBRE_ROUNDS_MAX) {
+            return $this->terminerSelonPvRestants(
+                combat: $combat,
+                combattantsJoueur1: $combattantsJoueur1,
+                combattantsJoueur2: $combattantsJoueur2,
+            );
+        }
+
         return false;
+    }
+
+    /**
+     * À la limite de rounds, le joueur qui conserve le plus de PV gagne.
+     * Une égalité parfaite reste un match nul déterministe.
+     *
+     * @param list<CombattantCombat> $combattantsJoueur1
+     * @param list<CombattantCombat> $combattantsJoueur2
+     */
+    private function terminerSelonPvRestants(
+        Combat $combat,
+        array $combattantsJoueur1,
+        array $combattantsJoueur2,
+    ): bool {
+        $pvJoueur1 = array_sum(array_map(
+            static fn (CombattantCombat $combattant): int =>
+                $combattant->getPvActuels(),
+            $combattantsJoueur1,
+        ));
+        $pvJoueur2 = array_sum(array_map(
+            static fn (CombattantCombat $combattant): int =>
+                $combattant->getPvActuels(),
+            $combattantsJoueur2,
+        ));
+
+        $gagnant = match (true) {
+            $pvJoueur1 > $pvJoueur2 => $combat->getJoueur1(),
+            $pvJoueur2 > $pvJoueur1 => $combat->getJoueur2(),
+            default => null,
+        };
+
+        return $this->terminer($combat, $gagnant);
     }
 
     private function nombreRoundsConsecutifsSansDegat(

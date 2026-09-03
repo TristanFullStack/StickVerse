@@ -1312,6 +1312,13 @@ body:has(#rapport-combat) {
     background: #fff;
 }
 
+#combat-en-ligne .resultat-round-passifs {
+    margin: .65rem 0 0;
+    color: var(--combat-accent-cyan, #36c5ff);
+    font-size: .82rem;
+    font-weight: 600;
+}
+
 #combat-en-ligne .combat-arene .carte-combattant.est-selectionnable {
     outline: 2px solid #555;
     outline-offset: 1px;

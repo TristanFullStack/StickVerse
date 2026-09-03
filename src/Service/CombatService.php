@@ -7,6 +7,11 @@ use InvalidArgumentException;
 
 final class CombatService
 {
+    public function __construct(
+        private readonly ?PassifCombatService $passifService = null,
+    ) {
+    }
+
     public function bonusPressionAttaque(int $numeroRound): int
     {
         if ($numeroRound < 1) {
@@ -30,7 +35,10 @@ final class CombatService
      *     degatsEffectifs: int,
      *     overkill: int,
      *     pvAvant: int,
-     *     pvRestants: int
+     *     pvRestants: int,
+     *     bonusPassifsAttaque?: int,
+     *     bonusPassifsDefense?: int,
+     *     passifsActifs?: list<array<string, mixed>>
      * }
      */
     public function calculerImpact(
@@ -74,16 +82,23 @@ final class CombatService
             $attaqueTotale += $stickman->getAttaque() ?? 0;
         }
 
+        $bonusPression = $this->bonusPressionAttaque($numeroRound);
+        $bonusPassifs = ($this->passifService ?? new PassifCombatService())
+            ->bonusAttaquePourcentage($stickmen, $numeroRound);
+
         return (int) round(
             $attaqueTotale
-            * (1 + ($this->bonusPressionAttaque($numeroRound) / 100))
+            * (1 + (($bonusPression + $bonusPassifs) / 100))
         );
     }
 
     /**
      * @param list<Stickman> $stickmen
      */
-    public function calculerDefenseTotale(array $stickmen): int
+    public function calculerDefenseTotale(
+        array $stickmen,
+        int $numeroRound = 1,
+    ): int
     {
         $defenseTotale = 0;
 
@@ -91,7 +106,12 @@ final class CombatService
             $defenseTotale += $stickman->getDefense() ?? 0;
         }
 
-        return $defenseTotale;
+        $bonusPassifs = ($this->passifService ?? new PassifCombatService())
+            ->bonusDefensePourcentage($stickmen, $numeroRound);
+
+        return (int) round(
+            $defenseTotale * (1 + ($bonusPassifs / 100))
+        );
     }
 
     /**
@@ -105,7 +125,10 @@ final class CombatService
      *     degatsEffectifs: int,
      *     overkill: int,
      *     pvAvant: int,
-     *     pvRestants: int
+     *     pvRestants: int,
+     *     bonusPassifsAttaque?: int,
+     *     bonusPassifsDefense?: int,
+     *     passifsActifs?: list<array<string, mixed>>
      * }
      */
     public function resoudreCible(
@@ -118,13 +141,27 @@ final class CombatService
             $attaquants,
             $numeroRound,
         );
-        $defenseTotale = $this->calculerDefenseTotale($defenseurs);
-
-        return $this->calculerImpact(
+        $defenseTotale = $this->calculerDefenseTotale(
+            $defenseurs,
+            $numeroRound,
+        );
+        $passifService = $this->passifService ?? new PassifCombatService();
+        $resultat = $this->calculerImpact(
             attaqueTotale: $attaqueTotale,
             defenseTotale: $defenseTotale,
             pvActuels: $pvActuels,
         );
+
+        $resultat['bonusPassifsAttaque'] = $passifService
+            ->bonusAttaquePourcentage($attaquants, $numeroRound);
+        $resultat['bonusPassifsDefense'] = $passifService
+            ->bonusDefensePourcentage($defenseurs, $numeroRound);
+        $resultat['passifsActifs'] = array_merge(
+            $passifService->passifsActifs($attaquants, $numeroRound),
+            $passifService->passifsActifs($defenseurs, $numeroRound),
+        );
+
+        return $resultat;
     }
 
     /**
@@ -141,7 +178,10 @@ final class CombatService
      *     degatsEffectifs: int,
      *     overkill: int,
      *     pvAvant: int,
-     *     pvRestants: int
+     *     pvRestants: int,
+     *     bonusPassifsAttaque?: int,
+     *     bonusPassifsDefense?: int,
+     *     passifsActifs?: list<array<string, mixed>>
      * }>
      */
     public function resoudreRound(

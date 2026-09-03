@@ -176,7 +176,8 @@ final class SalonCombatEnLigneController extends AbstractController
      *         pv: int|null,
      *         attaque: int|null,
      *         defense: int|null,
-     *         puissance: int
+     *         puissance: int,
+     *         passifs: list<array<string, mixed>>
      *     }>
      * }
      */
@@ -209,6 +210,7 @@ final class SalonCombatEnLigneController extends AbstractController
                 'defense' => $stickman->getDefense(),
                 'puissance' => $scorePuissanceService
                     ->calculerStickman($stickman),
+                'passifs' => $stickman->getPassifs(),
             ];
         }
 

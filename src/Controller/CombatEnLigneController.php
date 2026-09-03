@@ -153,6 +153,7 @@ final class CombatEnLigneController extends AbstractController
             'resolutionAutomatique' => $resolutionAutomatique,
             'expirationPlan' => $expirationPlan,
             'numeroRound' => $combat->getNumeroRound(),
+            'limiteRounds' => Combat::NOMBRE_MAX_ROUNDS,
             'matchmaking' => $combat->estEnAttente()
                 && !$combat->estPrive()
                 ? [
@@ -364,6 +365,7 @@ final class CombatEnLigneController extends AbstractController
      *         pvActuels: int,
      *         attaque: int,
      *         defense: int,
+     *         passifs: list<array<string, mixed>>,
      *         vivant: bool
      *     }>
      * }
@@ -387,6 +389,7 @@ final class CombatEnLigneController extends AbstractController
                     'pvActuels' => $combattant->getPvActuels(),
                     'attaque' => $combattant->getAttaqueSnapshot(),
                     'defense' => $combattant->getDefenseSnapshot(),
+                    'passifs' => $combattant->getPassifsSnapshot(),
                     'vivant' => $combattant->estVivant(),
                 ],
                 $combattantRepository->trouverPourCombatEtJoueur(

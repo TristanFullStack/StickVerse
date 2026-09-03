@@ -17,6 +17,7 @@ class Combat
 {
     public const DUREE_MAX_ATTENTE_SECONDES = 300;
     public const DUREE_MAX_PREPARATION_SECONDES = 300;
+    public const NOMBRE_MAX_ROUNDS = 20;
 
     public const STATUT_EN_ATTENTE = 'en_attente';
     public const STATUT_EN_COURS = 'en_cours';

@@ -30,6 +30,7 @@ export default class extends Controller {
         'resultatRound',
         'resultatRoundNumero',
         'resultatRoundLignes',
+        'resultatRoundPassifs',
         'historiqueRounds',
         'historiqueRoundsListe',
         'attenteAdversaire',
@@ -654,9 +655,11 @@ export default class extends Controller {
         this.combatStatutTarget.textContent = statuts[this.combat.statut]
             ?? this.combat.statut
             ?? 'Inconnu';
-        this.numeroRoundTarget.textContent = String(
-            this.combat.numeroRound ?? '—'
-        );
+        const numeroRound = this.combat.numeroRound ?? '—';
+        const limiteRounds = this.combat.limiteRounds;
+        this.numeroRoundTarget.textContent = Number.isInteger(limiteRounds)
+            ? `${numeroRound} / ${limiteRounds}`
+            : String(numeroRound);
 
         this.afficherParticipant(
             this.combat.moi,
@@ -873,6 +876,8 @@ export default class extends Controller {
         const resultats = dernierRound?.resultats;
 
         this.resultatRoundLignesTarget.replaceChildren();
+        this.resultatRoundPassifsTarget.hidden = true;
+        this.resultatRoundPassifsTarget.textContent = '';
 
         if (
             dernierRound === null
@@ -921,6 +926,32 @@ export default class extends Controller {
             }
 
             this.resultatRoundLignesTarget.append(element);
+        }
+
+        const passifs = Object.values(resultats)
+            .flatMap((resultat) => Array.isArray(resultat?.passifsActifs)
+                ? resultat.passifsActifs
+                : [])
+            .filter((passif, index, liste) => {
+                const cle = `${passif?.nom ?? ''}|${passif?.type ?? ''}|${passif?.valeur ?? ''}`;
+
+                return liste.findIndex((element) =>
+                    `${element?.nom ?? ''}|${element?.type ?? ''}|${element?.valeur ?? ''}` === cle
+                ) === index;
+            });
+
+        if (passifs.length > 0) {
+            this.resultatRoundPassifsTarget.textContent = [
+                'Passifs actifs :',
+                ...passifs.map((passif) => {
+                    const valeur = Number.isFinite(Number(passif?.valeur))
+                        ? ` (+${passif.valeur} %)`
+                        : '';
+
+                    return `${passif?.nom ?? 'Passif'}${valeur}`;
+                }),
+            ].join(' ');
+            this.resultatRoundPassifsTarget.hidden = false;
         }
 
         this.resultatRoundTarget.hidden = false;
