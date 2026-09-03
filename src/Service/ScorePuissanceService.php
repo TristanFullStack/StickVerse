@@ -15,6 +15,11 @@ final class ScorePuissanceService
     public const COEFFICIENT_ATTAQUE = 2.0;
     public const COEFFICIENT_DEFENSE = 1.5;
 
+    public function __construct(
+        private readonly ?PassifCombatService $passifService = null,
+    ) {
+    }
+
     public function calculerStickman(Stickman $stickman): int
     {
         $pv = $stickman->getPv();
@@ -27,7 +32,17 @@ final class ScorePuissanceService
             );
         }
 
-        return $this->calculerStatistiques($pv, $attaque, $defense);
+        $puissance = $this->calculerStatistiques($pv, $attaque, $defense);
+
+        if ($this->passifService === null) {
+            return $puissance;
+        }
+
+        return $puissance + $this->passifService->contributionPuissance(
+            $stickman,
+            self::COEFFICIENT_ATTAQUE,
+            self::COEFFICIENT_DEFENSE,
+        );
     }
 
     /**
@@ -118,11 +133,13 @@ final class ScorePuissanceService
                 continue;
             }
 
-            $score += $this->calculerStatistiques(
-                $combattant->getPvMaximum(),
-                $combattant->getAttaqueSnapshot(),
-                $combattant->getDefenseSnapshot(),
-            );
+            $stickman = (new Stickman())
+                ->setPv($combattant->getPvMaximum())
+                ->setAttaque($combattant->getAttaqueSnapshot())
+                ->setDefense($combattant->getDefenseSnapshot())
+                ->setPassifs($combattant->getPassifsSnapshot());
+
+            $score += $this->calculerStickman($stickman);
         }
 
         return $score;

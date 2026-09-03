@@ -7,6 +7,7 @@ use App\Entity\CombattantCombat;
 use App\Entity\Equipe;
 use App\Entity\Stickman;
 use App\Entity\User;
+use App\Service\PassifCombatService;
 use App\Service\ScorePuissanceService;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -35,6 +36,31 @@ final class ScorePuissanceServiceTest extends TestCase
             1197,
             (new ScorePuissanceService())->calculerEquipe($equipe),
         );
+    }
+
+    public function testLesPassifsAugmententLaPuissanceDeLaCarte(): void
+    {
+        $stickman = $this->creerStickman(1, 100, 50, 40)
+            ->setPassifs([
+                [
+                    'nom' => 'Frappe précise',
+                    'description' => '+10 % ATQ.',
+                    'type' => PassifCombatService::TYPE_BONUS_ATTAQUE_POURCENTAGE,
+                    'valeur' => 10,
+                ],
+                [
+                    'nom' => 'Garde légère',
+                    'description' => '+10 % DEF.',
+                    'type' => PassifCombatService::TYPE_BONUS_DEFENSE_POURCENTAGE,
+                    'valeur' => 10,
+                ],
+            ]);
+
+        $service = new ScorePuissanceService(new PassifCombatService());
+
+        // Base : 20 PV + 100 ATQ + 60 DEF = 180.
+        // Passifs : 10 % de 100 + 10 % de 60 = 16 points.
+        self::assertSame(196, $service->calculerStickman($stickman));
     }
 
     public function testLeCombatConserveLaPuissanceDesSnapshots(): void

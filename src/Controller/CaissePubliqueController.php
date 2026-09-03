@@ -256,7 +256,7 @@ final class CaissePubliqueController extends AbstractController
             'hp' => $stickman->getPv(),
             'attack' => $stickman->getAttaque(),
             'defense' => $stickman->getDefense(),
-            'passives' => [],
+            'passives' => $stickman->getPassifs(),
             'wikiUrl' => $this->generateUrl('app_wiki_show', [
                 'slug' => $stickman->getSlug(),
             ]),

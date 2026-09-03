@@ -6,22 +6,38 @@
             "nom": "Arbalétrier",
             "description": "18",
             "image": "18-Arbalétrirer.png",
-            "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
-            "actif": true
+            "rarete": 2,
+            "pv": 70,
+            "attaque": 22,
+            "defense": 9,
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Tir précis",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 8,
+                    "description": "+8 % ATQ."
+                }
+            ]
         },
         {
             "slug": "arbaletrier2",
             "nom": "Arbalétrier2",
             "description": "18",
             "image": "18-Arbalétrirer.png",
-            "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
-            "actif": true
+            "rarete": 2,
+            "pv": 72,
+            "attaque": 21,
+            "defense": 10,
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Tir de couverture",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 7,
+                    "description": "+7 % ATQ."
+                }
+            ]
         },
         {
             "slug": "archer",
@@ -32,7 +48,15 @@
             "pv": 260,
             "attaque": 80,
             "defense": 45,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Visée",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 10,
+                    "description": "+10 % ATQ."
+                }
+            ]
         },
         {
             "slug": "archer2",
@@ -40,9 +64,9 @@
             "description": "16",
             "image": "16-Archer.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 65,
+            "attaque": 20,
+            "defense": 11,
             "actif": true
         },
         {
@@ -54,7 +78,15 @@
             "pv": 220,
             "attaque": 105,
             "defense": 35,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Frappe vitale",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 12,
+                    "description": "+12 % ATQ."
+                }
+            ]
         },
         {
             "slug": "bagarreur",
@@ -62,9 +94,9 @@
             "description": "20",
             "image": "20-Bagarreur.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 80,
+            "attaque": 17,
+            "defense": 14,
             "actif": true
         },
         {
@@ -74,30 +106,59 @@
             "image": "Card07Berserker.png",
             "rarete": 4,
             "pv": 320,
-            "attaque": 110,
+            "attaque": 120,
             "defense": 40,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Furie",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 14,
+                    "description": "+14 % ATQ."
+                },
+                {
+                    "nom": "Rage montante",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 8,
+                    "description": "+8 % ATQ à partir du round 4.",
+                    "a_partir_round": 4
+                }
+            ]
         },
         {
             "slug": "capitaine",
             "nom": "Capitaine",
             "description": "27",
             "image": "27-Capitaine.png",
-            "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
-            "actif": true
+            "rarete": 2,
+            "pv": 90,
+            "attaque": 20,
+            "defense": 19,
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Ordre offensif",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 5,
+                    "description": "+5 % ATQ."
+                },
+                {
+                    "nom": "Ordre défensif",
+                    "type": "bonus_defense_pct",
+                    "valeur": 5,
+                    "description": "+5 % DEF."
+                }
+            ]
         },
         {
-            "slug": "combatant",
-            "nom": "Combatant",
+            "slug": "Combattant",
+            "nom": "Combattant",
             "description": "13",
             "image": "13-Guerrier.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 70,
+            "attaque": 16,
+            "defense": 16,
             "actif": true
         },
         {
@@ -109,7 +170,21 @@
             "pv": 380,
             "attaque": 85,
             "defense": 75,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Double pointe",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 10,
+                    "description": "+10 % ATQ."
+                },
+                {
+                    "nom": "Position solide",
+                    "type": "bonus_defense_pct",
+                    "valeur": 8,
+                    "description": "+8 % DEF."
+                }
+            ]
         },
         {
             "slug": "eclaireur",
@@ -117,9 +192,9 @@
             "description": "21",
             "image": "21-Éclaireur.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 65,
+            "attaque": 17,
+            "defense": 13,
             "actif": true
         },
         {
@@ -129,8 +204,8 @@
             "image": "12-Fantassin.png",
             "rarete": 1,
             "pv": 60,
-            "attaque": 14,
-            "defense": 13,
+            "attaque": 16,
+            "defense": 15,
             "actif": true
         },
         {
@@ -139,9 +214,9 @@
             "description": "15",
             "image": "15-Frondeur.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 60,
+            "attaque": 18,
+            "defense": 10,
             "actif": true
         },
         {
@@ -150,9 +225,9 @@
             "description": "14",
             "image": "14-Garde.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 75,
+            "attaque": 12,
+            "defense": 20,
             "actif": true
         },
         {
@@ -160,11 +235,19 @@
             "nom": "Gardien Novice",
             "description": "26",
             "image": "26-Gardien novice.png",
-            "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
-            "actif": true
+            "rarete": 2,
+            "pv": 100,
+            "attaque": 9,
+            "defense": 27,
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Garde novice",
+                    "type": "bonus_defense_pct",
+                    "valeur": 8,
+                    "description": "+8 % DEF."
+                }
+            ]
         },
         {
             "slug": "guerrier",
@@ -175,7 +258,15 @@
             "pv": 340,
             "attaque": 55,
             "defense": 70,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Endurance",
+                    "type": "bonus_defense_pct",
+                    "valeur": 8,
+                    "description": "+8 % DEF."
+                }
+            ]
         },
         {
             "slug": "lancier",
@@ -186,7 +277,15 @@
             "pv": 300,
             "attaque": 65,
             "defense": 60,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Allonge",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 8,
+                    "description": "+8 % ATQ."
+                }
+            ]
         },
         {
             "slug": "mage",
@@ -197,7 +296,15 @@
             "pv": 270,
             "attaque": 45,
             "defense": 100,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Canalisation",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 10,
+                    "description": "+10 % ATQ."
+                }
+            ]
         },
         {
             "slug": "magenovice",
@@ -205,9 +312,9 @@
             "description": "24",
             "image": "24-Mage novice.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 58,
+            "attaque": 21,
+            "defense": 11,
             "actif": true
         },
         {
@@ -216,9 +323,9 @@
             "description": "22",
             "image": "22-Piquier.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 78,
+            "attaque": 16,
+            "defense": 14,
             "actif": true
         },
         {
@@ -226,11 +333,19 @@
             "nom": "Porte-Bouclier",
             "description": "23",
             "image": "23-Porte-bouclier.png",
-            "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
-            "actif": true
+            "rarete": 2,
+            "pv": 95,
+            "attaque": 10,
+            "defense": 24,
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Bouclier levé",
+                    "type": "bonus_defense_pct",
+                    "valeur": 10,
+                    "description": "+10 % DEF."
+                }
+            ]
         },
         {
             "slug": "recrue",
@@ -252,7 +367,21 @@
             "pv": 460,
             "attaque": 100,
             "defense": 95,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Autorité royale",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 10,
+                    "description": "+10 % ATQ."
+                },
+                {
+                    "nom": "Armure royale",
+                    "type": "bonus_defense_pct",
+                    "valeur": 10,
+                    "description": "+10 % DEF."
+                }
+            ]
         },
         {
             "slug": "sorciernovice",
@@ -260,9 +389,9 @@
             "description": "25",
             "image": "25-Sorcier novice.png",
             "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
+            "pv": 55,
+            "attaque": 24,
+            "defense": 8,
             "actif": true
         },
         {
@@ -274,18 +403,34 @@
             "pv": 520,
             "attaque": 35,
             "defense": 120,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Rempart",
+                    "type": "bonus_defense_pct",
+                    "valeur": 12,
+                    "description": "+12 % DEF."
+                }
+            ]
         },
         {
             "slug": "tireur",
             "nom": "Tireur",
             "description": "19",
             "image": "19-Tireur.png",
-            "rarete": 1,
-            "pv": 1,
-            "attaque": 1,
-            "defense": 1,
-            "actif": true
+            "rarete": 2,
+            "pv": 60,
+            "attaque": 26,
+            "defense": 8,
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Œil vif",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 10,
+                    "description": "+10 % ATQ."
+                }
+            ]
         },
         {
             "slug": "ultra-mage",
@@ -296,7 +441,21 @@
             "pv": 250,
             "attaque": 125,
             "defense": 45,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "nom": "Arcane supérieur",
+                    "type": "bonus_attaque_pct",
+                    "valeur": 15,
+                    "description": "+15 % ATQ."
+                },
+                {
+                    "nom": "Barrière arcanique",
+                    "type": "bonus_defense_pct",
+                    "valeur": 10,
+                    "description": "+10 % DEF."
+                }
+            ]
         }
     ],
     "caisses": [
@@ -305,7 +464,7 @@
             "nom": "Caisse Origine",
             "description": "Une caisse contenant tout les premiers Stickmans",
             "image": "caisse-commune.png",
-            "prix": 120,
+            "prix": 2400,
             "actif": true,
             "contenus": [
                 {
@@ -347,6 +506,84 @@
                 {
                     "stickman": "ultra-mage",
                     "poids": 2
+                }
+            ]
+        },
+        {
+            "slug": "caisse-saison-1-premiers-renforts",
+            "nom": "Caisse Saison 1 - Premiers Renforts",
+            "description": "La première collection saisonnière de StickVerse, composée de nouveaux combattants et spécialistes.",
+            "image": "caisse-commune.png",
+            "prix": 200,
+            "actif": true,
+            "contenus": [
+                {
+                    "stickman": "Combattant",
+                    "poids": 10
+                },
+                {
+                    "stickman": "arbaletrier",
+                    "poids": 4
+                },
+                {
+                    "stickman": "arbaletrier2",
+                    "poids": 4
+                },
+                {
+                    "stickman": "archer2",
+                    "poids": 10
+                },
+                {
+                    "stickman": "bagarreur",
+                    "poids": 10
+                },
+                {
+                    "stickman": "capitaine",
+                    "poids": 4
+                },
+                {
+                    "stickman": "eclaireur",
+                    "poids": 10
+                },
+                {
+                    "stickman": "fantassin",
+                    "poids": 10
+                },
+                {
+                    "stickman": "frondeur",
+                    "poids": 10
+                },
+                {
+                    "stickman": "garde",
+                    "poids": 10
+                },
+                {
+                    "stickman": "gardiennovice",
+                    "poids": 4
+                },
+                {
+                    "stickman": "magenovice",
+                    "poids": 10
+                },
+                {
+                    "stickman": "piquier",
+                    "poids": 10
+                },
+                {
+                    "stickman": "portebouclier",
+                    "poids": 4
+                },
+                {
+                    "stickman": "recrue",
+                    "poids": 10
+                },
+                {
+                    "stickman": "sorciernovice",
+                    "poids": 10
+                },
+                {
+                    "stickman": "tireur",
+                    "poids": 4
                 }
             ]
         }

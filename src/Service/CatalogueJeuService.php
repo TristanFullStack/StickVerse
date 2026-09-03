@@ -28,7 +28,7 @@ final class CatalogueJeuService
     /**
      * @return array{
      *     version: int,
-     *     stickmans: list<array<string, bool|int|string>>,
+     *     stickmans: list<array<string, bool|int|string|list<array<string, mixed>>>>,
      *     caisses: list<array<string, bool|int|string|list<array{stickman: string, poids: int}>>>
      * }
      */
@@ -51,17 +51,27 @@ final class CatalogueJeuService
         return [
             'version' => self::VERSION_FORMAT,
             'stickmans' => array_map(
-                static fn (Stickman $stickman): array => [
-                    'slug' => (string) $stickman->getSlug(),
-                    'nom' => (string) $stickman->getNom(),
-                    'description' => (string) $stickman->getDescription(),
-                    'image' => (string) $stickman->getImage(),
-                    'rarete' => (int) $stickman->getRarete(),
-                    'pv' => (int) $stickman->getPv(),
-                    'attaque' => (int) $stickman->getAttaque(),
-                    'defense' => (int) $stickman->getDefense(),
-                    'actif' => (bool) $stickman->isStatutActif(),
-                ],
+                static function (Stickman $stickman): array {
+                    $donnees = [
+                        'slug' => (string) $stickman->getSlug(),
+                        'nom' => (string) $stickman->getNom(),
+                        'description' => (string) $stickman->getDescription(),
+                        'image' => (string) $stickman->getImage(),
+                        'rarete' => (int) $stickman->getRarete(),
+                        'pv' => (int) $stickman->getPv(),
+                        'attaque' => (int) $stickman->getAttaque(),
+                        'defense' => (int) $stickman->getDefense(),
+                        'actif' => (bool) $stickman->isStatutActif(),
+                    ];
+
+                    $passifs = $stickman->getPassifs();
+
+                    if ($passifs !== []) {
+                        $donnees['passifs'] = $passifs;
+                    }
+
+                    return $donnees;
+                },
                 $stickmans,
             ),
             'caisses' => array_map(
@@ -187,6 +197,11 @@ final class CatalogueJeuService
                         ->setPv($donnees['pv'])
                         ->setAttaque($donnees['attaque'])
                         ->setDefense($donnees['defense'])
+                        ->setPassifs(
+                            isset($donnees['passifs']) && is_array($donnees['passifs'])
+                                ? $donnees['passifs']
+                                : [],
+                        )
                         ->setStatutActif($donnees['actif']);
 
                     if ([] === $existants) {

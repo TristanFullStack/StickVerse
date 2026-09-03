@@ -20,6 +20,41 @@ final class PassifCombatService
     public const PASSIFS_MAXIMUM_PAR_CARTE = 6;
 
     /**
+     * Convertit les bonus de combat en points de puissance de carte.
+     *
+     * La conversion reprend les coefficients officiels du score de puissance
+     * (attaque = 2, défense = 1,5). Un passif différé est compté comme un
+     * potentiel de la carte afin que sa valeur reste comparable dès la
+     * sélection de l'équipe.
+     */
+    public function contributionPuissance(
+        Stickman $stickman,
+        float $coefficientAttaque,
+        float $coefficientDefense,
+    ): int {
+        $attaque = max(0, $stickman->getAttaque() ?? 0);
+        $defense = max(0, $stickman->getDefense() ?? 0);
+        $bonusAttaque = 0;
+        $bonusDefense = 0;
+
+        foreach ($this->passifsDe($stickman) as $passif) {
+            if ($passif['type'] === self::TYPE_BONUS_ATTAQUE_POURCENTAGE) {
+                $bonusAttaque += $passif['valeur'];
+            } elseif ($passif['type'] === self::TYPE_BONUS_DEFENSE_POURCENTAGE) {
+                $bonusDefense += $passif['valeur'];
+            }
+        }
+
+        $bonusAttaque = min(self::BONUS_MAXIMUM, $bonusAttaque);
+        $bonusDefense = min(self::BONUS_MAXIMUM, $bonusDefense);
+
+        return max(0, (int) round(
+            ($attaque * $coefficientAttaque * $bonusAttaque / 100)
+            + ($defense * $coefficientDefense * $bonusDefense / 100),
+        ));
+    }
+
+    /**
      * @param list<Stickman> $stickmen
      */
     public function bonusAttaquePourcentage(

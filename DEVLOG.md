@@ -8399,6 +8399,27 @@ résolution simultanée.
 - Syntaxe PHP validée sur les fichiers modifiés.
 - Les tests unitaires combat ciblés passent avec 47 tests et 182 assertions.
 
+## J94 — Activer les passifs de lancement et leur puissance
+
+### Objectif
+
+Donner une identité progressive aux cartes R2 à R5 sans modifier les cartes R1, tout en intégrant la valeur réelle des passifs dans le score de puissance.
+
+### Réalisé
+
+- 16 Stickmans R2–R5 reçoivent des passifs simples adaptés à leur rôle ; les 11 cartes R1 restent sans passif.
+- Les effets disponibles restent limités aux bonus d’attaque et de défense bornés à 50 % par groupe.
+- La contribution d’un passif reprend les coefficients officiels du score : attaque × 2 et défense × 1,5. Les bonus sont donc pris en compte dans les cartes, les compositions, le matchmaking et le calcul ELO.
+- Les passifs différés sont comptés comme potentiel de puissance dès la sélection, puis activés au round prévu pendant le combat.
+- Le catalogue JSON exporte et réimporte désormais les passifs afin de conserver une installation reproductible.
+- L’overlay d’ouverture affiche maintenant les passifs réellement présents sur la carte gagnée.
+
+### Vérifications
+
+- Migration `Version20260903110000` appliquée : 35 migrations exécutées, aucune en attente.
+- Catalogue vérifié : 27 Stickmans, 2 caisses, 27 associations et 29 images.
+- Tests unitaires ScorePuissance, PassifCombat, équipes, ELO et catalogue : 23 tests, 79 assertions réussis.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
