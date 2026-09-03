@@ -116,7 +116,7 @@ final class CaissePubliqueControllerTest extends WebTestCase
         self::assertCount(1, $mouvements);
         self::assertSame(-120, $mouvements[0]->getMontant());
         self::assertSame(
-            MouvementPieces::TYPE_ACHAT_CAISSE,
+            MouvementPieces::TYPE_OUVERTURE_CAISSE_PAYANTE,
             $mouvements[0]->getType(),
         );
 

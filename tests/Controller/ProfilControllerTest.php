@@ -194,7 +194,7 @@ final class ProfilControllerTest extends WebTestCase
 
         self::assertResponseRedirects('/recompenses');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('[data-solde-pieces]', '1100 pièces');
+        self::assertSelectorTextContains('[data-solde-pieces]', '2000 pièces');
         self::assertSelectorTextContains(
             '.alert-success',
             'Récompense quotidienne récupérée',
@@ -249,7 +249,7 @@ final class ProfilControllerTest extends WebTestCase
         self::assertResponseRedirects('/recompenses');
         $this->client->followRedirect();
 
-        self::assertSelectorTextContains('[data-solde-pieces]', '1050 pièces');
+        self::assertSelectorTextContains('[data-solde-pieces]', '1500 pièces');
         self::assertSelectorTextContains(
             '[data-profile-objectif="premier_combat"]',
             'Réclamé',

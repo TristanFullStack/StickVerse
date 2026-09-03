@@ -11,8 +11,8 @@ use LogicException;
 
 final class RecompenseHoraireService
 {
-    public const MONTANT_PAR_HEURE = 20;
-    public const MONTANT_MAXIMUM = 100;
+    public const MONTANT_PAR_HEURE = 100;
+    public const MONTANT_MAXIMUM = 500;
     public const HEURES_MAXIMUM = 5;
 
     public function __construct(

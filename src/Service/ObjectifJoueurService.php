@@ -26,31 +26,31 @@ final class ObjectifJoueurService
             'libelle' => 'Premier combat',
             'description' => 'Terminer ou abandonner un premier combat.',
             'cible' => 1,
-            'recompense' => 50,
+            'recompense' => 500,
         ],
         self::OBJECTIF_CINQ_COMBATS => [
             'libelle' => 'Habitué des combats',
             'description' => 'Participer à cinq combats.',
             'cible' => 5,
-            'recompense' => 100,
+            'recompense' => 1000,
         ],
         self::OBJECTIF_PREMIERE_CAISSE => [
             'libelle' => 'Première ouverture',
             'description' => 'Ouvrir une première caisse payante.',
             'cible' => 1,
-            'recompense' => 50,
+            'recompense' => 500,
         ],
         self::OBJECTIF_COLLECTION_DEBUT => [
             'libelle' => 'Collection en route',
             'description' => 'Obtenir cinq Stickmen différents.',
             'cible' => 5,
-            'recompense' => 75,
+            'recompense' => 500,
         ],
         self::OBJECTIF_EQUIPE_PRETE => [
             'libelle' => 'Équipe prête',
             'description' => 'Créer une équipe jouable.',
             'cible' => 1,
-            'recompense' => 75,
+            'recompense' => 250,
         ],
     ];
 
@@ -75,7 +75,7 @@ final class ObjectifJoueurService
         $ouvertures = $this->mouvementPiecesRepository
             ->compterPourJoueurEtType(
                 $joueur,
-                MouvementPieces::TYPE_ACHAT_CAISSE,
+                MouvementPieces::TYPE_OUVERTURE_CAISSE_PAYANTE,
             );
         $collection = $this->inventaireRepository->count([
             'utilisateur' => $joueur,

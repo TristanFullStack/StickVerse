@@ -18,9 +18,10 @@ final class MissionsJoueurServiceTest extends TestCase
         $joueur = $this->joueurAvecId(1);
         $combats = $this->createStub(CombatRepository::class);
         $combats->method('compterDepuisPourJoueur')->willReturn(2);
+        $combats->method('compterCombatsTerminesDepuisPourJoueur')->willReturn(2);
         $combats->method('compterVictoiresDepuisPourJoueur')->willReturn(1);
         $mouvements = $this->createStub(MouvementPiecesRepository::class);
-        $mouvements->method('compterDepuisPourJoueurEtType')->willReturn(3);
+        $mouvements->method('compterDepuisPourJoueurEtType')->willReturn(10);
 
         $missions = $this->creerService($joueur, $combats, $mouvements)->construire(
             $joueur,
@@ -38,6 +39,7 @@ final class MissionsJoueurServiceTest extends TestCase
         $joueur = $this->joueurAvecId(2);
         $combats = $this->createStub(CombatRepository::class);
         $combats->method('compterDepuisPourJoueur')->willReturn(1);
+        $combats->method('compterCombatsTerminesDepuisPourJoueur')->willReturn(1);
         $combats->method('compterVictoiresDepuisPourJoueur')->willReturn(0);
         $mouvements = $this->createStub(MouvementPiecesRepository::class);
         $entityManager = $this->createStub(EntityManagerInterface::class);
@@ -50,9 +52,9 @@ final class MissionsJoueurServiceTest extends TestCase
         $service = new MissionsJoueurService($combats, $mouvements, $users, $entityManager);
         $date = new DateTimeImmutable('2026-09-01 12:00:00');
 
-        self::assertSame(50, $service->reclamer($joueur, 'quotidiennes', 'combat', $date));
+        self::assertSame(250, $service->reclamer($joueur, 'quotidiennes', 'combat', $date));
         self::assertSame(0, $service->reclamer($joueur, 'quotidiennes', 'combat', $date));
-        self::assertSame(1050, $joueur->getPieces());
+        self::assertSame(1250, $joueur->getPieces());
     }
 
     private function creerService(

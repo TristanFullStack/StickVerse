@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 final class RecompenseHoraireServiceTest extends TestCase
 {
-    public function testCumuleVingtPiecesParHeureAvecUnPlafondDeCent(): void
+    public function testCumuleCentPiecesParHeureAvecUnPlafondDeCinqCents(): void
     {
         $joueur = $this->joueurAvecId(1)->setDateDerniereRecompenseHoraire(
             new DateTimeImmutable('2026-09-01 08:00:00'),
@@ -20,11 +20,11 @@ final class RecompenseHoraireServiceTest extends TestCase
         $service = $this->creerService($joueur);
 
         self::assertSame(
-            60,
+            300,
             $service->montantDisponible($joueur, new DateTimeImmutable('2026-09-01 11:30:00')),
         );
         self::assertSame(
-            100,
+            500,
             $service->montantDisponible($joueur, new DateTimeImmutable('2026-09-01 20:00:00')),
         );
     }
@@ -37,14 +37,14 @@ final class RecompenseHoraireServiceTest extends TestCase
         $service = $this->creerService($joueur);
 
         self::assertSame(
-            40,
+            200,
             $service->reclamer($joueur, new DateTimeImmutable('2026-09-01 10:30:00')),
         );
         self::assertEquals(
             new DateTimeImmutable('2026-09-01 10:00:00'),
             $joueur->getDateDerniereRecompenseHoraire(),
         );
-        self::assertSame(1040, $joueur->getPieces());
+        self::assertSame(1200, $joueur->getPieces());
     }
 
     private function creerService(

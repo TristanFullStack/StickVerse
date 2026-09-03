@@ -8328,6 +8328,46 @@ Après suppression ou modification de l’équipe, la carte n’est plus protég
 Une carte ne peut plus disparaître de l’inventaire alors qu’elle est encore équipée. Le joueur peut vendre ses
 doublons tout en conservant systématiquement les cartes nécessaires à ses compositions.
 
+## J92 — Revoir l’ensemble des récompenses
+
+### Objectif
+
+J92 aligne les récompenses de connexion, les missions et les objectifs permanents sur la nouvelle progression
+économique de StickVerse.
+
+### Récompenses de connexion
+
+- La récompense quotidienne passe à 1 000 pièces, récupérable une fois par jour.
+- La récompense horaire passe à 100 pièces par heure, cumulables jusqu’à 500 pièces (cinq heures), y compris lorsque
+  le joueur est hors ligne.
+
+### Missions
+
+- « Un combat aujourd’hui » demande de terminer un combat sans abandonner et rapporte 250 pièces.
+- Une victoire du jour rapporte 750 pièces.
+- La mission hebdomadaire de participation demande 10 combats et rapporte 1 500 pièces.
+- La série hebdomadaire demande 5 victoires et rapporte 2 000 pièces.
+- Les ouvertures hebdomadaires demandent 10 caisses payantes et rapportent 1 000 pièces.
+
+Un abandon volontaire ne valide pas la mission quotidienne de combat. Une victoire obtenue après l’abandon ou le
+forfait de l’adversaire la valide bien.
+
+Les achats de caisses et les ouvertures sont maintenant suivis par deux types de mouvements distincts afin que la
+mission d’ouvertures ne progresse qu’au moment où une caisse payante est réellement ouverte.
+
+### Objectifs permanents
+
+- Premier combat : 500 pièces.
+- Habitué des combats : 1 000 pièces.
+- Première ouverture : 500 pièces.
+- Collection en route : 500 pièces.
+- Équipe prête : 250 pièces.
+
+### Vérifications
+
+- Syntaxe PHP validée sur tous les fichiers modifiés.
+- Suite complète validée : 266 tests et 2 066 assertions.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

@@ -18,39 +18,39 @@ final class MissionsJoueurService
         'quotidiennes' => [
             'combat' => [
                 'libelle' => 'Un combat aujourd’hui',
-                'description' => 'Terminer ou abandonner un combat.',
+                'description' => 'Terminer un combat sans abandonner.',
                 'cible' => 1,
-                'recompense' => 50,
-                'metrique' => 'combats',
+                'recompense' => 250,
+                'metrique' => 'combats_termines',
             ],
             'victoire' => [
                 'libelle' => 'Victoire du jour',
                 'description' => 'Remporter un combat.',
                 'cible' => 1,
-                'recompense' => 75,
+                'recompense' => 750,
                 'metrique' => 'victoires',
             ],
         ],
         'hebdomadaires' => [
             'combats' => [
                 'libelle' => 'Régulier de la semaine',
-                'description' => 'Participer à cinq combats.',
-                'cible' => 5,
-                'recompense' => 150,
+                'description' => 'Participer à dix combats.',
+                'cible' => 10,
+                'recompense' => 1500,
                 'metrique' => 'combats',
             ],
             'victoires' => [
                 'libelle' => 'Série de victoires',
-                'description' => 'Remporter trois combats.',
-                'cible' => 3,
-                'recompense' => 200,
+                'description' => 'Remporter cinq combats.',
+                'cible' => 5,
+                'recompense' => 2000,
                 'metrique' => 'victoires',
             ],
             'caisses' => [
                 'libelle' => 'Ouvertures de la semaine',
-                'description' => 'Ouvrir trois caisses payantes.',
-                'cible' => 3,
-                'recompense' => 100,
+                'description' => 'Ouvrir dix caisses payantes.',
+                'cible' => 10,
+                'recompense' => 1000,
                 'metrique' => 'caisses',
             ],
         ],
@@ -181,10 +181,12 @@ final class MissionsJoueurService
         $definition = self::MISSIONS[$periode][$id];
         $progression = match ($definition['metrique']) {
             'combats' => $this->combatRepository->compterDepuisPourJoueur($joueur, $debut),
+            'combats_termines' => $this->combatRepository
+                ->compterCombatsTerminesDepuisPourJoueur($joueur, $debut),
             'victoires' => $this->combatRepository->compterVictoiresDepuisPourJoueur($joueur, $debut),
             'caisses' => $this->mouvementPiecesRepository->compterDepuisPourJoueurEtType(
                 $joueur,
-                MouvementPieces::TYPE_ACHAT_CAISSE,
+                MouvementPieces::TYPE_OUVERTURE_CAISSE_PAYANTE,
                 $debut,
             ),
             default => 0,

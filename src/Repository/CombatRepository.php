@@ -247,6 +247,37 @@ class CombatRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * Compte les combats effectivement menés par le joueur depuis une date.
+     *
+     * Un abandon par le joueur ne valide pas la mission « Un combat
+     * aujourd’hui ». En revanche, une victoire obtenue parce que l’adversaire
+     * a abandonné (ou a été déclaré forfait) est bien considérée comme un
+     * combat terminé pour le gagnant.
+     */
+    public function compterCombatsTerminesDepuisPourJoueur(
+        User $joueur,
+        DateTimeImmutable $debut,
+    ): int {
+        return (int) $this->createQueryBuilder('combat')
+            ->select('COUNT(combat.id)')
+            ->andWhere('(combat.joueur1 = :joueur OR combat.joueur2 = :joueur)')
+            ->andWhere(
+                '(combat.statut = :termine'
+                .' OR (combat.statut IN (:statutsVictoire) AND combat.gagnant = :joueur))',
+            )
+            ->andWhere('combat.dateMiseAJour >= :debut')
+            ->setParameter('joueur', $joueur)
+            ->setParameter('termine', Combat::STATUT_TERMINE)
+            ->setParameter('statutsVictoire', [
+                Combat::STATUT_ABANDONNE,
+                Combat::STATUT_FORFAIT,
+            ])
+            ->setParameter('debut', $debut)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function compterVictoiresDepuisPourJoueur(
         User $joueur,
         DateTimeImmutable $debut,

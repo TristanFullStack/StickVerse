@@ -11,7 +11,7 @@ use LogicException;
 
 final class RecompenseQuotidienneService
 {
-    public const MONTANT = 100;
+    public const MONTANT = 1000;
 
     public function __construct(
         private readonly UserRepository $userRepository,

@@ -120,7 +120,7 @@ final class OuvertureCaisseService
                     $this->mouvementPiecesService?->enregistrer(
                         $joueur,
                         -$prix,
-                        MouvementPieces::TYPE_ACHAT_CAISSE,
+                        MouvementPieces::TYPE_OUVERTURE_CAISSE_PAYANTE,
                         'Ouverture de la caisse '.($caisse->getNom() ?? ''),
                     );
                 }

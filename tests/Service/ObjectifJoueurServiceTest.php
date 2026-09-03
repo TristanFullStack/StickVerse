@@ -88,11 +88,11 @@ final class ObjectifJoueurServiceTest extends TestCase
             $mouvementService,
         );
 
-        self::assertSame(50, $service->reclamer(
+        self::assertSame(500, $service->reclamer(
             $joueur,
             ObjectifJoueurService::OBJECTIF_PREMIER_COMBAT,
         ));
-        self::assertSame(1050, $joueur->getPieces());
+        self::assertSame(1500, $joueur->getPieces());
         self::assertTrue($joueur->aReclameObjectif(
             ObjectifJoueurService::OBJECTIF_PREMIER_COMBAT,
         ));
