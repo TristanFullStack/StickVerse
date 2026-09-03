@@ -8420,6 +8420,32 @@ Donner une identité progressive aux cartes R2 à R5 sans modifier les cartes R1
 - Catalogue vérifié : 27 Stickmans, 2 caisses, 27 associations et 29 images.
 - Tests unitaires ScorePuissance, PassifCombat, équipes, ELO et catalogue : 23 tests, 79 assertions réussis.
 
+## J95 — Rendre les passifs lisibles et contextuels
+
+### Objectif
+
+Permettre aux joueurs de comprendre les passifs de chaque carte et préparer une base de règles suffisamment riche
+pour les futurs équilibrages compétitifs.
+
+### Réalisé
+
+- Les cartes affichent une ligne dédiée de repères de passifs ; une carte sans passif conserve la ligne vide sans carré.
+- Le survol d’un repère affiche le nom et la description complète du passif.
+- Le Wiki et la fiche d’administration listent désormais tous les passifs de la carte, avec leur règle d’activation.
+- Le formulaire d’administration accepte jusqu’à six passifs, vérifie les types autorisés et refuse les valeurs hors limites.
+- Le moteur reconnaît les passifs contextuels (PV faibles, cible affaiblie, Focus/Split, partenaire vivant ou K.O., double
+  défense, fenêtres de rounds et pénétration de défense) sans exécuter de code fourni par l’interface.
+- Les passifs de lancement des cartes R2 à R5 ont été remplacés par des effets nommés et contextualisés ; les cartes R1
+  restent sans passif.
+- La pénétration de défense est appliquée à chaque impact et la contribution des passifs augmente le score de puissance.
+- L’ouverture de caisse et le résumé d’un round affichent le nom et la description des passifs actifs.
+
+### Vérifications
+
+- Migration `Version20260903120000` appliquée et catalogue JSON régénéré.
+- Schéma Doctrine, conteneur Symfony et templates Twig validés.
+- Tests unitaires : 145 tests, 688 assertions réussis.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

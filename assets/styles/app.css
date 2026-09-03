@@ -207,6 +207,42 @@ fieldset {
     margin-bottom: 0;
 }
 
+.stickman-card-passifs {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    min-height: 25px;
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(63, 79, 95, .45);
+}
+
+.stickman-card-passif {
+    display: inline-grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border: 1px solid rgba(37, 71, 99, .72);
+    border-radius: 3px;
+    color: #17324a;
+    background: rgba(255, 255, 255, .72);
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.wiki-passifs-list,
+.admin-passifs-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.wiki-passifs-list li,
+.admin-passifs-list li {
+    margin-bottom: 7px;
+}
+
 .caisse-card-main {
     display: block;
     color: inherit;

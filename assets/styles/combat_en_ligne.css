@@ -1304,12 +1304,17 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .combat-arene .carte-combattant-passif {
-    display: block;
+    display: grid;
+    place-items: center;
     width: 13px;
     height: 13px;
     border: 1px solid #7e8d9a;
     border-radius: 2px;
+    color: #17324a;
     background: #fff;
+    font-size: 7px;
+    font-weight: 800;
+    line-height: 1;
 }
 
 #combat-en-ligne .resultat-round-passifs {

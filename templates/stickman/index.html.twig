@@ -28,6 +28,7 @@
                 <th>PV</th>
                 <th>ATQ</th>
                 <th>DEF</th>
+                <th>Passifs</th>
                 <th>Statut</th>
                 <th>Actions</th>
             </tr>
@@ -44,6 +45,7 @@
                 <td>{{ stickman.pv }}</td>
                 <td>{{ stickman.attaque }}</td>
                 <td>{{ stickman.defense }}</td>
+                <td>{{ stickman.passifs|length }} / 6</td>
                 <td><span class="admin-status {{ stickman.statutActif ? 'admin-status--active' : 'admin-status--inactive' }}">{{ stickman.statutActif ? 'Actif' : 'Inactif' }}</span></td>
                 <td class="admin-table-actions">
                     <a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">Détails</a>
@@ -52,7 +54,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="9">Aucun Stickman enregistré.</td>
+                <td colspan="10">Aucun Stickman enregistré.</td>
             </tr>
         {% endfor %}
         </tbody>

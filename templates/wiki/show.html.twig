@@ -14,6 +14,16 @@
         </article>
         <div class="wiki-detail-content">
             <h2>Description</h2><p>{{ stickman.description }}</p>
+            <h2>Passifs</h2>
+            {% if stickman.passifs is not empty %}
+                <ul class="wiki-passifs-list">
+                    {% for passif in stickman.passifs|slice(0, 6) %}
+                        <li><strong>{{ passif.nom|default('Passif') }}</strong>{% if passif.description|default('') %} — {{ passif.description }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Cette carte ne possède aucun passif.</p>
+            {% endif %}
             <h2>Saison</h2><p>{{ stickman.collectionJeu ? 'Saison '~stickman.collectionJeu.saison~' — '~stickman.collectionJeu.nom : 'Catalogue général' }}</p>
             <h2>Caisses disponibles</h2>
             <ul>{% for contenu in caisses %}<li><a href="{{ path('app_caisse_publique_show', {id: contenu.caisse.id}) }}">{{ contenu.caisse.nom }}</a> — {{ contenu.probabilite|number_format(2, ',', ' ') }} %</li>{% else %}<li>Ce Stickman n’est associé à aucune caisse active.</li>{% endfor %}</ul>

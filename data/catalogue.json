@@ -13,10 +13,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Tir précis",
-                    "type": "bonus_attaque_pct",
-                    "valeur": 8,
-                    "description": "+8 % ATQ."
+                    "nom": "Précision",
+                    "type": "precision",
+                    "valeur": 6,
+                    "description": "Ignore 6 % de la défense adverse."
                 }
             ]
         },
@@ -32,10 +32,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Tir de couverture",
-                    "type": "bonus_attaque_pct",
-                    "valeur": 7,
-                    "description": "+7 % ATQ."
+                    "nom": "Perforation I",
+                    "type": "perforation_i",
+                    "valeur": 8,
+                    "description": "Ignore 8 % de la défense adverse."
                 }
             ]
         },
@@ -51,10 +51,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Visée",
-                    "type": "bonus_attaque_pct",
-                    "valeur": 10,
-                    "description": "+10 % ATQ."
+                    "nom": "Précision",
+                    "type": "precision",
+                    "valeur": 8,
+                    "description": "Ignore 8 % de la défense adverse."
                 }
             ]
         },
@@ -81,10 +81,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Frappe vitale",
-                    "type": "bonus_attaque_pct",
+                    "nom": "Exécution",
+                    "type": "execution",
                     "valeur": 12,
-                    "description": "+12 % ATQ."
+                    "description": "+12 % ATQ contre une cible sous 30 % de PV."
                 }
             ]
         },
@@ -112,15 +112,15 @@
             "passifs": [
                 {
                     "nom": "Furie",
-                    "type": "bonus_attaque_pct",
+                    "type": "furie",
                     "valeur": 14,
-                    "description": "+14 % ATQ."
+                    "description": "+14 % ATQ sous 40 % de PV."
                 },
                 {
-                    "nom": "Rage montante",
-                    "type": "bonus_attaque_pct",
+                    "nom": "Surcharge",
+                    "type": "surcharge",
                     "valeur": 8,
-                    "description": "+8 % ATQ à partir du round 4.",
+                    "description": "+8 % ATQ du round 4 au round 8.",
                     "a_partir_round": 4
                 }
             ]
@@ -137,16 +137,16 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Ordre offensif",
-                    "type": "bonus_attaque_pct",
-                    "valeur": 5,
-                    "description": "+5 % ATQ."
+                    "nom": "Commandement",
+                    "type": "commandement",
+                    "valeur": 6,
+                    "description": "+6 % ATQ lorsque le partenaire est K.O."
                 },
                 {
-                    "nom": "Ordre défensif",
-                    "type": "bonus_defense_pct",
-                    "valeur": 5,
-                    "description": "+5 % DEF."
+                    "nom": "Formation",
+                    "type": "formation",
+                    "valeur": 6,
+                    "description": "+6 % ATQ tant que le partenaire est vivant."
                 }
             ]
         },
@@ -173,16 +173,16 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Double pointe",
-                    "type": "bonus_attaque_pct",
+                    "nom": "Tempête divisée",
+                    "type": "tempete_divisee",
                     "valeur": 10,
-                    "description": "+10 % ATQ."
+                    "description": "+10 % ATQ en attaque Split."
                 },
                 {
-                    "nom": "Position solide",
-                    "type": "bonus_defense_pct",
-                    "valeur": 8,
-                    "description": "+8 % DEF."
+                    "nom": "Forteresse",
+                    "type": "forteresse",
+                    "valeur": 10,
+                    "description": "+10 % DEF lors d’une double défense."
                 }
             ]
         },
@@ -242,10 +242,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Garde novice",
-                    "type": "bonus_defense_pct",
+                    "nom": "Rempart léger",
+                    "type": "rempart_leger",
                     "valeur": 8,
-                    "description": "+8 % DEF."
+                    "description": "+8 % DEF lors d’une double défense."
                 }
             ]
         },
@@ -261,10 +261,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Endurance",
-                    "type": "bonus_defense_pct",
-                    "valeur": 8,
-                    "description": "+8 % DEF."
+                    "nom": "Rage",
+                    "type": "rage",
+                    "valeur": 10,
+                    "description": "+10 % ATQ sous 40 % de PV."
                 }
             ]
         },
@@ -280,10 +280,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Allonge",
-                    "type": "bonus_attaque_pct",
+                    "nom": "Assaut coordonné",
+                    "type": "assaut_coordonne",
                     "valeur": 8,
-                    "description": "+8 % ATQ."
+                    "description": "+8 % ATQ en attaque Focus."
                 }
             ]
         },
@@ -299,10 +299,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Canalisation",
-                    "type": "bonus_attaque_pct",
+                    "nom": "Bouclier arcanique",
+                    "type": "bouclier_arcanique",
                     "valeur": 10,
-                    "description": "+10 % ATQ."
+                    "description": "+10 % DEF lors de la première défense."
                 }
             ]
         },
@@ -340,10 +340,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Bouclier levé",
-                    "type": "bonus_defense_pct",
+                    "nom": "Protecteur",
+                    "type": "protecteur",
                     "valeur": 10,
-                    "description": "+10 % DEF."
+                    "description": "+10 % DEF lorsqu’un allié est protégé."
                 }
             ]
         },
@@ -370,16 +370,16 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Autorité royale",
-                    "type": "bonus_attaque_pct",
+                    "nom": "Autorité impériale",
+                    "type": "autorite_imperiale",
                     "valeur": 10,
-                    "description": "+10 % ATQ."
+                    "description": "+10 % ATQ lorsque le partenaire est K.O."
                 },
                 {
-                    "nom": "Armure royale",
-                    "type": "bonus_defense_pct",
-                    "valeur": 10,
-                    "description": "+10 % DEF."
+                    "nom": "Maître du duel",
+                    "type": "maitre_du_duel",
+                    "valeur": 12,
+                    "description": "+12 % DEF lorsqu’une seule équipe adverse attaque la cible."
                 }
             ]
         },
@@ -407,9 +407,9 @@
             "passifs": [
                 {
                     "nom": "Rempart",
-                    "type": "bonus_defense_pct",
+                    "type": "rempart",
                     "valeur": 12,
-                    "description": "+12 % DEF."
+                    "description": "+12 % DEF lors d’une double défense."
                 }
             ]
         },
@@ -425,10 +425,10 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Œil vif",
-                    "type": "bonus_attaque_pct",
-                    "valeur": 10,
-                    "description": "+10 % ATQ."
+                    "nom": "Tir dispersé",
+                    "type": "tir_disperse",
+                    "valeur": 8,
+                    "description": "+8 % ATQ lorsque les deux groupes visent des cibles différentes."
                 }
             ]
         },
@@ -444,16 +444,17 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Arcane supérieur",
-                    "type": "bonus_attaque_pct",
-                    "valeur": 15,
-                    "description": "+15 % ATQ."
+                    "nom": "Apocalypse",
+                    "type": "apocalypse",
+                    "valeur": 18,
+                    "description": "+18 % ATQ à partir du round 10.",
+                    "a_partir_round": 10
                 },
                 {
-                    "nom": "Barrière arcanique",
-                    "type": "bonus_defense_pct",
-                    "valeur": 10,
-                    "description": "+10 % DEF."
+                    "nom": "Rune défensive",
+                    "type": "rune_defensive",
+                    "valeur": 12,
+                    "description": "+12 % DEF lors de la première défense."
                 }
             ]
         }

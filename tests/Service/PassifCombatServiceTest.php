@@ -5,6 +5,7 @@ namespace App\Tests\Service;
 use App\Entity\Stickman;
 use App\Service\CombatService;
 use App\Service\PassifCombatService;
+use App\Service\ScorePuissanceService;
 use PHPUnit\Framework\TestCase;
 
 final class PassifCombatServiceTest extends TestCase
@@ -95,5 +96,101 @@ final class PassifCombatServiceTest extends TestCase
         self::assertSame(60, $resultat['defense']);
         self::assertSame(40, $resultat['degatsEffectifs']);
         self::assertSame(20, $resultat['bonusPassifsDefense']);
+    }
+
+    public function testUnPassifContextuelUtiliseLesPvReelsDeLaCarte(): void
+    {
+        $stickman = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(100)
+            ->setDefense(0)
+            ->setPassifs([[
+                'nom' => 'Rage',
+                'description' => '+10 % ATQ sous 40 % de PV.',
+                'type' => 'rage',
+                'valeur' => 10,
+            ]]);
+
+        $service = new PassifCombatService();
+
+        self::assertSame(0, $service->bonusAttaquePourcentage([$stickman], 1));
+        self::assertSame(
+            10,
+            $service->bonusAttaquePourcentage([$stickman], 1, [
+                'attaquants' => [[
+                    'stickman' => $stickman,
+                    'pvActuels' => 30,
+                    'pvMaximum' => 100,
+                    'partenaireVivant' => true,
+                    'protegeAllie' => false,
+                ]],
+            ]),
+        );
+    }
+
+    public function testLaPrecisionReduitLaDefenseDansUnImpact(): void
+    {
+        $attaquant = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(100)
+            ->setDefense(0)
+            ->setPassifs([[
+                'nom' => 'Précision',
+                'description' => 'Ignore 10 % de la défense adverse.',
+                'type' => 'precision',
+                'valeur' => 10,
+            ]]);
+        $defenseur = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(0)
+            ->setDefense(50);
+
+        $resultat = (new CombatService(new PassifCombatService()))->resoudreCible(
+            [$attaquant],
+            [$defenseur],
+            100,
+            1,
+            [
+                'attaquants' => [[
+                    'stickman' => $attaquant,
+                    'pvActuels' => 100,
+                    'pvMaximum' => 100,
+                    'partenaireVivant' => true,
+                    'protegeAllie' => false,
+                ]],
+                'defenseurs' => [[
+                    'stickman' => $defenseur,
+                    'pvActuels' => 100,
+                    'pvMaximum' => 100,
+                    'partenaireVivant' => true,
+                    'protegeAllie' => false,
+                ]],
+                'pvActuelsCible' => 100,
+                'pvMaximumCible' => 100,
+            ],
+        );
+
+        self::assertSame(45, $resultat['defense']);
+        self::assertSame(10, $resultat['ignoreDefensePassifs']);
+    }
+
+    public function testUnPassifContextuelAugmenteLaPuissanceDeLaCarte(): void
+    {
+        $stickman = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(50)
+            ->setDefense(40)
+            ->setPassifs([[
+                'nom' => 'Rage',
+                'description' => '+10 % ATQ sous 40 % de PV.',
+                'type' => 'rage',
+                'valeur' => 10,
+            ]]);
+
+        self::assertSame(
+            190,
+            (new ScorePuissanceService(new PassifCombatService()))
+                ->calculerStickman($stickman),
+        );
     }
 }

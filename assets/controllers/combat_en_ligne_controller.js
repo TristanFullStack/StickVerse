@@ -944,11 +944,21 @@ export default class extends Controller {
             this.resultatRoundPassifsTarget.textContent = [
                 'Passifs actifs :',
                 ...passifs.map((passif) => {
+                    const estPenetration = [
+                        'precision',
+                        'perforation_i',
+                        'perforation_ii',
+                        'precision_spectrale',
+                    ].includes(passif?.type);
                     const valeur = Number.isFinite(Number(passif?.valeur))
-                        ? ` (+${passif.valeur} %)`
+                        ? ` (${estPenetration ? '-' : '+'}${passif.valeur} %${estPenetration ? ' DEF' : ''})`
+                        : '';
+                    const description = typeof passif?.description === 'string'
+                        && passif.description.trim() !== ''
+                        ? ` — ${passif.description.trim()}`
                         : '';
 
-                    return `${passif?.nom ?? 'Passif'}${valeur}`;
+                    return `${passif?.nom ?? 'Passif'}${valeur}${description}`;
                 }),
             ].join(' ');
             this.resultatRoundPassifsTarget.hidden = false;
@@ -2233,9 +2243,17 @@ export default class extends Controller {
             const emplacement = document.createElement('span');
             emplacement.className = 'carte-combattant-passif';
             emplacement.dataset.passifIndex = String(index + 1);
-            if (passif && typeof passif === 'object' && typeof passif.description === 'string') {
-                emplacement.title = passif.description;
-                emplacement.setAttribute('aria-label', passif.description);
+            if (passif && typeof passif === 'object') {
+                const nom = typeof passif.nom === 'string' && passif.nom.trim() !== ''
+                    ? passif.nom.trim()
+                    : 'Passif';
+                const description = typeof passif.description === 'string'
+                    ? passif.description.trim()
+                    : '';
+                const libelle = description ? `${nom} — ${description}` : nom;
+                emplacement.textContent = nom.slice(0, 2).toUpperCase();
+                emplacement.title = libelle;
+                emplacement.setAttribute('aria-label', libelle);
             } else {
                 emplacement.setAttribute('aria-hidden', 'true');
             }

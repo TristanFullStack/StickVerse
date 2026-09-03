@@ -323,9 +323,18 @@ export default class extends Controller {
         const elementListe = document.createElement('ul');
         liste.forEach((passif) => {
             const item = document.createElement('li');
-            item.textContent = typeof passif === 'string'
-                ? passif
-                : passif?.description ?? 'Passif';
+            if (typeof passif === 'string') {
+                item.textContent = passif;
+            } else {
+                const nom = typeof passif?.nom === 'string' && passif.nom.trim() !== ''
+                    ? passif.nom.trim()
+                    : 'Passif';
+                const description = typeof passif?.description === 'string'
+                    && passif.description.trim() !== ''
+                    ? ` — ${passif.description.trim()}`
+                    : '';
+                item.textContent = `${nom}${description}`;
+            }
             elementListe.append(item);
         });
         this.passivesTarget.append(elementListe);

@@ -19,6 +19,17 @@
             <div><dt>PV</dt><dd>{{ stickman.pv }}</dd></div>
             <div><dt>Attaque</dt><dd>{{ stickman.attaque }}</dd></div>
             <div><dt>Défense</dt><dd>{{ stickman.defense }}</dd></div>
+            <div><dt>Passifs</dt><dd>
+                {% if stickman.passifs is not empty %}
+                    <ul class="admin-passifs-list">
+                        {% for passif in stickman.passifs|slice(0, 6) %}
+                            <li><strong>{{ passif.nom|default('Passif') }}</strong>{% if passif.description|default('') %} — {{ passif.description }}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    Aucun passif
+                {% endif %}
+            </dd></div>
         </dl>
     </section>
     <div class="admin-secondary-actions">

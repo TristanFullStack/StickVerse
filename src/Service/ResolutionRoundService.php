@@ -41,6 +41,7 @@ final class ResolutionRoundService
             planAttaquant: $planJoueur1,
             defenseur: $joueur2,
             planDefenseur: $planJoueur2,
+            numeroRound: $numeroRound,
         );
 
         $this->ajouterImpacts(
@@ -50,6 +51,7 @@ final class ResolutionRoundService
             planAttaquant: $planJoueur2,
             defenseur: $joueur1,
             planDefenseur: $planJoueur1,
+            numeroRound: $numeroRound,
         );
 
         /*
@@ -74,7 +76,8 @@ final class ResolutionRoundService
      * @param array<string, array{
      *     attaquants: list<\App\Entity\Stickman>,
      *     defenseurs: list<\App\Entity\Stickman>,
-     *     pvActuels: int
+     *     pvActuels: int,
+     *     contexte: array<string, mixed>
      * }> $impacts
      */
     private function ajouterImpacts(
@@ -84,6 +87,7 @@ final class ResolutionRoundService
         PlanCombat $planAttaquant,
         EtatEquipeCombat $defenseur,
         PlanCombat $planDefenseur,
+        int $numeroRound,
     ): void {
         $ciblesAttaque = [
             'X' => $planAttaquant->getCibleAttaqueX(),
@@ -91,6 +95,7 @@ final class ResolutionRoundService
         ];
 
         $attaquantsParCible = [];
+        $groupesAttaquantsParCible = [];
 
         foreach ($ciblesAttaque as $groupe => $cible) {
             $stickmenAttaquants = $attaquant
@@ -116,6 +121,7 @@ final class ResolutionRoundService
                 $attaquantsParCible[$cible],
                 ...$stickmenAttaquants,
             );
+            $groupesAttaquantsParCible[$cible][] = $groupe;
         }
 
         $ciblesDefense = [
@@ -124,6 +130,7 @@ final class ResolutionRoundService
         ];
 
         $defenseursParCible = [];
+        $groupesDefenseParCible = [];
 
         foreach ($ciblesDefense as $groupe => $cible) {
             $stickmenDefenseurs = $defenseur
@@ -149,15 +156,75 @@ final class ResolutionRoundService
                 $defenseursParCible[$cible],
                 ...$stickmenDefenseurs,
             );
+            $groupesDefenseParCible[$cible][] = $groupe;
         }
 
         foreach ($attaquantsParCible as $cible => $stickmenAttaquants) {
+            $groupesAttaquants = array_values(array_unique($groupesAttaquantsParCible[$cible] ?? []));
+            $groupesDefense = array_values(array_unique($groupesDefenseParCible[$cible] ?? []));
+            $acteursAttaquants = [];
+            foreach ($groupesAttaquants as $groupe) {
+                $acteursAttaquants = array_merge(
+                    $acteursAttaquants,
+                    $this->construireActeurs($attaquant, $groupe),
+                );
+            }
+            $acteursDefenseurs = [];
+            foreach ($groupesDefense as $groupe) {
+                $acteursDefenseurs = array_merge(
+                    $acteursDefenseurs,
+                    $this->construireActeurs($defenseur, $groupe, $cible),
+                );
+            }
+
             $impacts[$prefixeCible.'_'.$cible] = [
                 'attaquants' => $stickmenAttaquants,
                 'defenseurs' => $defenseursParCible[$cible] ?? [],
                 'pvActuels' => $defenseur->getPvActuels($cible),
+                'contexte' => [
+                    'modeAttaque' => $planAttaquant->estFocus() ? 'focus' : 'split',
+                    'doubleDefense' => $planDefenseur->estDoubleDefense() && count($groupesDefense) > 1,
+                    'premiereDefense' => $numeroRound === 1,
+                    'equipesAttaquantSurCible' => count($groupesAttaquants),
+                    'pvActuelsCible' => $defenseur->getPvActuels($cible),
+                    'pvMaximumCible' => $defenseur->getStickman($cible)->getPv() ?? 0,
+                    'attaquants' => $acteursAttaquants,
+                    'defenseurs' => $acteursDefenseurs,
+                ],
             ];
         }
+    }
+
+    /**
+     * Construit le contexte vivant d’un groupe pour l’évaluation des passifs.
+     *
+     * @return list<array{stickman: \App\Entity\Stickman, pvActuels: int, pvMaximum: int, partenaireVivant: bool, protegeAllie: bool}>
+     */
+    private function construireActeurs(
+        EtatEquipeCombat $etat,
+        string $groupe,
+        ?string $cibleProtegee = null,
+    ): array {
+        $slots = $groupe === 'X' ? ['A', 'B'] : ['C', 'D'];
+        $acteurs = [];
+
+        foreach ($slots as $slot) {
+            if (!$etat->estVivant($slot)) {
+                continue;
+            }
+
+            $partenaire = $slot === 'A' ? 'B' : ($slot === 'B' ? 'A' : ($slot === 'C' ? 'D' : 'C'));
+            $stickman = $etat->getStickman($slot);
+            $acteurs[] = [
+                'stickman' => $stickman,
+                'pvActuels' => $etat->getPvActuels($slot),
+                'pvMaximum' => $stickman->getPv() ?? 0,
+                'partenaireVivant' => $etat->estVivant($partenaire),
+                'protegeAllie' => $cibleProtegee !== null && $cibleProtegee !== $slot,
+            ];
+        }
+
+        return $acteurs;
     }
 
     /**

@@ -38,6 +38,7 @@ final class CombatService
      *     pvRestants: int,
      *     bonusPassifsAttaque?: int,
      *     bonusPassifsDefense?: int,
+     *     ignoreDefensePassifs?: int,
      *     passifsActifs?: list<array<string, mixed>>
      * }
      */
@@ -74,6 +75,7 @@ final class CombatService
     public function calculerAttaqueTotale(
         array $stickmen,
         int $numeroRound = 1,
+        array $contexte = [],
     ): int
     {
         $attaqueTotale = 0;
@@ -84,7 +86,7 @@ final class CombatService
 
         $bonusPression = $this->bonusPressionAttaque($numeroRound);
         $bonusPassifs = ($this->passifService ?? new PassifCombatService())
-            ->bonusAttaquePourcentage($stickmen, $numeroRound);
+            ->bonusAttaquePourcentage($stickmen, $numeroRound, $contexte);
 
         return (int) round(
             $attaqueTotale
@@ -98,6 +100,7 @@ final class CombatService
     public function calculerDefenseTotale(
         array $stickmen,
         int $numeroRound = 1,
+        array $contexte = [],
     ): int
     {
         $defenseTotale = 0;
@@ -107,7 +110,7 @@ final class CombatService
         }
 
         $bonusPassifs = ($this->passifService ?? new PassifCombatService())
-            ->bonusDefensePourcentage($stickmen, $numeroRound);
+            ->bonusDefensePourcentage($stickmen, $numeroRound, $contexte);
 
         return (int) round(
             $defenseTotale * (1 + ($bonusPassifs / 100))
@@ -136,16 +139,27 @@ final class CombatService
         array $defenseurs,
         int $pvActuels,
         int $numeroRound = 1,
+        array $contexte = [],
     ): array {
         $attaqueTotale = $this->calculerAttaqueTotale(
             $attaquants,
             $numeroRound,
+            $contexte,
         );
         $defenseTotale = $this->calculerDefenseTotale(
             $defenseurs,
             $numeroRound,
+            $contexte,
         );
         $passifService = $this->passifService ?? new PassifCombatService();
+        $ignoreDefense = $passifService->ignoreDefensePourcentage(
+            $attaquants,
+            $numeroRound,
+            $contexte,
+        );
+        $defenseTotale = (int) round(
+            $defenseTotale * (1 - ($ignoreDefense / 100)),
+        );
         $resultat = $this->calculerImpact(
             attaqueTotale: $attaqueTotale,
             defenseTotale: $defenseTotale,
@@ -153,12 +167,21 @@ final class CombatService
         );
 
         $resultat['bonusPassifsAttaque'] = $passifService
-            ->bonusAttaquePourcentage($attaquants, $numeroRound);
+            ->bonusAttaquePourcentage($attaquants, $numeroRound, $contexte);
         $resultat['bonusPassifsDefense'] = $passifService
-            ->bonusDefensePourcentage($defenseurs, $numeroRound);
+            ->bonusDefensePourcentage($defenseurs, $numeroRound, $contexte);
+        $resultat['ignoreDefensePassifs'] = $ignoreDefense;
         $resultat['passifsActifs'] = array_merge(
-            $passifService->passifsActifs($attaquants, $numeroRound),
-            $passifService->passifsActifs($defenseurs, $numeroRound),
+            $passifService->passifsActifs(
+                $attaquants,
+                $numeroRound,
+                ['attaquants' => $contexte['attaquants'] ?? []],
+            ),
+            $passifService->passifsActifs(
+                $defenseurs,
+                $numeroRound,
+                ['defenseurs' => $contexte['defenseurs'] ?? []],
+            ),
         );
 
         return $resultat;
@@ -168,7 +191,8 @@ final class CombatService
      * @param array<string, array{
      *     attaquants: list<Stickman>,
      *     defenseurs: list<Stickman>,
-     *     pvActuels: int
+     *     pvActuels: int,
+     *     contexte?: array<string, mixed>
      * }> $impacts
      *
      * @return array<string, array{
@@ -181,6 +205,7 @@ final class CombatService
      *     pvRestants: int,
      *     bonusPassifsAttaque?: int,
      *     bonusPassifsDefense?: int,
+     *     ignoreDefensePassifs?: int,
      *     passifsActifs?: list<array<string, mixed>>
      * }>
      */
@@ -197,6 +222,7 @@ final class CombatService
                 defenseurs: $impact['defenseurs'],
                 pvActuels: $impact['pvActuels'],
                 numeroRound: $numeroRound,
+                contexte: $impact['contexte'] ?? [],
             );
         }
 

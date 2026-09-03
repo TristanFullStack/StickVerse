@@ -27,12 +27,22 @@
             <p class="stickman-card-status">Non obtenue</p>
         {% endif %}
 
-        {% if stickman.collectionJeu is defined and stickman.collectionJeu is not null %}
-            <p>Collection : {{ stickman.collectionJeu.nom }}</p>
-        {% endif %}
         <p>Puissance : <strong>{{ puissance|default('—') }}</strong></p>
         <p>PV : {{ stickman.pv }}</p>
         <p>Attaque : {{ stickman.attaque }}</p>
         <p>Défense : {{ stickman.defense }}</p>
+
+        {% set passifsCarte = stickman.passifs|default([])|slice(0, 6) %}
+        <div class="stickman-card-passifs" aria-label="Passifs de la carte">
+            {% for passif in passifsCarte %}
+                {% set nomPassif = passif.nom|default('Passif') %}
+                {% set descriptionPassif = passif.description|default('') %}
+                <span
+                    class="stickman-card-passif"
+                    title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                    aria-label="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                >{{ nomPassif|slice(0, 2)|upper }}</span>
+            {% endfor %}
+        </div>
     </article>
 </a>
