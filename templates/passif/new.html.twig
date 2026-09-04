@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau passif — Administration{% endblock %}
+{% block body %}
+    <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Combat</p><h1>Créer un passif</h1><p>Définis une règle contrôlée par le moteur de combat.</p></div></div>
+    <section class="admin-form-card">{{ include('passif/_form.html.twig') }}</section>
+    <p class="admin-back-link"><a href="{{ path('app_passif_index') }}">← Retour au catalogue des passifs</a></p>
+{% endblock %}

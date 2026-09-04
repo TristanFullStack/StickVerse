@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Passifs — Administration{% endblock %}
+
+{% block body %}
+    <div class="admin-page-heading">
+        <div>
+            <p class="admin-kicker">Administration / Combat</p>
+            <h1>Catalogue des passifs</h1>
+            <p>Centralise les règles de combat et la puissance ajoutée à chaque carte.</p>
+        </div>
+        <a class="admin-primary-action" href="{{ path('app_passif_new') }}">Créer un passif</a>
+    </div>
+
+    <section class="admin-list-panel">
+        <div class="admin-list-heading">
+            <strong>{{ passifs|length }} passif{% if passifs|length != 1 %}s{% endif %}</strong>
+            <span>Une modification est répercutée sur toutes les cartes qui utilisent ce passif.</span>
+        </div>
+        <div class="admin-table-scroll">
+            <table class="admin-resource-table">
+                <thead>
+                    <tr><th>Nom</th><th>Type</th><th>Effet</th><th>Puissance carte</th><th>Début</th><th>Statut</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for passif in passifs %}
+                        <tr>
+                            <td><strong>{{ passif.nom }}</strong><small>{{ passif.slug }}</small><small>{{ passif.description }}</small></td>
+                            <td><code>{{ passif.type }}</code></td>
+                            <td>+{{ passif.valeur }} %</td>
+                            <td><strong>+{{ passif.puissance }}</strong></td>
+                            <td>{{ passif.aPartirRound ? 'Round '~passif.aPartirRound : 'Round 1' }}</td>
+                            <td><span class="admin-status {{ passif.statutActif ? 'admin-status--active' : 'admin-status--inactive' }}">{{ passif.statutActif ? 'Actif' : 'Inactif' }}</span></td>
+                            <td class="admin-table-actions">
+                                <a href="{{ path('app_passif_show', {'id': passif.id}) }}">Détails</a>
+                                <a href="{{ path('app_passif_edit', {'id': passif.id}) }}">Modifier</a>
+                                <form method="post" action="{{ path('app_passif_delete', {'id': passif.id}) }}" onsubmit="return confirm('Supprimer ce passif de toutes les cartes ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_passif_' ~ passif.id) }}">
+                                    <button type="submit">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7">Aucun passif. Crée le premier depuis ce catalogue.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

@@ -2,77 +2,77 @@
 
 namespace App\Form;
 
-use App\Entity\Stickman;
 use App\Entity\CollectionJeu;
+use App\Entity\Passif;
+use App\Entity\Stickman;
+use App\Repository\PassifRepository;
+use App\Service\PassifAffectationService;
 use App\Service\PassifCombatService;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\CallbackTransformer;
-use Symfony\Component\Form\Exception\TransformationFailedException;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Count;
 
-class StickmanType extends AbstractType
+final class StickmanType extends AbstractType
 {
     public function __construct(
-        private readonly PassifCombatService $passifCombatService,
+        private readonly PassifRepository $passifRepository,
+        private readonly PassifAffectationService $passifAffectationService,
     ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $choixImages = [];
-        $cheminProjet = dirname(__DIR__, 2);
-        $images = glob($cheminProjet . '/public/images/stickmen/*.png');
+        $images = glob(dirname(__DIR__, 2) . '/public/images/stickmen/*.png') ?: [];
         foreach ($images as $image) {
             $nomImage = basename($image);
             $choixImages[$nomImage] = $nomImage;
         }
 
+        $stickman = $options['data'] instanceof Stickman ? $options['data'] : new Stickman();
+        $passifsDisponibles = $this->passifRepository->findBy([], ['nom' => 'ASC']);
+
         $builder
-            ->add('nom', TextType::class, [
-                'label' => 'Nom du Stickman',
-            ])
-            ->add('slug', TextType::class, [
-                'label' => 'Slug (URL)',
-            ])
-            ->add('description', TextareaType::class, [
-                'label' => 'Description',
-            ])
-            ->add('image', ChoiceType::class, [
-                'label' => 'Image',
-                'choices' => $choixImages,
-            ])
-            ->add('rarete', IntegerType::class, [
-                'label' => 'Rareté (1-5)',
-            ])
-            ->add('pv', IntegerType::class, [
-                'label' => 'Points de vie',
-            ])
-            ->add('attaque', IntegerType::class, [
-                'label' => 'Attaque',
-            ])
-            ->add('defense', IntegerType::class, [
-                'label' => 'Défense',
-            ])
-            ->add('passifs', TextareaType::class, [
-                'label' => 'Passifs (JSON, facultatif)',
+            ->add('nom', TextType::class, ['label' => 'Nom du Stickman'])
+            ->add('slug', TextType::class, ['label' => 'Slug (URL)'])
+            ->add('description', TextareaType::class, ['label' => 'Description'])
+            ->add('image', ChoiceType::class, ['label' => 'Image', 'choices' => $choixImages])
+            ->add('rarete', IntegerType::class, ['label' => 'Rareté (1-5)'])
+            ->add('pv', IntegerType::class, ['label' => 'Points de vie'])
+            ->add('attaque', IntegerType::class, ['label' => 'Attaque'])
+            ->add('defense', IntegerType::class, ['label' => 'Défense'])
+            ->add('passifsSelection', EntityType::class, [
+                'class' => Passif::class,
+                'mapped' => false,
+                'multiple' => true,
                 'required' => false,
-                'empty_data' => '',
-                'help' => sprintf(
-                    '6 passifs maximum. Types disponibles : %s. Exemple : [{"nom":"Rage","description":"+10 %% ATQ sous 40 %% de PV.","type":"rage","valeur":10}]',
-                    implode(', ', $this->passifCombatService->typesDisponibles()),
+                'choices' => $passifsDisponibles,
+                'data' => $this->passifRepository->trouverPourStickman($stickman),
+                'choice_label' => static fn (Passif $passif): string => sprintf(
+                    '%s (+%d puissance%s)',
+                    $passif->getNom(),
+                    $passif->getPuissance(),
+                    $passif->isStatutActif() ? '' : ', inactif',
                 ),
-                'attr' => [
-                    'rows' => 5,
-                    'placeholder' => '[]',
+                'label' => 'Passifs (0 à 6)',
+                'help' => 'Sélectionne jusqu’à six passifs. Leur valeur et leur puissance se règlent dans le CRUD Passifs.',
+                'constraints' => [
+                    new Count(
+                        max: PassifCombatService::PASSIFS_MAXIMUM_PAR_CARTE,
+                        maxMessage: 'Une carte ne peut pas contenir plus de {{ limit }} passifs.',
+                    ),
                 ],
+                'attr' => ['size' => min(12, max(4, count($passifsDisponibles)))],
             ])
             ->add('statutActif', CheckboxType::class, [
                 'label' => 'Actif ?',
@@ -88,78 +88,28 @@ class StickmanType extends AbstractType
                 'label' => 'Collection',
                 'required' => false,
                 'placeholder' => 'Aucune collection',
-            ])
-        ;
+            ]);
 
-        $builder->get('passifs')->addModelTransformer(new CallbackTransformer(
-            static function (mixed $passifs): string {
-                if (!is_array($passifs) || $passifs === []) {
-                    return '';
-                }
+        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event): void {
+            $stickman = $event->getData();
+            if (!$stickman instanceof Stickman) {
+                return;
+            }
 
-                return json_encode(
-                    $passifs,
-                    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+            $selection = $event->getForm()->get('passifsSelection')->getData();
+            $selection = is_array($selection) ? $selection : [];
+            if ($stickman->getRarete() === 1 && $selection !== []) {
+                $event->getForm()->get('passifsSelection')->addError(
+                    new FormError('Les cartes R1 doivent rester sans passif.'),
                 );
-            },
-            function (mixed $passifs): array {
-                if (!is_string($passifs) || trim($passifs) === '') {
-                    return [];
-                }
-
-                try {
-                    $decoded = json_decode(
-                        $passifs,
-                        true,
-                        512,
-                        JSON_THROW_ON_ERROR,
-                    );
-                } catch (\JsonException $exception) {
-                    throw new TransformationFailedException(
-                        'Le JSON des passifs est invalide.',
-                        0,
-                        $exception,
-                    );
-                }
-
-                if (!is_array($decoded) || array_is_list($decoded) === false) {
-                    throw new TransformationFailedException(
-                        'Les passifs doivent être un tableau JSON.',
-                    );
-                }
-
-                if (count($decoded) > PassifCombatService::PASSIFS_MAXIMUM_PAR_CARTE) {
-                    throw new TransformationFailedException(
-                        sprintf('Une carte ne peut pas contenir plus de %d passifs.', PassifCombatService::PASSIFS_MAXIMUM_PAR_CARTE),
-                    );
-                }
-
-                $typesDisponibles = array_flip($this->passifCombatService->typesDisponibles());
-                foreach ($decoded as $index => $passif) {
-                    if (!is_array($passif)) {
-                        throw new TransformationFailedException(sprintf('Le passif n°%d doit être un objet JSON.', $index + 1));
-                    }
-
-                    $type = $passif['type'] ?? null;
-                    if (!is_string($type) || !isset($typesDisponibles[$type])) {
-                        throw new TransformationFailedException(sprintf('Le type du passif n°%d est inconnu.', $index + 1));
-                    }
-
-                    $valeur = $passif['valeur'] ?? null;
-                    if (!is_numeric($valeur) || (float) $valeur < 0 || (float) $valeur > PassifCombatService::BONUS_MAXIMUM) {
-                        throw new TransformationFailedException(sprintf('La valeur du passif n°%d doit être comprise entre 0 et %d.', $index + 1, PassifCombatService::BONUS_MAXIMUM));
-                    }
-                }
-
-                return $decoded;
-            },
-        ));
+                $selection = [];
+            }
+            $stickman->setPassifs($this->passifAffectationService->snapshotsDepuis($selection));
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([
-            'data_class' => Stickman::class,
-        ]);
+        $resolver->setDefaults(['data_class' => Stickman::class]);
     }
 }

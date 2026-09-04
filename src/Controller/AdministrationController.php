@@ -7,6 +7,7 @@ use App\Repository\CaisseStickmanRepository;
 use App\Repository\StickmanRepository;
 use App\Repository\UserRepository;
 use App\Repository\MouvementPiecesRepository;
+use App\Repository\PassifRepository;
 use App\Service\ConsoleAdministrationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +24,7 @@ final class AdministrationController extends AbstractController
         CaisseRepository $caisseRepository,
         CaisseStickmanRepository $caisseStickmanRepository,
         UserRepository $userRepository,
+        PassifRepository $passifRepository,
         ConsoleAdministrationService $consoleAdministrationService,
     ): Response {
         $commande = '';
@@ -45,6 +47,7 @@ final class AdministrationController extends AbstractController
             'nombre_caisses' => $caisseRepository->count([]),
             'nombre_contenus_caisses' => $caisseStickmanRepository->count([]),
             'nombre_joueurs' => $userRepository->count([]),
+            'nombre_passifs' => $passifRepository->count([]),
             'commande' => $commande,
             'resultat' => $resultat,
         ]);

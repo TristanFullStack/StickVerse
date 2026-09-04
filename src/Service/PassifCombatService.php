@@ -18,6 +18,7 @@ final class PassifCombatService
     public const TYPE_BONUS_DEFENSE_POURCENTAGE = 'bonus_defense_pct';
     public const BONUS_MAXIMUM = 50;
     public const PASSIFS_MAXIMUM_PAR_CARTE = 6;
+    public const PUISSANCE_MAXIMUM = 500;
 
     /**
      * Identifiants des passifs contextuels disponibles dans l’administration.
@@ -88,8 +89,13 @@ final class PassifCombatService
         $defense = max(0, $stickman->getDefense() ?? 0);
         $bonusAttaque = 0;
         $bonusDefense = 0;
+        $puissanceDirecte = 0;
 
         foreach ($this->passifsDe($stickman) as $passif) {
+            if (array_key_exists('puissance', $passif)) {
+                $puissanceDirecte += $passif['puissance'];
+                continue;
+            }
             if ($this->typeContribueAttaque($passif['type'])) {
                 $bonusAttaque += $passif['valeur'];
             } elseif ($this->typeContribueDefense($passif['type'])) {
@@ -104,7 +110,7 @@ final class PassifCombatService
         $bonusAttaque = min(self::BONUS_MAXIMUM, $bonusAttaque);
         $bonusDefense = min(self::BONUS_MAXIMUM, $bonusDefense);
 
-        return max(0, (int) round(
+        return max(0, $puissanceDirecte + (int) round(
             ($attaque * $coefficientAttaque * $bonusAttaque / 100)
             + ($defense * $coefficientDefense * $bonusDefense / 100),
         ));
@@ -303,7 +309,8 @@ final class PassifCombatService
             'opportuniste', 'moisson', 'moisson_finale' => $ratioCible < .25,
             'assaut_coordonne', 'charge_groupee', 'doctrine_focus' => ($contexte['modeAttaque'] ?? null) === 'focus',
             'tir_disperse', 'mobilite', 'tempete_divisee', 'danse_divisee', 'doctrine_split' => ($contexte['modeAttaque'] ?? null) === 'split',
-            'formation', 'duo_discipline' => (bool) ($acteur['partenaireVivant'] ?? false),
+            'formation' => (bool) ($acteur['partenaireVivant'] ?? false) && $numeroRound <= 2,
+            'duo_discipline' => (bool) ($acteur['partenaireVivant'] ?? false),
             'commandement', 'autorite_imperiale', 'heritage_general' => !($acteur['partenaireVivant'] ?? true),
             'percee_aube', 'premier_sang', 'lame_solaire', 'ordre_charge' => $numeroRound <= 3,
             'fenetre_tactique' => $numeroRound >= 4 && $numeroRound <= 8,
@@ -336,7 +343,8 @@ final class PassifCombatService
         $equipesAttaquantes = max(0, (int) ($contexte['equipesAttaquantSurCible'] ?? 1));
 
         return match ($type) {
-            'protecteur', 'protection', 'sentinelle', 'serment', 'protection_juree', 'egide' => (bool) ($acteur['protegeAllie'] ?? false),
+            'protecteur', 'protection', 'sentinelle', 'serment', 'egide' => (bool) ($acteur['protegeAllie'] ?? false),
+            'protection_juree' => (bool) ($acteur['protegeAllie'] ?? false) && (bool) ($contexte['doubleDefense'] ?? false),
             'rempart', 'rempart_leger', 'bastion', 'forteresse', 'citadelle', 'citadelle_double' => (bool) ($contexte['doubleDefense'] ?? false),
             'duelliste', 'duel', 'riposte', 'combat_singulier', 'maitre_du_duel' => $equipesAttaquantes === 1,
             'bouclier_arcanique', 'barriere', 'rune_defensive', 'serment_initial' => (bool) ($contexte['premiereDefense'] ?? false),
@@ -392,12 +400,20 @@ final class PassifCombatService
     /** @param array<string, mixed> $passif */
     private function normaliserPassifActif(array $passif): array
     {
-        return [
+        $normalise = [
             'nom' => $passif['nom'],
             'description' => $passif['description'],
             'type' => $passif['type'],
             'valeur' => $passif['valeur'],
         ];
+        if (array_key_exists('puissance', $passif)) {
+            $normalise['puissance'] = $passif['puissance'];
+        }
+        if (array_key_exists('actif', $passif)) {
+            $normalise['actif'] = $passif['actif'];
+        }
+
+        return $normalise;
     }
 
     private function typeContribueAttaque(string $type): bool
@@ -463,7 +479,7 @@ final class PassifCombatService
     }
 
     /**
-     * @return list<array{nom: string, description: string, type: string, valeur: int, a_partir_round?: int}>
+     * @return list<array{nom: string, description: string, type: string, valeur: int, puissance?: int, a_partir_round?: int}>
      */
     private function passifsDe(Stickman $stickman): array
     {
@@ -471,6 +487,9 @@ final class PassifCombatService
 
         foreach (array_slice($stickman->getPassifs(), 0, self::PASSIFS_MAXIMUM_PAR_CARTE) as $passif) {
             if (!is_array($passif)) {
+                continue;
+            }
+            if (array_key_exists('actif', $passif) && $passif['actif'] === false) {
                 continue;
             }
 
@@ -502,8 +521,12 @@ final class PassifCombatService
             $nom = $passif['nom'] ?? 'Passif';
             $description = $passif['description'] ?? '';
             $minimumRound = $passif['a_partir_round'] ?? 1;
+            $puissance = $passif['puissance'] ?? null;
 
             if (!is_string($nom) || !is_string($description) || !is_numeric($minimumRound)) {
+                continue;
+            }
+            if ($puissance !== null && (!is_numeric($puissance) || (float) $puissance < 0 || (float) $puissance > self::PUISSANCE_MAXIMUM)) {
                 continue;
             }
 
@@ -513,6 +536,9 @@ final class PassifCombatService
                 'type' => $type,
                 'valeur' => $valeur,
             ];
+            if ($puissance !== null) {
+                $entree['puissance'] = (int) round((float) $puissance);
+            }
             $minimumRound = max(1, (int) $minimumRound);
 
             if ($minimumRound > 1) {

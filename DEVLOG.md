@@ -8446,6 +8446,60 @@ pour les futurs équilibrages compétitifs.
 - Schéma Doctrine, conteneur Symfony et templates Twig validés.
 - Tests unitaires : 145 tests, 688 assertions réussis.
 
+## J96 — Centraliser les passifs et leur puissance
+
+### Objectif
+
+J96 ajoute un véritable catalogue administrable des passifs afin de régler
+l’équilibrage depuis un seul outil et d’éviter les snapshots incohérents entre
+les cartes.
+
+### CRUD des passifs
+
+L’administration dispose maintenant d’un onglet **Passifs** permettant de :
+
+- créer, modifier, consulter et supprimer un passif ;
+- choisir un type de déclenchement connu du moteur de combat ;
+- régler sa valeur d’effet et son round d’activation ;
+- définir manuellement la puissance ajoutée au score de la carte.
+- activer ou désactiver un passif sans modifier le code du moteur.
+
+Le catalogue contient les types déjà supportés par le moteur, y compris les
+passifs contextuels. Une modification est synchronisée sur toutes les cartes
+qui utilisent le passif ; une suppression retire également ses snapshots de
+cartes.
+
+### Gestion des Stickmans
+
+Le formulaire administrateur des Stickmans ne demande plus de JSON libre.
+L’administrateur sélectionne directement de zéro à six passifs dans le
+catalogue central. Les valeurs, descriptions, conditions et puissances sont
+ainsi identiques partout, tout en conservant les snapshots nécessaires aux
+combats.
+
+La puissance manuelle d’un passif s’ajoute une seule fois à la puissance de la
+carte. Les anciennes cartes sans champ de puissance gardent leur calcul de
+compatibilité jusqu’à leur synchronisation.
+
+### Conditions plus intéressantes
+
+Le Porte-Bouclier utilise désormais **Protection jurée**, active uniquement
+quand il protège un allié pendant une double défense. Le passif peut donc être
+contré en changeant le plan de défense.
+
+Les effets du Capitaine ne donnent plus le même bonus dans les deux états :
+la Formation récompense les premiers rounds avec son partenaire vivant, tandis
+que le Commandement devient plus fort après sa chute.
+
+### Vérifications
+
+- Migration Doctrine appliquée : table centrale et catalogue initial créés.
+- 76 types de passifs disponibles dans l’administration.
+- R1 conservées sans passif.
+- Le formulaire refuse désormais toute affectation de passif à une carte R1.
+- Syntaxe PHP, conteneur Symfony, routes et templates Twig validés.
+- Test ajouté pour la puissance manuelle des passifs.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

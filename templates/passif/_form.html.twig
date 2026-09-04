@@ -1,0 +1,6 @@
+{{ form_start(form, {'attr': {'class': 'admin-form'}}) }}
+    <div class="admin-form-fields">
+        {{ form_widget(form) }}
+    </div>
+    <button class="admin-primary-action" type="submit">{{ button_label|default('Enregistrer le passif') }}</button>
+{{ form_end(form) }}

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ passif.nom }} — Administration{% endblock %}
+{% block body %}
+    <div class="admin-page-heading"><div><p class="admin-kicker">Administration / Combat</p><h1>{{ passif.nom }}</h1><p>{{ passif.description }}</p></div><a class="admin-primary-action" href="{{ path('app_passif_edit', {'id': passif.id}) }}">Modifier ce passif</a></div>
+    <section class="admin-detail-card">
+        <dl class="admin-detail-list">
+            <div><dt>Slug</dt><dd>{{ passif.slug }}</dd></div>
+            <div><dt>Type de déclenchement</dt><dd><code>{{ passif.type }}</code></dd></div>
+            <div><dt>Valeur de l’effet</dt><dd>+{{ passif.valeur }} %</dd></div>
+            <div><dt>Puissance ajoutée</dt><dd>+{{ passif.puissance }} points</dd></div>
+            <div><dt>Activation</dt><dd>{{ passif.aPartirRound ? 'À partir du round '~passif.aPartirRound : 'Dès le round 1' }}</dd></div>
+            <div><dt>Statut</dt><dd>{{ passif.statutActif ? 'Actif' : 'Inactif' }}</dd></div>
+        </dl>
+    </section>
+    <section class="admin-list-panel">
+        <div class="admin-list-heading"><strong>{{ stickmen|length }} carte{% if stickmen|length != 1 %}s{% endif %} équipée{% if stickmen|length != 1 %}s{% endif %}</strong><span>Les cartes sont mises à jour lors de chaque modification.</span></div>
+        <div class="admin-detail-list">
+            {% for stickman in stickmen %}<div><dt>{{ stickman.nom }}</dt><dd><a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">Voir la carte</a></dd></div>{% else %}<p class="admin-empty-inline">Ce passif n’est utilisé par aucune carte.</p>{% endfor %}
+        </div>
+    </section>
+    <div class="admin-secondary-actions"><a href="{{ path('app_passif_index') }}">← Retour au catalogue</a></div>
+{% endblock %}

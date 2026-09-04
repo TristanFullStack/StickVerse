@@ -99,6 +99,7 @@
                     <div class="site-admin-links">
                         <a href="{{ path('app_admin_console') }}" {% if navigation_route == 'app_admin_console' %}aria-current="page"{% endif %}>Console</a>
                         <a href="{{ path('app_stickman_index') }}" {% if navigation_route starts with 'app_stickman_' %}aria-current="page"{% endif %}>Stickmans</a>
+                        <a href="{{ path('app_passif_index') }}" {% if navigation_route starts with 'app_passif_' %}aria-current="page"{% endif %}>Passifs</a>
                         <a href="{{ path('app_caisse_index') }}" {% if navigation_route starts with 'app_caisse_' and navigation_route != 'app_caisse_stickman_index' and navigation_route != 'app_caisse_stickman_new' and navigation_route != 'app_caisse_stickman_show' and navigation_route != 'app_caisse_stickman_edit' and navigation_route != 'app_caisse_stickman_delete' %}aria-current="page"{% endif %}>Caisses</a>
                         <a href="{{ path('app_collection_jeu_index') }}" {% if navigation_route starts with 'app_collection_jeu_' %}aria-current="page"{% endif %}>Collections</a>
                         <a href="{{ path('app_caisse_stickman_index') }}" {% if navigation_route starts with 'app_caisse_stickman_' %}aria-current="page"{% endif %}>Contenu des caisses</a>

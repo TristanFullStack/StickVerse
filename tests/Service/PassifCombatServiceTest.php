@@ -193,4 +193,26 @@ final class PassifCombatServiceTest extends TestCase
                 ->calculerStickman($stickman),
         );
     }
+
+    public function testLaPuissanceManuelleDuPassifEstAjouteeUneSeuleFois(): void
+    {
+        $stickman = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(50)
+            ->setDefense(40)
+            ->setPassifs([[
+                'nom' => 'Passif central',
+                'description' => 'Puissance fixe.',
+                'type' => 'rage',
+                'valeur' => 10,
+                'puissance' => 37,
+            ]]);
+
+        // Base : 20 PV + 100 ATQ + 60 DEF, puis +37 du catalogue central.
+        self::assertSame(
+            217,
+            (new ScorePuissanceService(new PassifCombatService()))
+                ->calculerStickman($stickman),
+        );
+    }
 }

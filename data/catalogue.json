@@ -13,10 +13,12 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 5,
                     "nom": "Précision",
                     "type": "precision",
-                    "valeur": 6,
-                    "description": "Ignore 6 % de la défense adverse."
+                    "valeur": 8,
+                    "puissance": 10,
+                    "description": "Ignore 8 % de la défense adverse."
                 }
             ]
         },
@@ -32,9 +34,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 19,
                     "nom": "Perforation I",
                     "type": "perforation_i",
                     "valeur": 8,
+                    "puissance": 10,
                     "description": "Ignore 8 % de la défense adverse."
                 }
             ]
@@ -51,9 +55,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 5,
                     "nom": "Précision",
                     "type": "precision",
                     "valeur": 8,
+                    "puissance": 10,
                     "description": "Ignore 8 % de la défense adverse."
                 }
             ]
@@ -81,9 +87,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 4,
                     "nom": "Exécution",
                     "type": "execution",
                     "valeur": 12,
+                    "puissance": 14,
                     "description": "+12 % ATQ contre une cible sous 30 % de PV."
                 }
             ]
@@ -111,15 +119,19 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 22,
                     "nom": "Furie",
                     "type": "furie",
                     "valeur": 14,
+                    "puissance": 16,
                     "description": "+14 % ATQ sous 40 % de PV."
                 },
                 {
+                    "id": 49,
                     "nom": "Surcharge",
                     "type": "surcharge",
                     "valeur": 8,
+                    "puissance": 10,
                     "description": "+8 % ATQ du round 4 au round 8.",
                     "a_partir_round": 4
                 }
@@ -137,16 +149,21 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 12,
                     "nom": "Commandement",
                     "type": "commandement",
-                    "valeur": 6,
-                    "description": "+6 % ATQ lorsque le partenaire est K.O."
+                    "valeur": 10,
+                    "puissance": 12,
+                    "description": "+10 % ATQ pendant un round après la chute du partenaire."
                 },
                 {
+                    "id": 13,
                     "nom": "Formation",
                     "type": "formation",
                     "valeur": 6,
-                    "description": "+6 % ATQ tant que le partenaire est vivant."
+                    "puissance": 8,
+                    "description": "+6 % ATQ pendant les deux premiers rounds si les deux alliés sont vivants.",
+                    "a_partir_round": 1
                 }
             ]
         },
@@ -173,15 +190,19 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 38,
                     "nom": "Tempête divisée",
                     "type": "tempete_divisee",
                     "valeur": 10,
+                    "puissance": 12,
                     "description": "+10 % ATQ en attaque Split."
                 },
                 {
+                    "id": 36,
                     "nom": "Forteresse",
                     "type": "forteresse",
                     "valeur": 10,
+                    "puissance": 12,
                     "description": "+10 % DEF lors d’une double défense."
                 }
             ]
@@ -242,9 +263,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 18,
                     "nom": "Rempart léger",
                     "type": "rempart_leger",
                     "valeur": 8,
+                    "puissance": 10,
                     "description": "+8 % DEF lors d’une double défense."
                 }
             ]
@@ -261,9 +284,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 3,
                     "nom": "Rage",
                     "type": "rage",
                     "valeur": 10,
+                    "puissance": 12,
                     "description": "+10 % ATQ sous 40 % de PV."
                 }
             ]
@@ -280,9 +305,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 8,
                     "nom": "Assaut coordonné",
                     "type": "assaut_coordonne",
                     "valeur": 8,
+                    "puissance": 10,
                     "description": "+8 % ATQ en attaque Focus."
                 }
             ]
@@ -299,9 +326,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 10,
                     "nom": "Bouclier arcanique",
                     "type": "bouclier_arcanique",
                     "valeur": 10,
+                    "puissance": 12,
                     "description": "+10 % DEF lors de la première défense."
                 }
             ]
@@ -340,10 +369,12 @@
             "actif": true,
             "passifs": [
                 {
-                    "nom": "Protecteur",
-                    "type": "protecteur",
+                    "id": 62,
+                    "nom": "Protection jurée",
+                    "type": "protection_juree",
                     "valeur": 10,
-                    "description": "+10 % DEF lorsqu’un allié est protégé."
+                    "puissance": 12,
+                    "description": "+10 % DEF lorsque la carte protège un allié pendant une double défense."
                 }
             ]
         },
@@ -370,16 +401,20 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 40,
                     "nom": "Autorité impériale",
                     "type": "autorite_imperiale",
                     "valeur": 10,
-                    "description": "+10 % ATQ lorsque le partenaire est K.O."
+                    "puissance": 12,
+                    "description": "+10 % ATQ après la chute du partenaire."
                 },
                 {
+                    "id": 37,
                     "nom": "Maître du duel",
                     "type": "maitre_du_duel",
                     "valeur": 12,
-                    "description": "+12 % DEF lorsqu’une seule équipe adverse attaque la cible."
+                    "puissance": 14,
+                    "description": "+12 % DEF lorsqu’une seule équipe adverse attaque."
                 }
             ]
         },
@@ -406,9 +441,11 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 7,
                     "nom": "Rempart",
                     "type": "rempart",
                     "valeur": 12,
+                    "puissance": 14,
                     "description": "+12 % DEF lors d’une double défense."
                 }
             ]
@@ -425,10 +462,12 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 9,
                     "nom": "Tir dispersé",
                     "type": "tir_disperse",
                     "valeur": 8,
-                    "description": "+8 % ATQ lorsque les deux groupes visent des cibles différentes."
+                    "puissance": 10,
+                    "description": "+8 % ATQ en attaque Split."
                 }
             ]
         },
@@ -444,16 +483,20 @@
             "actif": true,
             "passifs": [
                 {
+                    "id": 53,
                     "nom": "Apocalypse",
                     "type": "apocalypse",
                     "valeur": 18,
+                    "puissance": 20,
                     "description": "+18 % ATQ à partir du round 10.",
                     "a_partir_round": 10
                 },
                 {
+                    "id": 32,
                     "nom": "Rune défensive",
                     "type": "rune_defensive",
                     "valeur": 12,
+                    "puissance": 14,
                     "description": "+12 % DEF lors de la première défense."
                 }
             ]
