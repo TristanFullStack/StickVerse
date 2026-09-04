@@ -15,6 +15,24 @@ final class ScorePuissanceService
     public const COEFFICIENT_ATTAQUE = 2.0;
     public const COEFFICIENT_DEFENSE = 1.5;
 
+    /**
+     * Fourchettes officielles de puissance par rareté.
+     *
+     * La borne haute de R5 est volontairement ouverte : les passifs avancés
+     * peuvent continuer à valoriser une carte légendaire sans la plafonner.
+     * Les bornes sont centralisées ici afin que l’éditeur d’administration et
+     * les contrôles de composition utilisent exactement les mêmes règles.
+     *
+     * @var array<int, array{min: int, max: int|null}>
+     */
+    public const FOURCHETTES_RARETE = [
+        1 => ['min' => 70, 'max' => 130],
+        2 => ['min' => 130, 'max' => 220],
+        3 => ['min' => 220, 'max' => 300],
+        4 => ['min' => 300, 'max' => 500],
+        5 => ['min' => 500, 'max' => null],
+    ];
+
     public function __construct(
         private readonly ?PassifCombatService $passifService = null,
     ) {
@@ -43,6 +61,32 @@ final class ScorePuissanceService
             self::COEFFICIENT_ATTAQUE,
             self::COEFFICIENT_DEFENSE,
         );
+    }
+
+    /**
+     * @return array{min: int, max: int|null}
+     */
+    public function fourchettePourRarete(int $rarete): array
+    {
+        if (!isset(self::FOURCHETTES_RARETE[$rarete])) {
+            throw new InvalidArgumentException('La rareté doit être comprise entre 1 et 5.');
+        }
+
+        return self::FOURCHETTES_RARETE[$rarete];
+    }
+
+    public function puissanceCompatibleRarete(Stickman $stickman): bool
+    {
+        $rarete = $stickman->getRarete();
+        if ($rarete === null || !isset(self::FOURCHETTES_RARETE[$rarete])) {
+            return false;
+        }
+
+        $fourchette = self::FOURCHETTES_RARETE[$rarete];
+        $puissance = $this->calculerStickman($stickman);
+
+        return $puissance >= $fourchette['min']
+            && ($fourchette['max'] === null || $puissance <= $fourchette['max']);
     }
 
     /**

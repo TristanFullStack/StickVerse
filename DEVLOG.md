@@ -8500,6 +8500,43 @@ que le Commandement devient plus fort après sa chute.
 - Syntaxe PHP, conteneur Symfony, routes et templates Twig validés.
 - Test ajouté pour la puissance manuelle des passifs.
 
+## J97 — Donner un vrai impact stratégique aux passifs
+
+### Objectif
+
+Rendre les passifs immédiatement lisibles et suffisamment puissants pour
+influencer une composition, tout en ajoutant des fenêtres de jeu et des
+conditions qui offrent de vrais contres.
+
+### Réalisé
+
+- Les 80 entrées du catalogue central ont été rééquilibrées : valeurs
+  d’effets et puissance de carte sont désormais cohérentes et non nulles.
+- Les passifs sont structurés par phases : ouverture (rounds 1 à 3), milieu
+  (rounds 4 à 8) et fin de partie (rounds 8 à 10+).
+- Les effets de fin de partie les plus forts (Dernier survivant, Apocalypse,
+  Dernière citadelle, Fureur crépusculaire et Égide crépusculaire) exigent une
+  condition difficile, comme la chute du partenaire, avant de s’activer.
+- Deux contres de début de partie ont été ajoutés : Instabilité réduit l’ATQ
+  et Fragilité de l’aube réduit la DEF pendant les trois premiers rounds.
+  Les malus sont bornés et remontent correctement dans le score de combat.
+- Quatre cartes R1 disposent maintenant d’un profil différent sans rendre
+  toute la rareté obligatoire : Premier sang, Ancrage, Dernier survivant ou
+  Fragilité de l’aube. Le formulaire limite les passifs R1 à ces profils et à
+  un seul passif par carte.
+- L’éditeur d’équipe affiche les repères, noms et descriptions des passifs
+  dans l’inventaire et dans chaque emplacement de composition.
+- Le contexte complet du round est conservé lors de l’affichage des passifs
+  actifs, afin que les conditions de double défense et de partenaire vivant
+  soient reflétées comme dans le calcul réel.
+
+### Vérifications
+
+- Migrations `Version20260904100000` et `Version20260904101000` appliquées.
+- Catalogue JSON régénéré et vérifié : 27 Stickmans, 2 caisses et 29 images.
+- Mapping Doctrine, conteneur Symfony et templates Twig validés.
+- Tests ciblés des passifs et de la puissance : 16 tests, 37 assertions réussis.
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -8507,6 +8544,31 @@ que le Commandement devient plus fort après sa chute.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+## J98 — Aligner la puissance sur la rareté
+
+### Objectif
+
+Garantir qu’une carte ne puisse pas dépasser la puissance attendue de sa
+rareté, afin qu’une R1 ne soit jamais plus puissante qu’une R2, etc.
+
+### Réalisé
+
+- Les fourchettes officielles sont centralisées dans `ScorePuissanceService` :
+  R1 70–130, R2 130–220, R3 220–300, R4 300–500 et R5 à partir de 500.
+- Les statistiques des cartes ont été rééquilibrées en conservant leurs rôles
+  (offensif, défensif ou polyvalent) et les effets des passifs existants.
+- Le catalogue contient désormais 27 cartes dont la puissance calculée respecte
+  la rareté : R1 70–130, R2 130–154, R3 299–300, R4 440–452 et R5 502–526.
+- Le CRUD Stickman refuse maintenant une composition dont la puissance sort de
+  la fourchette de sa rareté et rappelle les limites directement dans le champ.
+- La migration `Version20260904110000` applique les nouvelles statistiques en
+  base sans toucher aux inventaires des joueurs.
+
+### Vérifications
+
+- Calcul automatique contrôlé sur les 27 Stickmans du catalogue.
+- Formatage Git vérifié sans erreur.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

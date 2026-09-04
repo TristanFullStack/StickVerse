@@ -146,6 +146,24 @@ export default class extends Controller {
             const statistiques = document.createElement('small');
             statistiques.textContent = `Puissance ${carte.dataset.stickmanPuissance ?? 0} · ATQ ${carte.dataset.stickmanAttaque ?? 0} · DÉF ${carte.dataset.stickmanDefense ?? 0}`;
             details.append(nom, statistiques);
+
+            const passifs = document.createElement('span');
+            passifs.className = 'team-slot-passifs';
+            const listePassifs = this.lirePassifs(carte);
+            if (listePassifs.length === 0) {
+                const aucun = document.createElement('small');
+                aucun.textContent = 'Aucun passif';
+                passifs.append(aucun);
+            } else {
+                listePassifs.slice(0, 6).forEach((passif) => {
+                    const badge = document.createElement('span');
+                    badge.className = 'team-slot-passif';
+                    badge.textContent = String(passif.nom ?? 'Passif');
+                    badge.title = [passif.nom, passif.description].filter(Boolean).join(' — ');
+                    passifs.append(badge);
+                });
+            }
+            details.append(passifs);
             contenu.append(image, details);
 
             if (retrait instanceof HTMLButtonElement) {
@@ -321,6 +339,16 @@ export default class extends Controller {
         const nombre = Number.parseInt(String(valeur ?? 0), 10);
 
         return Number.isFinite(nombre) ? nombre : 0;
+    }
+
+    lirePassifs(carte) {
+        try {
+            const passifs = JSON.parse(carte.dataset.stickmanPassifs ?? '[]');
+
+            return Array.isArray(passifs) ? passifs.filter((passif) => passif && typeof passif === 'object') : [];
+        } catch (error) {
+            return [];
+        }
     }
 }
 

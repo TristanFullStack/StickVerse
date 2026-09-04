@@ -45,6 +45,18 @@
                                     >
                                     <small>Puissance {{ membre.puissance }}</small>
                                     <small>PV {{ membre.stickman.pv }} · ATQ {{ membre.stickman.attaque }} · DÉF {{ membre.stickman.defense }}</small>
+                                    <div class="team-member-mini-passifs" aria-label="Passifs de {{ membre.stickman.nom }}">
+                                        {% for passif in membre.stickman.passifs|default([])|slice(0, 6) %}
+                                            {% set nomPassif = passif.nom|default('Passif') %}
+                                            {% set descriptionPassif = passif.description|default('') %}
+                                            <span
+                                                class="team-member-mini-passif"
+                                                title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                                            >{{ nomPassif }}</span>
+                                        {% else %}
+                                            <small>Aucun passif</small>
+                                        {% endfor %}
+                                    </div>
                                 </article>
                             {% endfor %}
                         </div>

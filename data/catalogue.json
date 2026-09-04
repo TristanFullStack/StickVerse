@@ -7,18 +7,19 @@
             "description": "18",
             "image": "18-Arbalétrirer.png",
             "rarete": 2,
-            "pv": 70,
-            "attaque": 22,
-            "defense": 9,
+            "pv": 90,
+            "attaque": 30,
+            "defense": 15,
             "actif": true,
             "passifs": [
                 {
                     "id": 5,
                     "nom": "Précision",
                     "type": "precision",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "Ignore 8 % de la défense adverse."
+                    "actif": true,
+                    "valeur": 25,
+                    "puissance": 30,
+                    "description": "Ignore 25 % de la défense adverse."
                 }
             ]
         },
@@ -28,18 +29,19 @@
             "description": "18",
             "image": "18-Arbalétrirer.png",
             "rarete": 2,
-            "pv": 72,
-            "attaque": 21,
-            "defense": 10,
-            "actif": true,
+            "pv": 90,
+            "attaque": 29,
+            "defense": 18,
+            "actif": false,
             "passifs": [
                 {
-                    "id": 19,
-                    "nom": "Perforation I",
-                    "type": "perforation_i",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "Ignore 8 % de la défense adverse."
+                    "id": 41,
+                    "nom": "Moisson",
+                    "type": "moisson",
+                    "actif": true,
+                    "valeur": 44,
+                    "puissance": 48,
+                    "description": "+44 % ATQ contre une cible sous 25 % de PV."
                 }
             ]
         },
@@ -49,8 +51,8 @@
             "description": "#2 Gros dégâts, fragile",
             "image": "Card02Archer.png",
             "rarete": 3,
-            "pv": 260,
-            "attaque": 80,
+            "pv": 240,
+            "attaque": 77,
             "defense": 45,
             "actif": true,
             "passifs": [
@@ -58,9 +60,10 @@
                     "id": 5,
                     "nom": "Précision",
                     "type": "precision",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "Ignore 8 % de la défense adverse."
+                    "actif": true,
+                    "valeur": 25,
+                    "puissance": 30,
+                    "description": "Ignore 25 % de la défense adverse."
                 }
             ]
         },
@@ -81,18 +84,19 @@
             "description": "#5 Glass cannon",
             "image": "Card05Assassin.png",
             "rarete": 3,
-            "pv": 220,
-            "attaque": 105,
-            "defense": 35,
+            "pv": 180,
+            "attaque": 90,
+            "defense": 24,
             "actif": true,
             "passifs": [
                 {
                     "id": 4,
                     "nom": "Exécution",
                     "type": "execution",
-                    "valeur": 12,
-                    "puissance": 14,
-                    "description": "+12 % ATQ contre une cible sous 30 % de PV."
+                    "actif": true,
+                    "valeur": 42,
+                    "puissance": 48,
+                    "description": "+42 % ATQ contre une cible sous 30 % de PV."
                 }
             ]
         },
@@ -104,8 +108,20 @@
             "rarete": 1,
             "pv": 80,
             "attaque": 17,
-            "defense": 14,
-            "actif": true
+            "defense": 13,
+            "actif": true,
+            "passifs": [
+                {
+                    "id": 77,
+                    "nom": "Dernier survivant",
+                    "type": "dernier_survivant",
+                    "actif": true,
+                    "valeur": 50,
+                    "puissance": 60,
+                    "description": "+50 % ATQ à partir du round 8 lorsque la carte est seule dans son groupe.",
+                    "a_partir_round": 8
+                }
+            ]
         },
         {
             "slug": "berserker",
@@ -122,17 +138,19 @@
                     "id": 22,
                     "nom": "Furie",
                     "type": "furie",
-                    "valeur": 14,
-                    "puissance": 16,
-                    "description": "+14 % ATQ sous 40 % de PV."
+                    "actif": true,
+                    "valeur": 40,
+                    "puissance": 48,
+                    "description": "+40 % ATQ sous 40 % de PV."
                 },
                 {
                     "id": 49,
                     "nom": "Surcharge",
                     "type": "surcharge",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "+8 % ATQ du round 4 au round 8.",
+                    "actif": true,
+                    "valeur": 34,
+                    "puissance": 40,
+                    "description": "+34 % ATQ du round 4 au round 8.",
                     "a_partir_round": 4
                 }
             ]
@@ -152,18 +170,19 @@
                     "id": 12,
                     "nom": "Commandement",
                     "type": "commandement",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % ATQ pendant un round après la chute du partenaire."
+                    "actif": true,
+                    "valeur": 36,
+                    "puissance": 40,
+                    "description": "+36 % ATQ après la chute du partenaire."
                 },
                 {
                     "id": 13,
                     "nom": "Formation",
                     "type": "formation",
-                    "valeur": 6,
-                    "puissance": 8,
-                    "description": "+6 % ATQ pendant les deux premiers rounds si les deux alliés sont vivants.",
-                    "a_partir_round": 1
+                    "actif": true,
+                    "valeur": 24,
+                    "puissance": 28,
+                    "description": "+24 % ATQ pendant les deux premiers rounds si les deux alliés sont vivants."
                 }
             ]
         },
@@ -193,17 +212,19 @@
                     "id": 38,
                     "nom": "Tempête divisée",
                     "type": "tempete_divisee",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % ATQ en attaque Split."
+                    "actif": true,
+                    "valeur": 34,
+                    "puissance": 40,
+                    "description": "+34 % ATQ en attaque Split."
                 },
                 {
                     "id": 36,
                     "nom": "Forteresse",
                     "type": "forteresse",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % DEF lors d’une double défense."
+                    "actif": true,
+                    "valeur": 35,
+                    "puissance": 42,
+                    "description": "+35 % DEF lors d’une double défense."
                 }
             ]
         },
@@ -215,7 +236,7 @@
             "rarete": 1,
             "pv": 65,
             "attaque": 17,
-            "defense": 13,
+            "defense": 16,
             "actif": true
         },
         {
@@ -226,7 +247,7 @@
             "rarete": 1,
             "pv": 60,
             "attaque": 16,
-            "defense": 15,
+            "defense": 18,
             "actif": true
         },
         {
@@ -237,7 +258,7 @@
             "rarete": 1,
             "pv": 60,
             "attaque": 18,
-            "defense": 10,
+            "defense": 15,
             "actif": true
         },
         {
@@ -249,7 +270,18 @@
             "pv": 75,
             "attaque": 12,
             "defense": 20,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "id": 78,
+                    "nom": "Ancrage",
+                    "type": "ancrage",
+                    "actif": true,
+                    "valeur": 35,
+                    "puissance": 40,
+                    "description": "+35 % DEF au premier round : tenir la ligne ou tomber."
+                }
+            ]
         },
         {
             "slug": "gardiennovice",
@@ -257,18 +289,19 @@
             "description": "26",
             "image": "26-Gardien novice.png",
             "rarete": 2,
-            "pv": 100,
-            "attaque": 9,
-            "defense": 27,
+            "pv": 120,
+            "attaque": 15,
+            "defense": 31,
             "actif": true,
             "passifs": [
                 {
                     "id": 18,
                     "nom": "Rempart léger",
                     "type": "rempart_leger",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "+8 % DEF lors d’une double défense."
+                    "actif": true,
+                    "valeur": 24,
+                    "puissance": 30,
+                    "description": "+24 % DEF lors d’une double défense."
                 }
             ]
         },
@@ -278,18 +311,19 @@
             "description": "#1 Équilibré",
             "image": "Card01Guerrier.png",
             "rarete": 3,
-            "pv": 340,
-            "attaque": 55,
-            "defense": 70,
+            "pv": 320,
+            "attaque": 50,
+            "defense": 68,
             "actif": true,
             "passifs": [
                 {
                     "id": 3,
                     "nom": "Rage",
                     "type": "rage",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % ATQ sous 40 % de PV."
+                    "actif": true,
+                    "valeur": 28,
+                    "puissance": 34,
+                    "description": "+28 % ATQ lorsque la carte passe sous 40 % de PV."
                 }
             ]
         },
@@ -299,18 +333,19 @@
             "description": "#3 Défensif",
             "image": "Card03Lancier.png",
             "rarete": 3,
-            "pv": 300,
-            "attaque": 65,
-            "defense": 60,
+            "pv": 280,
+            "attaque": 61,
+            "defense": 58,
             "actif": true,
             "passifs": [
                 {
                     "id": 8,
                     "nom": "Assaut coordonné",
                     "type": "assaut_coordonne",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "+8 % ATQ en attaque Focus."
+                    "actif": true,
+                    "valeur": 28,
+                    "puissance": 34,
+                    "description": "+28 % ATQ en attaque Focus."
                 }
             ]
         },
@@ -320,18 +355,19 @@
             "description": "#6 Attaquant puissant",
             "image": "Card06Mage.png",
             "rarete": 3,
-            "pv": 270,
-            "attaque": 45,
-            "defense": 100,
+            "pv": 240,
+            "attaque": 42,
+            "defense": 88,
             "actif": true,
             "passifs": [
                 {
                     "id": 10,
                     "nom": "Bouclier arcanique",
                     "type": "bouclier_arcanique",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % DEF lors de la première défense."
+                    "actif": true,
+                    "valeur": 30,
+                    "puissance": 36,
+                    "description": "+30 % DEF lors de la première défense."
                 }
             ]
         },
@@ -354,7 +390,7 @@
             "rarete": 1,
             "pv": 78,
             "attaque": 16,
-            "defense": 14,
+            "defense": 15,
             "actif": true
         },
         {
@@ -365,16 +401,17 @@
             "rarete": 2,
             "pv": 95,
             "attaque": 10,
-            "defense": 24,
+            "defense": 30,
             "actif": true,
             "passifs": [
                 {
                     "id": 62,
                     "nom": "Protection jurée",
                     "type": "protection_juree",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % DEF lorsque la carte protège un allié pendant une double défense."
+                    "actif": true,
+                    "valeur": 40,
+                    "puissance": 46,
+                    "description": "+40 % DEF si la carte protège un allié pendant une double défense."
                 }
             ]
         },
@@ -387,7 +424,18 @@
             "pv": 60,
             "attaque": 12,
             "defense": 14,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "id": 46,
+                    "nom": "Premier sang",
+                    "type": "premier_sang",
+                    "actif": true,
+                    "valeur": 30,
+                    "puissance": 32,
+                    "description": "+30 % ATQ au premier round uniquement."
+                }
+            ]
         },
         {
             "slug": "roi-stick",
@@ -404,17 +452,19 @@
                     "id": 40,
                     "nom": "Autorité impériale",
                     "type": "autorite_imperiale",
-                    "valeur": 10,
-                    "puissance": 12,
-                    "description": "+10 % ATQ après la chute du partenaire."
+                    "actif": true,
+                    "valeur": 36,
+                    "puissance": 42,
+                    "description": "+36 % ATQ après la chute du partenaire."
                 },
                 {
                     "id": 37,
                     "nom": "Maître du duel",
                     "type": "maitre_du_duel",
-                    "valeur": 12,
-                    "puissance": 14,
-                    "description": "+12 % DEF lorsqu’une seule équipe adverse attaque."
+                    "actif": true,
+                    "valeur": 45,
+                    "puissance": 50,
+                    "description": "+45 % DEF lorsqu’une seule équipe adverse attaque."
                 }
             ]
         },
@@ -427,7 +477,18 @@
             "pv": 55,
             "attaque": 24,
             "defense": 8,
-            "actif": true
+            "actif": true,
+            "passifs": [
+                {
+                    "id": 79,
+                    "nom": "Fragilité de l’aube",
+                    "type": "fragilite_aube",
+                    "actif": true,
+                    "valeur": 32,
+                    "puissance": 30,
+                    "description": "-32 % DEF pendant les trois premiers rounds, puis la carte retrouve sa pleine résistance."
+                }
+            ]
         },
         {
             "slug": "tank",
@@ -435,18 +496,19 @@
             "description": "#4 Mur défensif",
             "image": "Card04Tank.png",
             "rarete": 3,
-            "pv": 520,
-            "attaque": 35,
-            "defense": 120,
+            "pv": 400,
+            "attaque": 30,
+            "defense": 80,
             "actif": true,
             "passifs": [
                 {
                     "id": 7,
                     "nom": "Rempart",
                     "type": "rempart",
-                    "valeur": 12,
-                    "puissance": 14,
-                    "description": "+12 % DEF lors d’une double défense."
+                    "actif": true,
+                    "valeur": 34,
+                    "puissance": 40,
+                    "description": "+34 % DEF lors d’une double défense."
                 }
             ]
         },
@@ -456,18 +518,19 @@
             "description": "19",
             "image": "19-Tireur.png",
             "rarete": 2,
-            "pv": 60,
-            "attaque": 26,
-            "defense": 8,
+            "pv": 80,
+            "attaque": 34,
+            "defense": 9,
             "actif": true,
             "passifs": [
                 {
                     "id": 9,
                     "nom": "Tir dispersé",
                     "type": "tir_disperse",
-                    "valeur": 8,
-                    "puissance": 10,
-                    "description": "+8 % ATQ en attaque Split."
+                    "actif": true,
+                    "valeur": 26,
+                    "puissance": 32,
+                    "description": "+26 % ATQ en attaque Split."
                 }
             ]
         },
@@ -478,7 +541,7 @@
             "image": "Card09UltraMage.png",
             "rarete": 5,
             "pv": 250,
-            "attaque": 125,
+            "attaque": 140,
             "defense": 45,
             "actif": true,
             "passifs": [
@@ -486,18 +549,20 @@
                     "id": 53,
                     "nom": "Apocalypse",
                     "type": "apocalypse",
-                    "valeur": 18,
-                    "puissance": 20,
-                    "description": "+18 % ATQ à partir du round 10.",
+                    "actif": true,
+                    "valeur": 50,
+                    "puissance": 60,
+                    "description": "+50 % ATQ à partir du round 10 si le partenaire est tombé.",
                     "a_partir_round": 10
                 },
                 {
                     "id": 32,
                     "nom": "Rune défensive",
                     "type": "rune_defensive",
-                    "valeur": 12,
-                    "puissance": 14,
-                    "description": "+12 % DEF lors de la première défense."
+                    "actif": true,
+                    "valeur": 38,
+                    "puissance": 44,
+                    "description": "+38 % DEF lors de la première défense."
                 }
             ]
         }

@@ -16,6 +16,11 @@ final class PassifCombatService
 {
     public const TYPE_BONUS_ATTAQUE_POURCENTAGE = 'bonus_attaque_pct';
     public const TYPE_BONUS_DEFENSE_POURCENTAGE = 'bonus_defense_pct';
+    /**
+     * Les passifs peuvent faire basculer un round, mais une carte ne doit
+     * jamais rendre le calcul infini.  Le plafond s'applique aux bonus et aux
+     * malus cumulés d'une même action.
+     */
     public const BONUS_MAXIMUM = 50;
     public const PASSIFS_MAXIMUM_PAR_CARTE = 6;
     public const PUISSANCE_MAXIMUM = 500;
@@ -44,6 +49,16 @@ final class PassifCombatService
         'heritage_general', 'fureur_crepusculaire', 'moisson_finale',
         'doctrine_focus', 'doctrine_split', 'duo_discipline', 'egide_aube',
         'egide_zenith', 'egide_crepuscule',
+        // Passifs à haut risque/haute récompense et contres de début de partie.
+        'dernier_survivant', 'ancrage', 'fragilite_aube', 'instabilite',
+    ];
+
+    /** Les cartes R1 restent simples : seuls ces quatre passifs sont autorisés. */
+    public const R1_PASSIFS_AUTORISES = [
+        'premier_sang',
+        'ancrage',
+        'dernier_survivant',
+        'fragilite_aube',
     ];
 
     /**
@@ -138,12 +153,13 @@ final class PassifCombatService
                 }
 
                 if ($this->passifAttaqueActif($passif, $acteur, $contexte, $numeroRound)) {
-                    $total += $this->valeurActive($passif, $numeroRound);
+                    $valeur = $this->valeurActive($passif, $numeroRound);
+                    $total += $this->estMalusAttaque($passif['type']) ? -$valeur : $valeur;
                 }
             }
         }
 
-        return min(self::BONUS_MAXIMUM, max(0, $total));
+        return min(self::BONUS_MAXIMUM, max(-self::BONUS_MAXIMUM, $total));
     }
 
     /**
@@ -168,12 +184,13 @@ final class PassifCombatService
                 }
 
                 if ($this->passifDefenseActif($passif, $acteur, $contexte, $numeroRound)) {
-                    $total += $this->valeurActive($passif, $numeroRound);
+                    $valeur = $this->valeurActive($passif, $numeroRound);
+                    $total += $this->estMalusDefense($passif['type']) ? -$valeur : $valeur;
                 }
             }
         }
 
-        return min(self::BONUS_MAXIMUM, max(0, $total));
+        return min(self::BONUS_MAXIMUM, max(-self::BONUS_MAXIMUM, $total));
     }
 
     /**
@@ -312,12 +329,19 @@ final class PassifCombatService
             'formation' => (bool) ($acteur['partenaireVivant'] ?? false) && $numeroRound <= 2,
             'duo_discipline' => (bool) ($acteur['partenaireVivant'] ?? false),
             'commandement', 'autorite_imperiale', 'heritage_general' => !($acteur['partenaireVivant'] ?? true),
-            'percee_aube', 'premier_sang', 'lame_solaire', 'ordre_charge' => $numeroRound <= 3,
+            'percee_aube', 'lame_solaire', 'ordre_charge' => $numeroRound <= 3,
             'fenetre_tactique' => $numeroRound >= 4 && $numeroRound <= 8,
             'surcharge' => $numeroRound >= 4 && $numeroRound <= 8,
-            'crepuscule', 'apocalypse', 'fureur_crepusculaire' => $numeroRound >= 10,
-            'cri_meute' => true,
+            'crepuscule' => $numeroRound >= 10,
+            'apocalypse', 'fureur_crepusculaire' => $numeroRound >= 10
+                && !($acteur['partenaireVivant'] ?? true),
+            'dernier_survivant' => $numeroRound >= 8 && !($acteur['partenaireVivant'] ?? true),
+            'instabilite' => $numeroRound <= 3,
+            'cri_meute' => (bool) ($acteur['partenaireVivant'] ?? false),
             'acceleration_temporelle' => min(32, $numeroRound * $passif['valeur']) > 0,
+            'cadence_temporelle' => $numeroRound >= 4,
+            'blitz' => $numeroRound === 1,
+            'premier_sang' => $numeroRound === 1,
             default => false,
         };
     }
@@ -352,7 +376,11 @@ final class PassifCombatService
             'resilience' => $ratioPv < .35,
             'mur_aube', 'egide_aube' => $numeroRound <= 3,
             'verrouillage', 'fortification', 'egide_zenith' => $numeroRound >= 4 && $numeroRound <= 8,
-            'mur_crepuscule', 'derniere_citadelle', 'egide_crepuscule' => $numeroRound >= 10,
+            'mur_crepuscule' => $numeroRound >= 10,
+            'derniere_citadelle', 'egide_crepuscule' => $numeroRound >= 10
+                && !($acteur['partenaireVivant'] ?? true),
+            'ancrage' => $numeroRound === 1,
+            'fragilite_aube' => $numeroRound <= 3,
             'doctrine_defensive', 'aura_fortifiee' => true,
             'egide_croissante' => min(32, $numeroRound * $passif['valeur']) > 0,
             default => false,
@@ -405,6 +433,9 @@ final class PassifCombatService
             'description' => $passif['description'],
             'type' => $passif['type'],
             'valeur' => $passif['valeur'],
+            'direction' => ($this->estMalusAttaque($passif['type']) || $this->estMalusDefense($passif['type']))
+                ? 'malus'
+                : 'bonus',
         ];
         if (array_key_exists('puissance', $passif)) {
             $normalise['puissance'] = $passif['puissance'];
@@ -476,6 +507,16 @@ final class PassifCombatService
         }
 
         return min(self::BONUS_MAXIMUM, max(0, $total));
+    }
+
+    private function estMalusAttaque(string $type): bool
+    {
+        return in_array($type, ['instabilite'], true);
+    }
+
+    private function estMalusDefense(string $type): bool
+    {
+        return in_array($type, ['fragilite_aube'], true);
     }
 
     /**

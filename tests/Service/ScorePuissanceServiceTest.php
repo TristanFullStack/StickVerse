@@ -96,6 +96,34 @@ final class ScorePuissanceServiceTest extends TestCase
         self::assertSame(1500, $service->limiteEquipePourElo(1500));
     }
 
+    public function testExposeLesFourchettesOfficiellesParRarete(): void
+    {
+        $service = new ScorePuissanceService();
+
+        self::assertSame(['min' => 70, 'max' => 130], $service->fourchettePourRarete(1));
+        self::assertSame(['min' => 130, 'max' => 220], $service->fourchettePourRarete(2));
+        self::assertSame(['min' => 220, 'max' => 300], $service->fourchettePourRarete(3));
+        self::assertSame(['min' => 300, 'max' => 500], $service->fourchettePourRarete(4));
+        self::assertSame(['min' => 500, 'max' => null], $service->fourchettePourRarete(5));
+    }
+
+    public function testVerifieLaCompatibiliteEntrePuissanceEtRarete(): void
+    {
+        $service = new ScorePuissanceService(new PassifCombatService());
+        $carte = $this->creerStickman(1, 60, 12, 14)
+            ->setPassifs([[
+                'type' => PassifCombatService::TYPE_BONUS_ATTAQUE_POURCENTAGE,
+                'valeur' => 10,
+                'puissance' => 32,
+            ]])
+            ->setRarete(1);
+
+        self::assertTrue($service->puissanceCompatibleRarete($carte));
+
+        $carte->setRarete(2);
+        self::assertFalse($service->puissanceCompatibleRarete($carte));
+    }
+
     private function creerStickman(
         int $id,
         int $pv,

@@ -117,6 +117,7 @@
                             data-stickman-attaque="{{ stickman.attaque|default(0) }}"
                             data-stickman-defense="{{ stickman.defense|default(0) }}"
                             data-stickman-puissance="{{ puissances_stickmen[stickmanId]|default(0) }}"
+                            data-stickman-passifs="{{ stickman.passifs|default([])|json_encode|e('html_attr') }}"
                         >
                             <span class="team-inventory-card-top">
                                 <strong>{{ stickman.nom }}</strong>
@@ -129,6 +130,18 @@
                                 <span>DÉF {{ stickman.defense }}</span>
                             </span>
                             <span class="team-inventory-card-power">Puissance {{ puissances_stickmen[stickmanId]|default(0) }}</span>
+                            <span class="team-inventory-card-passifs" aria-label="Passifs de {{ stickman.nom }}">
+                                {% for passif in stickman.passifs|default([])|slice(0, 6) %}
+                                    {% set nomPassif = passif.nom|default('Passif') %}
+                                    {% set descriptionPassif = passif.description|default('') %}
+                                    <span
+                                        class="team-inventory-card-passif"
+                                        title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                                    >{{ nomPassif }}</span>
+                                {% else %}
+                                    <small>Aucun passif</small>
+                                {% endfor %}
+                            </span>
                             <span class="team-inventory-card-state" data-team-composer-card-state>Sélectionner</span>
                         </button>
                     {% else %}

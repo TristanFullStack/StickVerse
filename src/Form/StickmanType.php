@@ -8,6 +8,7 @@ use App\Entity\Stickman;
 use App\Repository\PassifRepository;
 use App\Service\PassifAffectationService;
 use App\Service\PassifCombatService;
+use App\Service\ScorePuissanceService;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -27,6 +28,7 @@ final class StickmanType extends AbstractType
     public function __construct(
         private readonly PassifRepository $passifRepository,
         private readonly PassifAffectationService $passifAffectationService,
+        private readonly ScorePuissanceService $scorePuissanceService,
     ) {
     }
 
@@ -47,7 +49,10 @@ final class StickmanType extends AbstractType
             ->add('slug', TextType::class, ['label' => 'Slug (URL)'])
             ->add('description', TextareaType::class, ['label' => 'Description'])
             ->add('image', ChoiceType::class, ['label' => 'Image', 'choices' => $choixImages])
-            ->add('rarete', IntegerType::class, ['label' => 'Rareté (1-5)'])
+            ->add('rarete', IntegerType::class, [
+                'label' => 'Rareté (1-5)',
+                'help' => 'Puissance attendue : R1 70-130 · R2 130-220 · R3 220-300 · R4 300-500 · R5 500+.',
+            ])
             ->add('pv', IntegerType::class, ['label' => 'Points de vie'])
             ->add('attaque', IntegerType::class, ['label' => 'Attaque'])
             ->add('defense', IntegerType::class, ['label' => 'Défense'])
@@ -98,13 +103,41 @@ final class StickmanType extends AbstractType
 
             $selection = $event->getForm()->get('passifsSelection')->getData();
             $selection = is_array($selection) ? $selection : [];
-            if ($stickman->getRarete() === 1 && $selection !== []) {
+            if ($stickman->getRarete() === 1) {
+                $passifsInterdits = array_values(array_filter(
+                    $selection,
+                    static fn (mixed $passif): bool => !($passif instanceof Passif)
+                        || !in_array(
+                            $passif->getType(),
+                            PassifCombatService::R1_PASSIFS_AUTORISES,
+                            true,
+                        ),
+                ));
+                if ($passifsInterdits !== []) {
+                    $event->getForm()->get('passifsSelection')->addError(
+                        new FormError('Cette carte R1 ne peut utiliser que les passifs R1 autorisés.'),
+                    );
+                    $selection = [];
+                }
+            }
+            if ($stickman->getRarete() === 1 && count($selection) > 1) {
                 $event->getForm()->get('passifsSelection')->addError(
-                    new FormError('Les cartes R1 doivent rester sans passif.'),
+                    new FormError('Une carte R1 ne peut contenir qu’un seul passif.'),
                 );
                 $selection = [];
             }
             $stickman->setPassifs($this->passifAffectationService->snapshotsDepuis($selection));
+
+            if ($stickman->getRarete() !== null && !$this->scorePuissanceService->puissanceCompatibleRarete($stickman)) {
+                $fourchette = $this->scorePuissanceService->fourchettePourRarete($stickman->getRarete());
+                $maximum = $fourchette['max'] === null ? '+' : sprintf('-%d', $fourchette['max']);
+                $event->getForm()->addError(new FormError(sprintf(
+                    'La puissance calculée doit être comprise entre %d et %s pour cette rareté (puissance actuelle : %d).',
+                    $fourchette['min'],
+                    $maximum,
+                    $this->scorePuissanceService->calculerStickman($stickman),
+                )));
+            }
         });
     }
 

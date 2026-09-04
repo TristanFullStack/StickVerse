@@ -175,12 +175,12 @@ final class CombatService
             $passifService->passifsActifs(
                 $attaquants,
                 $numeroRound,
-                ['attaquants' => $contexte['attaquants'] ?? []],
+                $contexte,
             ),
             $passifService->passifsActifs(
                 $defenseurs,
                 $numeroRound,
-                ['defenseurs' => $contexte['defenseurs'] ?? []],
+                $contexte,
             ),
         );
 

@@ -215,4 +215,60 @@ final class PassifCombatServiceTest extends TestCase
                 ->calculerStickman($stickman),
         );
     }
+
+    public function testLesMalusDeDebutDePartieSontVisiblesEtTemporaires(): void
+    {
+        $stickman = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(100)
+            ->setDefense(100)
+            ->setPassifs([
+                [
+                    'nom' => 'Fragilité de l’aube',
+                    'description' => '-32 % DEF pendant trois rounds.',
+                    'type' => 'fragilite_aube',
+                    'valeur' => 32,
+                ],
+                [
+                    'nom' => 'Instabilité',
+                    'description' => '-30 % ATQ pendant trois rounds.',
+                    'type' => 'instabilite',
+                    'valeur' => 30,
+                ],
+            ]);
+        $service = new PassifCombatService();
+
+        self::assertSame(-30, $service->bonusAttaquePourcentage([$stickman], 1));
+        self::assertSame(-32, $service->bonusDefensePourcentage([$stickman], 3));
+        self::assertSame(0, $service->bonusAttaquePourcentage([$stickman], 4));
+        self::assertSame(0, $service->bonusDefensePourcentage([$stickman], 4));
+    }
+
+    public function testLePassifDernierSurvivantEstFortMaisDifficileAActiver(): void
+    {
+        $stickman = (new Stickman())
+            ->setPv(100)
+            ->setAttaque(100)
+            ->setDefense(0)
+            ->setPassifs([[
+                'nom' => 'Dernier survivant',
+                'description' => '+50 % ATQ à partir du round 8 seul.',
+                'type' => 'dernier_survivant',
+                'valeur' => 50,
+                'a_partir_round' => 8,
+            ]]);
+        $contexte = [
+            'attaquants' => [[
+                'stickman' => $stickman,
+                'pvActuels' => 100,
+                'pvMaximum' => 100,
+                'partenaireVivant' => false,
+                'protegeAllie' => false,
+            ]],
+        ];
+        $service = new PassifCombatService();
+
+        self::assertSame(0, $service->bonusAttaquePourcentage([$stickman], 7, $contexte));
+        self::assertSame(50, $service->bonusAttaquePourcentage([$stickman], 8, $contexte));
+    }
 }

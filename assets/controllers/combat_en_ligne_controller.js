@@ -950,8 +950,9 @@ export default class extends Controller {
                         'perforation_ii',
                         'precision_spectrale',
                     ].includes(passif?.type);
+                    const estMalus = passif?.direction === 'malus';
                     const valeur = Number.isFinite(Number(passif?.valeur))
-                        ? ` (${estPenetration ? '-' : '+'}${passif.valeur} %${estPenetration ? ' DEF' : ''})`
+                        ? ` (${estPenetration || estMalus ? '-' : '+'}${passif.valeur} %${estPenetration ? ' DEF' : ''})`
                         : '';
                     const description = typeof passif?.description === 'string'
                         && passif.description.trim() !== ''
