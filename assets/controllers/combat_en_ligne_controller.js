@@ -92,6 +92,8 @@ export default class extends Controller {
         this.etatsInteractions = new Map();
         this.animationRoundEnCours = false;
         this.generationAnimation = 0;
+        this.generationGuidage = 0;
+        this.numeroRoundGuide = null;
         this.signatureCombatAffiche = null;
         this.chargerSalon();
     }
@@ -99,11 +101,15 @@ export default class extends Controller {
     disconnect() {
         this.requeteEnCours?.abort();
         this.generationAnimation += 1;
+        this.generationGuidage += 1;
         this.annulerActualisation();
     }
 
     rafraichir() {
-        if (this.actionEnCours || this.animationRoundEnCours) {
+        if (
+            this.actionEnCours
+            || this.animationRoundEnCours
+        ) {
             return;
         }
 
@@ -601,6 +607,24 @@ export default class extends Controller {
                 return;
             }
 
+            const planDisponible = this.planEstDisponible(donnees);
+            const planPrecedentDisponible = this.planEstDisponible(
+                this.combat,
+            );
+            const numeroRound = this.entierPositif(donnees.numeroRound);
+            const numeroRoundPrecedent = this.entierPositif(
+                this.combat?.numeroRound,
+            );
+            const nouveauTour = planDisponible
+                && (
+                    !planPrecedentDisponible
+                    || numeroRound !== numeroRoundPrecedent
+                );
+
+            if (nouveauTour) {
+                this.reinitialiserPlanPourNouveauTour();
+            }
+
             const signature = JSON.stringify(donnees);
             const combatModifie = signature !== this.signatureCombatAffiche;
 
@@ -622,6 +646,7 @@ export default class extends Controller {
             }
 
             await this.animerNouveauRoundSiNecessaire();
+            await this.animerGuidageNouveauTourSiNecessaire(nouveauTour);
             this.programmerActualisation();
         } catch (erreur) {
             if (erreur.name !== 'AbortError') {
@@ -1166,15 +1191,79 @@ export default class extends Controller {
         return conteneur;
     }
 
+    planEstDisponible(combat) {
+        return combat?.statut === 'en_cours'
+            && combat?.adversaire !== null
+            && combat?.adversaire !== undefined
+            && combat?.preparation?.active !== true
+            && combat?.planSoumis === false;
+    }
+
+    reinitialiserPlanPourNouveauTour() {
+        for (const cle of this.clesPlan()) {
+            const select = this.selectPlan(cle);
+
+            if (select) {
+                select.value = '';
+            }
+        }
+
+        this.planFormTarget.reset();
+        this.actionPlanActive = 'cibleAttaqueX';
+        this.mettreAJourPlanTactique();
+    }
+
+    async animerGuidageNouveauTourSiNecessaire(nouveauTour) {
+        const numeroRound = this.entierPositif(this.combat?.numeroRound);
+
+        if (
+            !nouveauTour
+            || numeroRound === null
+            || this.numeroRoundGuide === numeroRound
+            || !this.planEstDisponible(this.combat)
+        ) {
+            return;
+        }
+
+        this.numeroRoundGuide = numeroRound;
+        const generation = ++this.generationGuidage;
+        const mouvementReduit = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        const dureeIntroduction = mouvementReduit ? 180 : 680;
+
+        // Le premier choix reste toujours ATK X. L'animation accompagne ce
+        // choix sans bloquer les clics ni basculer artificiellement en DEF.
+        this.actionPlanActive = 'cibleAttaqueX';
+        this.mettreAJourPlanTactique();
+        this.instructionPlanTarget.textContent =
+            'Étape 1/2 — Choisis les deux cartes adverses à attaquer.';
+
+        try {
+            await this.attendreGuidage(dureeIntroduction, generation);
+        } finally {
+            if (generation !== this.generationGuidage) {
+                return;
+            }
+        }
+    }
+
+    attendreGuidage(duree, generation) {
+        return new Promise((resolve) => {
+            window.setTimeout(() => {
+                resolve(generation === this.generationGuidage);
+            }, duree);
+        });
+    }
+
     afficherFormulairePlan() {
-        const peutJouer = this.combat.statut === 'en_cours'
-            && this.combat.adversaire !== null
-            && this.combat.preparation?.active !== true
-            && this.combat.planSoumis === false;
+        const peutJouer = this.planEstDisponible(this.combat);
 
         this.planSectionTarget.hidden = !peutJouer;
 
         if (!peutJouer) {
+            delete this.combatActifTarget.dataset.guidagePhase;
+
             return;
         }
 
@@ -1308,6 +1397,36 @@ export default class extends Controller {
             : 'moi';
     }
 
+    synchroniserPhaseGuidage() {
+        if (
+            this.planSectionTarget.hidden
+            || !this.planEstDisponible(this.combat)
+        ) {
+            delete this.combatActifTarget.dataset.guidagePhase;
+
+            return;
+        }
+
+        // Conserver l'action explicitement choisie permet de modifier une
+        // cible déjà renseignée (même si une autre case reste à compléter).
+        const prochaineAction = this.clesPlan().includes(this.actionPlanActive)
+            ? this.actionPlanActive
+            : this.clesPlan().find(
+                (cle) => this.selectPlan(cle)?.value === '',
+            );
+
+        if (!prochaineAction) {
+            delete this.combatActifTarget.dataset.guidagePhase;
+
+            return;
+        }
+
+        this.combatActifTarget.dataset.guidagePhase =
+            prochaineAction.startsWith('cibleAttaque')
+                ? 'attaque'
+                : 'defense';
+    }
+
     selectionnerCiblePlan(camp, slot) {
         if (
             this.planSectionTarget.hidden
@@ -1352,10 +1471,10 @@ export default class extends Controller {
         }
 
         const libelles = {
-            cibleAttaqueX: 'Sélectionne un adversaire pour l’attaque X.',
-            cibleAttaqueY: 'Sélectionne un adversaire pour l’attaque Y.',
-            cibleDefenseX: 'Sélectionne un allié pour la défense X.',
-            cibleDefenseY: 'Sélectionne un allié pour la défense Y.',
+            cibleAttaqueX: 'ATTAQUES — Sélectionne la cible de ATK X.',
+            cibleAttaqueY: 'ATTAQUES — Sélectionne la cible de ATK Y.',
+            cibleDefenseX: 'DÉFENSES — Sélectionne l’allié de DEF X.',
+            cibleDefenseY: 'DÉFENSES — Sélectionne l’allié de DEF Y.',
         };
 
         for (const bouton of this.planActionButtonTargets) {
@@ -1386,6 +1505,7 @@ export default class extends Controller {
         );
         this.mettreAJourCartesPlan();
         this.mettreAJourResumePlan();
+        this.synchroniserPhaseGuidage();
         this.actualiserApercusSurvoles();
     }
 
@@ -1639,16 +1759,16 @@ export default class extends Controller {
                 this.selectionnerCiblePlan(camp, combattant.slot);
             });
             carte.addEventListener('mouseenter', () => {
-                this.afficherApercuDegats(carte, camp, combattant.slot);
+                this.afficherApercuCible(carte, camp, combattant.slot);
             });
             carte.addEventListener('mouseleave', () => {
-                this.masquerApercuDegats(carte);
+                this.masquerApercuCible(carte);
             });
             carte.addEventListener('focusin', () => {
-                this.afficherApercuDegats(carte, camp, combattant.slot);
+                this.afficherApercuCible(carte, camp, combattant.slot);
             });
             carte.addEventListener('focusout', () => {
-                this.masquerApercuDegats(carte);
+                this.masquerApercuCible(carte);
             });
             carte.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -1657,6 +1777,24 @@ export default class extends Controller {
                 }
             });
             listeTarget.append(carte);
+        }
+    }
+
+    afficherApercuCible(carte, camp, slot) {
+        if (
+            camp === 'adversaire'
+            && this.actionPlanActive.startsWith('cibleAttaque')
+        ) {
+            this.afficherApercuDegats(carte, camp, slot);
+
+            return;
+        }
+
+        if (
+            camp === 'moi'
+            && this.actionPlanActive.startsWith('cibleDefense')
+        ) {
+            this.afficherApercuDefense(carte, camp, slot);
         }
     }
 
@@ -1709,6 +1847,7 @@ export default class extends Controller {
         }
 
         const pourcentageActuel = Number(carte.dataset.pourcentageVie ?? 0);
+        bande.dataset.mode = 'degats';
         bande.style.left = `${apercu.pourcentageRestant}%`;
         bande.style.width = `${Math.max(
             0,
@@ -1720,6 +1859,65 @@ export default class extends Controller {
             : '0 dégât sans défense';
         previsualisation.hidden = false;
         carte.classList.add('affiche-preview-degats');
+    }
+
+    afficherApercuDefense(carte, camp, slot) {
+        if (
+            camp !== 'moi'
+            || this.planSectionTarget.hidden
+            || carte.dataset.vivant === 'false'
+        ) {
+            return;
+        }
+
+        let defense = 0;
+
+        for (const groupe of ['X', 'Y']) {
+            const cle = groupe === 'X'
+                ? 'cibleDefenseX'
+                : 'cibleDefenseY';
+            const cible = this.selectPlan(cle)?.value;
+
+            if (
+                cible === slot
+                || (
+                    cle === this.actionPlanActive
+                    && this.actionPlanActive.startsWith('cibleDefense')
+                )
+            ) {
+                defense += this.puissanceGroupe(groupe, 'defense');
+            }
+        }
+
+        if (defense <= 0) {
+            return;
+        }
+
+        const bande = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
+        const previsualisation = carte.querySelector(
+            '.carte-combattant-preview-degats'
+        );
+
+        if (!bande || !previsualisation) {
+            return;
+        }
+
+        const pvMaximum = Number(carte.dataset.pvMaximum ?? 0);
+        const pourcentageActuel = Number(carte.dataset.pourcentageVie ?? 0);
+        const pourcentageDefense = pvMaximum > 0
+            ? Math.min(100, (defense / pvMaximum) * 100)
+            : 0;
+        const largeur = Math.min(pourcentageActuel, pourcentageDefense);
+
+        bande.dataset.mode = 'defense';
+        bande.style.left = `${Math.max(0, pourcentageActuel - largeur)}%`;
+        bande.style.width = `${largeur}%`;
+        bande.hidden = largeur <= 0;
+        previsualisation.textContent = `+${defense} DÉF sur cette carte`;
+        previsualisation.hidden = false;
+        carte.classList.add('affiche-preview-defense');
     }
 
     masquerApercuDegats(carte) {
@@ -1734,6 +1932,7 @@ export default class extends Controller {
             bande.hidden = true;
             bande.style.left = '0';
             bande.style.width = '0';
+            delete bande.dataset.mode;
         }
 
         if (previsualisation) {
@@ -1741,19 +1940,35 @@ export default class extends Controller {
         }
 
         carte.classList.remove('affiche-preview-degats');
+        carte.classList.remove('affiche-preview-defense');
+    }
+
+    masquerApercuCible(carte) {
+        this.masquerApercuDegats(carte);
     }
 
     actualiserApercusSurvoles() {
         for (const carte of this.participantsTarget.querySelectorAll(
-            '.carte-combattant.affiche-preview-degats'
+            '.carte-combattant.affiche-preview-degats, '
+            + '.carte-combattant.affiche-preview-defense'
         )) {
-            this.masquerApercuDegats(carte);
+            this.masquerApercuCible(carte);
         }
 
         for (const carte of this.participantsTarget.querySelectorAll(
             '.carte-combattant:hover[data-camp="adversaire"]'
         )) {
-            this.afficherApercuDegats(
+            this.afficherApercuCible(
+                carte,
+                carte.dataset.camp,
+                carte.dataset.slot,
+            );
+        }
+
+        for (const carte of this.participantsTarget.querySelectorAll(
+            '.carte-combattant:hover[data-camp="moi"]'
+        )) {
+            this.afficherApercuCible(
                 carte,
                 carte.dataset.camp,
                 carte.dataset.slot,
@@ -2181,6 +2396,21 @@ export default class extends Controller {
         titre.className = 'selection-equipe-titre';
         this.equipeApercuTarget.append(titre);
 
+        const groupes = document.createElement('div');
+        groupes.className = 'selection-equipe-groupes';
+        groupes.setAttribute('aria-label', 'Répartition de la composition');
+
+        const groupeX = document.createElement('span');
+        groupeX.className = 'selection-equipe-groupe selection-equipe-groupe-x';
+        groupeX.textContent = 'Équipe X';
+
+        const groupeY = document.createElement('span');
+        groupeY.className = 'selection-equipe-groupe selection-equipe-groupe-y';
+        groupeY.textContent = 'Équipe Y';
+
+        groupes.append(groupeX, groupeY);
+        this.equipeApercuTarget.append(groupes);
+
         const liste = document.createElement('div');
         liste.className = 'grille-combattants';
         const combattants = Array.isArray(equipe.combattants)
@@ -2252,7 +2482,10 @@ export default class extends Controller {
                     ? passif.description.trim()
                     : '';
                 const libelle = description ? `${nom} — ${description}` : nom;
-                emplacement.textContent = nom.slice(0, 2).toUpperCase();
+                // Une lettre compacte garde les six emplacements lisibles.
+                // Le nom et la description restent accessibles au survol et
+                // aux lecteurs d'écran.
+                emplacement.textContent = nom.charAt(0).toUpperCase();
                 emplacement.title = libelle;
                 emplacement.setAttribute('aria-label', libelle);
             } else {

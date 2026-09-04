@@ -14,6 +14,7 @@ final class MatchmakingCombatEnLigneService
         private readonly CombatRepository $combatRepository,
         private readonly CreationCombatEnLigneService $creationService,
         private readonly RejoindreCombatEnLigneService $rejoindreService,
+        private readonly AnnulationCombatEnLigneService $annulationService,
         private readonly ScorePuissanceService $scorePuissanceService,
         private readonly ReglesMatchmakingService $reglesService,
     ) {
@@ -24,27 +25,54 @@ final class MatchmakingCombatEnLigneService
         $combatActif = $this->combatRepository
             ->trouverActifPourJoueur($joueur);
 
+        $combatEnAttente = null;
+
         if ($combatActif instanceof Combat) {
             // Une relance peut arriver juste après que l’adversaire a rejoint
             // le combat. Retourner ce combat rend la recherche idempotente et
             // permet au navigateur de récupérer immédiatement le bon état.
             if (!$combatActif->estPrive()) {
-                return $combatActif;
-            }
+                if (
+                    !$combatActif->estEnAttente()
+                    || $combatActif->getJoueur2() instanceof User
+                ) {
+                    return $combatActif;
+                }
 
-            throw new LogicException(
-                'Le joueur participe déjà à un combat actif.'
-            );
+                // Deux clics/requêtes simultanés peuvent exceptionnellement
+                // créer deux salles publiques en attente. On conserve la
+                // salle ayant le plus petit identifiant comme salle
+                // canonique et on réconciliera l'autre plus bas.
+                $combatEnAttente = $combatActif;
+            } else {
+                throw new LogicException(
+                    'Le joueur participe déjà à un combat actif.'
+                );
+            }
         }
 
         $puissanceEquipe = $this->scorePuissanceService
             ->calculerEquipe($equipe);
+        $combatEnAttenteAnnule = false;
         $candidats = [];
 
         foreach (
             $this->combatRepository->trouverDisponiblesPour($joueur)
             as $combat
         ) {
+            // En cas de doublon créé par une course concurrente, seul le
+            // propriétaire de la salle la plus récente doit la quitter pour
+            // rejoindre la plus ancienne. Cela évite que deux requêtes ne
+            // s'annulent mutuellement et recréent indéfiniment des salles.
+            if (
+                $combatEnAttente instanceof Combat
+                && $combatEnAttente->getId() !== null
+                && $combat->getId() !== null
+                && $combat->getId() > $combatEnAttente->getId()
+            ) {
+                continue;
+            }
+
             $puissanceAdverse = $this->scorePuissanceService
                 ->calculerCombatPourJoueur(
                     $combat,
@@ -91,6 +119,19 @@ final class MatchmakingCombatEnLigneService
             }
 
             try {
+                if ($combatEnAttente instanceof Combat) {
+                    $combatEnAttenteId = $combatEnAttente->getId();
+
+                    if ($combatEnAttenteId !== null) {
+                        $this->annulationService->annuler(
+                            $combatEnAttenteId,
+                            $joueur,
+                        );
+                        $combatEnAttenteAnnule = true;
+                        $combatEnAttente = null;
+                    }
+                }
+
                 return $this->rejoindreService->rejoindre(
                     $combatId,
                     $joueur,
@@ -108,6 +149,13 @@ final class MatchmakingCombatEnLigneService
                     throw $exception;
                 }
             }
+        }
+
+        if (
+            $combatEnAttente instanceof Combat
+            && !$combatEnAttenteAnnule
+        ) {
+            return $combatEnAttente;
         }
 
         return $this->creationService->creer(

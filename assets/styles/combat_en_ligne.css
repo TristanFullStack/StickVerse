@@ -110,6 +110,33 @@ body:has(#rapport-combat) {
     font-size: 18px;
 }
 
+#combat-en-ligne .combat-context-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 0 0 22px;
+    padding: 7px 11px;
+    color: var(--combat-texte-secondaire);
+    border: 1px solid #1d4665;
+    border-radius: 7px;
+    background: rgba(8, 21, 34, 0.82);
+    font-size: 14px;
+}
+
+#combat-en-ligne .combat-context-links a {
+    color: var(--combat-cyan);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+#combat-en-ligne .combat-context-links a:hover,
+#combat-en-ligne .combat-context-links a:focus-visible {
+    color: #fff;
+}
+
 #combat-en-ligne button,
 #combat-en-ligne select {
     font: inherit;
@@ -495,15 +522,15 @@ body:has(#rapport-combat) {
 #combat-en-ligne .carte-combattant-passif {
     display: grid;
     place-items: center;
-    width: 15px;
-    height: 15px;
-    flex: 0 0 15px;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
     box-sizing: border-box;
     border: 1px solid #7e8d9a;
     border-radius: 3px;
     color: #17324a;
     background: #ffffff;
-    font-size: 7px;
+    font-size: 12px;
     font-weight: 800;
     line-height: 1;
     cursor: help;
@@ -526,6 +553,10 @@ body:has(#rapport-combat) {
 
 @media (prefers-reduced-motion: reduce) {
     #combat-en-ligne .carte-combattant-vie-remplissage {
+        transition: none;
+    }
+
+    #combat-en-ligne .combat-actif[data-guidage-phase] .carte-combattant {
         transition: none;
     }
 }
@@ -843,12 +874,101 @@ body:has(#rapport-combat) {
 
 #combat-en-ligne [data-combat-en-ligne-target="salon"] {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 20px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="salon"] > .salon-equipe-section,
+#combat-en-ligne [data-combat-en-ligne-target="salon"] > .salon-actions-section {
+    align-self: start;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="salon"] > .salon-actions-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+#combat-en-ligne .salon-actions-section .rejoindre-par-code {
+    margin-top: 0;
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] {
     margin: 18px 0;
+}
+
+#combat-en-ligne .selection-equipe-groupes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0 0 8px;
+}
+
+#combat-en-ligne .selection-equipe-groupe {
+    padding: 7px 10px;
+    color: var(--combat-texte);
+    border: 1px solid #315b7d;
+    border-radius: 7px;
+    background: rgba(7, 21, 34, 0.72);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+#combat-en-ligne .selection-equipe-groupe-x {
+    grid-column: 1 / 3;
+    border-color: rgba(40, 185, 255, 0.72);
+    color: var(--combat-cyan);
+}
+
+#combat-en-ligne .selection-equipe-groupe-y {
+    grid-column: 3 / 5;
+    border-color: rgba(185, 77, 255, 0.72);
+    color: #d58cff;
+}
+
+/* Aperçu de l'équipe : des cartes plus lisibles que les cartes compactes de
+   l'arène, sans modifier les dimensions nécessaires au déroulement d'un round. */
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .grille-combattants {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant {
+    min-height: 405px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-titre {
+    min-height: 54px;
+    padding: 14px 12px 8px;
+    font-size: 17px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-image {
+    height: 200px;
+    padding: 10px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-vie {
+    padding: 11px 12px 12px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-passifs {
+    min-height: 31px;
+    padding: 5px 7px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-passif {
+    width: 21px;
+    height: 21px;
+    flex-basis: 21px;
+}
+
+#combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-statistiques {
+    padding: 12px 10px;
+    font-size: 13px;
 }
 
 #combat-en-ligne .selection-equipe-titre {
@@ -1092,6 +1212,10 @@ body:has(#rapport-combat) {
     #combat-en-ligne [data-combat-en-ligne-target="historiqueCombats"] {
         grid-template-columns: 1fr;
     }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .grille-combattants {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 720px) {
@@ -1131,6 +1255,10 @@ body:has(#rapport-combat) {
     }
 
     #combat-en-ligne .combat-disponible {
+        grid-template-columns: 1fr;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .grille-combattants {
         grid-template-columns: 1fr;
     }
 
@@ -1335,13 +1463,14 @@ body:has(#rapport-combat) {
 #combat-en-ligne .combat-arene .carte-combattant-passif {
     display: grid;
     place-items: center;
-    width: 13px;
-    height: 13px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
     border: 1px solid #7e8d9a;
     border-radius: 2px;
     color: #17324a;
     background: #fff;
-    font-size: 7px;
+    font-size: 10px;
     font-weight: 800;
     line-height: 1;
 }
@@ -1361,6 +1490,59 @@ body:has(#rapport-combat) {
 #combat-en-ligne .combat-arene .carte-combattant.est-selectionnable:hover,
 #combat-en-ligne .combat-arene .carte-combattant.est-selectionnable:focus-visible {
     transform: translateY(-2px);
+}
+
+/* Guide visuel de préparation : les cartes de la phase active prennent le
+   devant, tandis que l'autre camp s'efface légèrement. */
+#combat-en-ligne .combat-actif[data-guidage-phase] .combat-arene .carte-combattant {
+    position: relative;
+    transition:
+        transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 520ms ease,
+        filter 520ms ease,
+        box-shadow 520ms ease;
+    will-change: transform, opacity;
+}
+
+#combat-en-ligne .combat-actif[data-guidage-phase="attaque"]
+    .combat-equipe-moi .carte-combattant,
+#combat-en-ligne .combat-actif[data-guidage-phase="defense"]
+    .combat-equipe-adversaire .carte-combattant {
+    opacity: 0.38;
+    filter: saturate(0.45) brightness(0.72);
+    transform: scale(0.96);
+}
+
+#combat-en-ligne .combat-actif[data-guidage-phase="attaque"]
+    .combat-equipe-adversaire .carte-combattant.est-selectionnable,
+#combat-en-ligne .combat-actif[data-guidage-phase="defense"]
+    .combat-equipe-moi .carte-combattant.est-selectionnable {
+    z-index: 3;
+    transform: scale(1.045);
+    box-shadow:
+        0 0 0 2px rgba(255, 180, 35, 0.72),
+        0 0 24px rgba(255, 156, 0, 0.42);
+}
+
+#combat-en-ligne .combat-actif[data-guidage-phase="defense"]
+    .combat-equipe-moi .carte-combattant.est-selectionnable {
+    box-shadow:
+        0 0 0 2px rgba(64, 178, 255, 0.8),
+        0 0 24px rgba(46, 153, 255, 0.48);
+}
+
+#combat-en-ligne .combat-actif[data-guidage-phase="attaque"]
+    .plan-tactique-instruction {
+    color: #ffe0a1;
+    border-color: #c98918;
+    background: rgba(83, 53, 5, 0.82);
+}
+
+#combat-en-ligne .combat-actif[data-guidage-phase="defense"]
+    .plan-tactique-instruction {
+    color: #c5ecff;
+    border-color: #238cff;
+    background: rgba(8, 57, 99, 0.82);
 }
 
 #combat-en-ligne .carte-combattant-menace {
@@ -1416,6 +1598,17 @@ body:has(#rapport-combat) {
     box-shadow: 0 0 7px rgba(255, 0, 0, 0.75);
     pointer-events: none;
     transition: left 120ms ease, width 120ms ease;
+}
+
+#combat-en-ligne .carte-combattant-vie-preview[data-mode="defense"] {
+    background: #238cff;
+    box-shadow: 0 0 8px rgba(35, 140, 255, 0.86);
+}
+
+#combat-en-ligne .carte-combattant.affiche-preview-defense
+    .carte-combattant-preview-degats {
+    border-color: #0b5cad;
+    background: rgba(17, 102, 194, 0.95);
 }
 
 #combat-en-ligne .carte-combattant-animation {

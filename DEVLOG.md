@@ -7888,6 +7888,8 @@ StickVerse possède maintenant une progression classée lisible et motivante. Le
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
 ## J86 — Enrichir les cartes et simplifier l’accès aux fiches Wiki
 
 ### Objectif
@@ -8569,6 +8571,38 @@ rareté, afin qu’une R1 ne soit jamais plus puissante qu’une R2, etc.
 
 - Calcul automatique contrôlé sur les 27 Stickmans du catalogue.
 - Formatage Git vérifié sans erreur.
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+## J99 — Stabiliser le matchmaking et guider les phases de combat
+
+### Objectif
+
+Éviter les recherches classées infinies lors de requêtes simultanées et rendre
+chaque étape de préparation d’un tour immédiatement compréhensible.
+
+### Réalisé
+
+- Le matchmaking public réconcilie désormais les salles en attente créées par
+  une course concurrente : une seule salle canonique est conservée, les
+  doublons sont annulés avant toute nouvelle création.
+- Les choix d’attaque et de défense restent modifiables pendant la phase
+  correspondante et sont réinitialisés à chaque nouveau tour.
+- L’interface guide visuellement la phase active : zoom sur les cartes
+  adverses pour les attaques, puis sur les cartes du joueur pour les défenses.
+- Les dégâts prévisionnels d’attaque restent signalés en rouge et les
+  prévisions de défense disposent d’un indicateur bleu distinct.
+- Les marqueurs de passifs sont lisibles dans les cartes de combat et le lien
+  « Classement ELO » est de nouveau visible depuis le salon.
+
+### Vérifications
+
+- Syntaxe JavaScript contrôlée avec `node --check`.
+- Templates Twig validés avec le linter Symfony.
+- Tests ciblés du salon de combat : 6 tests, 192 assertions réussis.
+- Diff Git vérifié sans erreur de format.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -9,6 +9,7 @@ use App\Entity\Stickman;
 use App\Entity\User;
 use App\Repository\CombatRepository;
 use App\Repository\CombattantCombatRepository;
+use App\Service\CreationCombatEnLigneService;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -622,6 +623,72 @@ final class SalonCombatEnLigneControllerTest extends WebTestCase
             $salonApresJonction
                 ['combatsDisponibles'],
         );
+    }
+
+    public function testReconcileDeuxRecherchesPubliquesLanceesSimultanement(): void
+    {
+        [
+            $joueur1,
+            $joueur2,
+            $equipeJoueur1,
+            $equipeJoueur2,
+        ] = $this->creerDonneesDuSalon();
+
+        $creationService = static::getContainer()->get(
+            CreationCombatEnLigneService::class,
+        );
+
+        self::assertInstanceOf(
+            CreationCombatEnLigneService::class,
+            $creationService,
+        );
+
+        // Cette situation reproduit la course où deux POST arrivent avant
+        // que l'un des deux combats ne voie l'autre en base.
+        $combat1 = $creationService->creer(
+            $joueur1,
+            $equipeJoueur1,
+            false,
+        );
+        $combat2 = $creationService->creer(
+            $joueur2,
+            $equipeJoueur2,
+            false,
+        );
+
+        $combat1Id = $combat1->getId();
+        $combat2Id = $combat2->getId();
+
+        self::assertNotNull($combat1Id);
+        self::assertNotNull($combat2Id);
+        self::assertLessThan($combat2Id, $combat1Id);
+
+        $this->client->loginUser($joueur2);
+        $this->client->request('GET', '/salon-combat-en-ligne');
+        $csrf = $this->lireReponseJson()['csrf']['matchmaking'];
+
+        $this->client->jsonRequest(
+            'POST',
+            '/salon-combat-en-ligne/rechercher-adversaire',
+            ['equipeId' => $equipeJoueur2->getId()],
+            ['HTTP_X_CSRF_TOKEN' => $csrf],
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            'adversaire_trouve',
+            $this->lireReponseJson()['etat'],
+        );
+
+        $this->entityManager->clear();
+        $combatCanonique = $this->combatRepository->find($combat1Id);
+        $combatDuplique = $this->combatRepository->find($combat2Id);
+
+        self::assertInstanceOf(Combat::class, $combatCanonique);
+        self::assertInstanceOf(Combat::class, $combatDuplique);
+        self::assertSame(Combat::STATUT_EN_COURS, $combatCanonique->getStatut());
+        self::assertSame($joueur2->getId(), $combatCanonique->getJoueur2()?->getId());
+        self::assertSame(Combat::STATUT_ANNULE, $combatDuplique->getStatut());
     }
 
     private function assertReponseNonMiseEnCache(): void

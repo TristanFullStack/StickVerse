@@ -68,7 +68,7 @@
                 Prépare ton équipe et affronte un autre joueur.
             </p>
             <p class="combat-context-links">
-                <a href="{{ path('app_classement') }}">Voir le classement</a>
+                <a href="{{ path('app_classement') }}">Classement ELO</a>
                 ·
                 <a href="{{ path('app_equipe') }}">Gérer mes équipes</a>
             </p>
@@ -385,7 +385,10 @@
             </section>
 
             <div data-combat-en-ligne-target="salon" hidden>
-                <section aria-labelledby="equipe-selection-titre">
+                <section
+                    class="salon-equipe-section"
+                    aria-labelledby="equipe-selection-titre"
+                >
                     <h2 id="equipe-selection-titre">
                         Équipe sélectionnée
                     </h2>
@@ -404,6 +407,39 @@
                         data-combat-en-ligne-target="equipeApercu"
                         aria-live="polite"
                     ></div>
+
+                </section>
+
+                <section
+                    class="salon-actions-section"
+                    aria-labelledby="combat-prive-titre"
+                >
+                    <h2 id="combat-prive-titre">
+                        Rejoindre un combat privé
+                    </h2>
+                    <form
+                        class="rejoindre-par-code"
+                        data-action="submit->combat-en-ligne#rejoindreParCode"
+                    >
+                        <label for="code-invitation-combat">
+                            Rejoindre avec un code
+                        </label>
+
+                        <input
+                            id="code-invitation-combat"
+                            type="text"
+                            inputmode="text"
+                            maxlength="9"
+                            autocomplete="off"
+                            placeholder="SV-A1B2C3"
+                            data-combat-en-ligne-target="codeInvitationInput"
+                            required
+                        >
+
+                        <button type="submit">
+                            Rejoindre
+                        </button>
+                    </form>
 
                     <div class="choix-mode-combat">
                         <article>
@@ -434,35 +470,6 @@
                             </button>
                         </article>
                     </div>
-                </section>
-
-                <section aria-labelledby="combat-prive-titre">
-                    <h2 id="combat-prive-titre">
-                        Rejoindre un combat privé
-                    </h2>
-                    <form
-                        class="rejoindre-par-code"
-                        data-action="submit->combat-en-ligne#rejoindreParCode"
-                    >
-                        <label for="code-invitation-combat">
-                            Rejoindre avec un code
-                        </label>
-
-                        <input
-                            id="code-invitation-combat"
-                            type="text"
-                            inputmode="text"
-                            maxlength="9"
-                            autocomplete="off"
-                            placeholder="SV-A1B2C3"
-                            data-combat-en-ligne-target="codeInvitationInput"
-                            required
-                        >
-
-                        <button type="submit">
-                            Rejoindre
-                        </button>
-                    </form>
                 </section>
 
                 <section
