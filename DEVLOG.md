@@ -8644,7 +8644,32 @@ Renforcer la sécurité des comptes joueurs et préparer la mise à jour automat
 
 ### Points à configurer en production
 - Renseigner un vrai `MAILER_DSN` et une adresse `MAILER_FROM` sur le VPS pour que les e-mails soient envoyés.
-- Ajouter les secrets SSH du workflow dans GitHub avant d'activer le déploiement automatique.
+- Ajouter les secrets SSH du workflow dans GitHub avant d’activer le déploiement automatique.
+
+## J103 — Refonte des parcours d’authentification
+
+### Objectif
+Rendre l’inscription et la connexion plus claires, plus rassurantes et plus
+robustes, tout en corrigeant l’erreur 500 observée juste après une suppression
+de compte.
+
+### Travail réalisé
+- Refonte visuelle responsive des pages « Créer un compte » et « Se connecter ».
+- Réécriture des textes d’aide, des étapes du parcours et des messages d’erreur
+  en français.
+- Validation explicite de l’adresse e-mail, avec normalisation des espaces et de
+  la casse pour éviter les doublons.
+- Amélioration des indications concernant la confirmation e-mail, le mot de
+  passe oublié et le renvoi du lien de confirmation.
+- Invalidation du token de sécurité avant la redirection après suppression d’un
+  compte, ce qui évite la page 500 sans devoir recharger le navigateur.
+- Ajout d’une confirmation visible sur l’accueil après suppression.
+- Mise à jour des tests d’inscription et ajout de tests dédiés à la suppression
+  et à l’invalidation de session.
+
+### Vérifications
+- Templates Twig, XLIFF et YAML validés.
+- Suite complète PHPUnit : 289 tests réussis, 2 171 assertions.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

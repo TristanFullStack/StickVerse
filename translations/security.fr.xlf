@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="security">
+        <body>
+            <trans-unit id="invalid-credentials">
+                <source>Invalid credentials.</source>
+                <target>Adresse e-mail ou mot de passe incorrect.</target>
+            </trans-unit>
+            <trans-unit id="too-many-failed-login-attempts">
+                <source>Too many failed login attempts</source>
+                <target>Trop de tentatives de connexion échouées. Réessaie dans une minute.</target>
+            </trans-unit>
+            <trans-unit id="user-not-found">
+                <source>Username could not be found.</source>
+                <target>Adresse e-mail ou mot de passe incorrect.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

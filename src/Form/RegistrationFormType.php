@@ -5,10 +5,12 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -40,12 +42,29 @@ class RegistrationFormType extends AbstractType
                     ),
                 ],
             ])
-            ->add('email')
+            ->add('email', EmailType::class, [
+                'label' => 'Adresse e-mail',
+                'attr' => [
+                    'autocomplete' => 'email',
+                    'inputmode' => 'email',
+                    'maxlength' => 180,
+                    'placeholder' => 'toi@exemple.com',
+                ],
+                'help' => 'Elle servira à confirmer ton compte et à récupérer ton accès.',
+                'constraints' => [
+                    new NotBlank(message: 'Indique ton adresse e-mail.'),
+                    new Email(message: 'Saisis une adresse e-mail valide.'),
+                    new Length(
+                        max: 180,
+                        maxMessage: 'Cette adresse e-mail est trop longue.',
+                    ),
+                ],
+            ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'constraints' => [
                     new IsTrue(
-                        message: 'You should agree to our terms.',
+                        message: 'Accepte les conditions d’utilisation pour continuer.',
                     ),
                 ],
             ])
@@ -56,11 +75,11 @@ class RegistrationFormType extends AbstractType
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
                     new NotBlank(
-                        message: 'Please enter a password',
+                        message: 'Choisis un mot de passe.',
                     ),
                     new Length(
                         min: 8,
-                        minMessage: 'Your password should be at least {{ limit }} characters',
+                        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
                         // max length allowed by Symfony for security reasons
                         max: 4096,
                     ),

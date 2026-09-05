@@ -1,31 +1,84 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer mon compte - StickVerse{% endblock %}
+{% block title %}Créer un compte — StickVerse{% endblock %}
 
 {% block body %}
-    <h1>Créer mon compte</h1>
+    <main class="auth-layout auth-layout--register" aria-labelledby="inscription-titre">
+        <section class="auth-card">
+            <div class="auth-card-header">
+                <p class="auth-eyebrow">Bienvenue dans StickVerse</p>
+                <h1 id="inscription-titre">Créer ton compte</h1>
+                <p>
+                    Rejoins l’arène, collectionne tes premiers Stickmans et prépare ta
+                    première équipe.
+                </p>
+            </div>
 
-    <p>
-        Ton compte recevra immédiatement quatre Stickmans différents
-        pour composer sa première équipe.
-    </p>
-    <p>
-        Après ton inscription, un lien de confirmation sera envoyé à ton adresse
-        e-mail. La connexion sera disponible une fois l’adresse confirmée.
-    </p>
+            <div class="auth-alert auth-alert--info" role="status">
+                <strong>Ton départ est déjà préparé.</strong>
+                <span>Quatre Stickmans et cinq caisses de départ t’attendent après ton inscription.</span>
+            </div>
 
-    {{ form_errors(registrationForm) }}
+            {{ form_errors(registrationForm) }}
 
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.pseudo) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Mot de passe'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms, {
-            label: 'J’accepte les conditions d’utilisation'
-        }) }}
+            {{ form_start(registrationForm, {
+                attr: {
+                    class: 'auth-form',
+                    'aria-describedby': 'inscription-aide'
+                }
+            }) }}
+                <p id="inscription-aide" class="auth-form-intro">
+                    Tous les champs sont obligatoires. Utilise une adresse e-mail à laquelle
+                    tu as accès : un lien de confirmation y sera envoyé.
+                </p>
 
-        <button type="submit" class="btn">Créer mon compte</button>
-    {{ form_end(registrationForm) }}
+                {{ form_row(registrationForm.pseudo, {
+                    label: 'Pseudo public',
+                    row_attr: {class: 'auth-field'}
+                }) }}
+                {{ form_row(registrationForm.email, {
+                    label: 'Adresse e-mail',
+                    row_attr: {class: 'auth-field'}
+                }) }}
+                {{ form_row(registrationForm.plainPassword, {
+                    label: 'Mot de passe',
+                    row_attr: {class: 'auth-field'}
+                }) }}
+                {{ form_row(registrationForm.agreeTerms, {
+                    label: 'J’accepte les conditions d’utilisation de StickVerse',
+                    row_attr: {class: 'auth-field auth-checkbox'}
+                }) }}
+
+                <button type="submit" class="auth-submit">Créer mon compte</button>
+            {{ form_end(registrationForm) }}
+
+            <p class="auth-switch">
+                Tu as déjà un compte ?
+                <a href="{{ path('app_login') }}">Se connecter</a>
+            </p>
+        </section>
+
+        <aside class="auth-aside" aria-labelledby="inscription-etapes">
+            <p class="auth-aside-kicker">Le parcours StickVerse</p>
+            <h2 id="inscription-etapes">Prêt en quelques secondes</h2>
+            <ol class="auth-steps">
+                <li>
+                    <span class="auth-step-number">1</span>
+                    <span><strong>Crée ton identité</strong><small>Choisis un pseudo visible par les autres joueurs.</small></span>
+                </li>
+                <li>
+                    <span class="auth-step-number">2</span>
+                    <span><strong>Confirme ton e-mail</strong><small>Le lien reçu est valable 24 heures.</small></span>
+                </li>
+                <li>
+                    <span class="auth-step-number">3</span>
+                    <span><strong>Entre dans l’arène</strong><small>Connecte-toi et compose ta première équipe.</small></span>
+                </li>
+            </ol>
+            <p class="auth-aside-note">
+                Ton adresse reste privée et sert uniquement à sécuriser ton compte et à
+                récupérer ton accès.
+            </p>
+        </aside>
+    </main>
 {% endblock %}

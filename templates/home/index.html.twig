@@ -3,6 +3,10 @@
 {% block title %}StickVerse{% endblock %}
 
 {% block body %}
+    {% for message in app.flashes('success') %}
+        <div class="auth-alert auth-alert--success" role="status">{{ message }}</div>
+    {% endfor %}
+
     {% if app.user and tableau_de_bord %}
         <h1>Tableau de bord</h1>
 

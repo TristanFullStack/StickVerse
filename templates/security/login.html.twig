@@ -1,68 +1,112 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Se connecter — StickVerse{% endblock %}
 
 {% block body %}
-    {% for message in app.flashes('success') %}
-        <p class="alert-success" role="status">{{ message }}</p>
-    {% endfor %}
-
-    <form method="post">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
-
-        {% if app.user %}
-            <div class="mb-3">
-                Tu es connecté avec le pseudo {{ app.user.pseudo }}, <a href="{{ logout_path() }}">Déconnexion</a>
+    <main class="auth-layout auth-layout--login" aria-labelledby="connexion-titre">
+        <section class="auth-card">
+            <div class="auth-card-header">
+                <p class="auth-eyebrow">Ravi de te revoir</p>
+                <h1 id="connexion-titre">Se connecter</h1>
+                <p>Retrouve tes équipes, tes combats et ta collection.</p>
             </div>
-        {% endif %}
 
-        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-        <label for="username">Email</label>
-        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
-        <label for="password">Password</label>
-        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
-        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+            {% for message in app.flashes('success') %}
+                <div class="auth-alert auth-alert--success" role="status">{{ message }}</div>
+            {% endfor %}
 
-        {#
-            Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-            See https://symfony.com/doc/current/security/remember_me.html
+            {% if app.user %}
+                <div class="auth-alert auth-alert--info" role="status">
+                    <strong>Tu es déjà connecté avec {{ app.user.pseudo }}.</strong>
+                    <span><a href="{{ path('app_profil') }}">Ouvrir ton profil</a> ou <a href="{{ path('app_logout') }}">te déconnecter</a>.</span>
+                </div>
+            {% else %}
+                <form method="post" action="{{ path('app_login') }}" class="auth-form">
+                    {% if error %}
+                        <div class="auth-alert auth-alert--error" role="alert">
+                            <strong>Connexion impossible</strong>
+                            <span>{{ error.messageKey|trans(error.messageData, 'security', 'fr') }}</span>
+                        </div>
+                    {% endif %}
 
-            <div class="checkbox mb-3">
-                <input type="checkbox" name="_remember_me" id="_remember_me">
-                <label for="_remember_me">Remember me</label>
-            </div>
-        #}
+                    <p class="auth-form-intro">
+                        Saisis l’adresse e-mail confirmée associée à ton compte.
+                    </p>
 
-        <button class="btn btn-lg btn-primary" type="submit">
-            Sign in
-        </button>
+                    <div class="auth-field">
+                        <label for="username">Adresse e-mail</label>
+                        <input
+                            type="email"
+                            value="{{ last_username }}"
+                            name="_username"
+                            id="username"
+                            autocomplete="email"
+                            inputmode="email"
+                            maxlength="180"
+                            placeholder="toi@exemple.com"
+                            required
+                            autofocus
+                        >
+                    </div>
 
-        <p>
-            <a href="{{ path('app_demande_reinitialisation_mot_de_passe') }}">
-                Mot de passe oublié ?
-            </a>
-        </p>
-    </form>
+                    <div class="auth-field">
+                        <label for="password">Mot de passe</label>
+                        <input
+                            type="password"
+                            name="_password"
+                            id="password"
+                            autocomplete="current-password"
+                            placeholder="Ton mot de passe"
+                            required
+                        >
+                    </div>
 
-    <details>
-        <summary>Renvoyer l’e-mail de confirmation</summary>
-        <form method="post" action="{{ path('app_verification_email_renvoyer') }}">
-            <label for="verification-email">Adresse e-mail</label>
-            <input
-                type="email"
-                name="email"
-                id="verification-email"
-                autocomplete="email"
-                required
-            >
-            <input
-                type="hidden"
-                name="_token"
-                value="{{ csrf_token('verification-email-renvoi') }}"
-            >
-            <button type="submit">Renvoyer</button>
-        </form>
-    </details>
+                    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                    <button class="auth-submit" type="submit">Se connecter</button>
+
+                    <div class="auth-form-links">
+                        <a href="{{ path('app_demande_reinitialisation_mot_de_passe') }}">Mot de passe oublié ?</a>
+                    </div>
+                </form>
+            {% endif %}
+
+            <div class="auth-divider"><span>ou</span></div>
+            <p class="auth-switch">
+                Pas encore de compte ?
+                <a href="{{ path('app_register') }}">Créer un compte</a>
+            </p>
+        </section>
+
+        <aside class="auth-aside" aria-labelledby="connexion-aide">
+            <p class="auth-aside-kicker">Un accès simple et sécurisé</p>
+            <h2 id="connexion-aide">Besoin d’un coup de main ?</h2>
+            <ul class="auth-benefits">
+                <li><strong>Adresse confirmée</strong><small>La confirmation protège ton compte contre les erreurs d’adresse.</small></li>
+                <li><strong>Mot de passe oublié</strong><small>Demande un lien de réinitialisation valable pendant une durée limitée.</small></li>
+                <li><strong>E-mail non reçu</strong><small>Tu peux demander un nouvel e-mail de confirmation ci-dessous.</small></li>
+            </ul>
+
+            <details class="auth-secondary-help">
+                <summary>Renvoyer l’e-mail de confirmation</summary>
+                <p>Indique ton adresse. Pour protéger les comptes, la réponse reste la même qu’un compte existe ou non.</p>
+                <form method="post" action="{{ path('app_verification_email_renvoyer') }}" class="auth-form auth-form--compact">
+                    <div class="auth-field">
+                        <label for="verification-email">Adresse e-mail</label>
+                        <input
+                            type="email"
+                            name="email"
+                            id="verification-email"
+                            autocomplete="email"
+                            inputmode="email"
+                            placeholder="toi@exemple.com"
+                            required
+                        >
+                    </div>
+                    <input type="hidden" name="_token" value="{{ csrf_token('verification-email-renvoi') }}">
+                    <button type="submit" class="auth-secondary-submit">Renvoyer le lien</button>
+                </form>
+            </details>
+        </aside>
+    </main>
 {% endblock %}

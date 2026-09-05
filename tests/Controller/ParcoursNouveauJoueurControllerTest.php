@@ -54,7 +54,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testInscriptionConnecteEtPrepareLePremierParcours(): void
+    public function testInscriptionPrepareLePremierParcoursEtDemandeLaConfirmation(): void
     {
         $email = sprintf(
             'nouveau-joueur-%s@example.com',
@@ -71,21 +71,13 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
             'registration_form[agreeTerms]' => '1',
         ]);
 
-        self::assertResponseRedirects('/ma-collection');
+        self::assertResponseRedirects('/login');
         $this->client->followRedirect();
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(
-            '.flash-success',
-            'Ton pack de départ est prêt',
-        );
-        self::assertSelectorTextContains(
-            '#progression-joueur-titre',
-            'Tes prochaines étapes',
-        );
-        self::assertSelectorTextContains(
-            'body',
-            'Obtenir au moins quatre Stickmans différents',
+            '.auth-alert--success',
+            'Compte créé ! Consulte ton adresse e-mail',
         );
 
         $userRepository = static::getContainer()->get(UserRepository::class);
@@ -96,6 +88,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
 
         self::assertInstanceOf(User::class, $utilisateur);
         self::assertSame('NouveauJoueur', $utilisateur->getPseudo());
+        self::assertFalse($utilisateur->isEmailVerifie());
 
         $inventaires = $inventaireRepository->findBy([
             'utilisateur' => $utilisateur,
@@ -105,9 +98,7 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         self::assertSame(5, $utilisateur->getCaissesPremiersRenforts());
 
         $this->client->request('GET', '/equipe');
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('.flash-error');
-        self::assertSelectorNotExists('form[name="equipe"]');
+        self::assertResponseRedirects('/login');
     }
 
     public function testInscriptionRefuseUnPseudoDejaUtilise(): void

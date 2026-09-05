@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class CompteController extends AbstractController
@@ -25,6 +26,7 @@ final class CompteController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
+        TokenStorageInterface $tokenStorage,
     ): Response {
         $joueur = $this->getUser();
         if (!$joueur instanceof User) {
@@ -43,9 +45,25 @@ final class CompteController extends AbstractController
             } else {
                 $entityManager->remove($joueur);
                 $entityManager->flush();
-                $request->getSession()->invalidate();
 
-                return $this->redirectToRoute('app_home');
+                // Le compte supprimé ne doit plus rester dans le token de
+                // sécurité pendant la réponse de redirection. Sans cela,
+                // Symfony peut tenter de resérialiser l’utilisateur supprimé
+                // et afficher une erreur 500 avant le rechargement de la page.
+                $tokenStorage->setToken(null);
+                $request->getSession()->invalidate();
+                $this->addFlash(
+                    'success',
+                    'Ton compte a été supprimé définitivement. À bientôt sur StickVerse.',
+                );
+
+                $response = $this->redirectToRoute('app_home');
+                $response->headers->set(
+                    'Cache-Control',
+                    'no-store, no-cache, must-revalidate',
+                );
+
+                return $response;
             }
         }
 

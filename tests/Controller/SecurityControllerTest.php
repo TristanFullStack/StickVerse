@@ -6,6 +6,34 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class SecurityControllerTest extends WebTestCase
 {
+    public function testPageConnexionEstEnFrancaisEtGuideLeJoueur(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/login');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1#connexion-titre', 'Se connecter');
+        self::assertSelectorExists('form.auth-form[action="/login"]');
+        self::assertSelectorExists('input#username[autocomplete="email"]');
+        self::assertSelectorExists('input#password[autocomplete="current-password"]');
+        self::assertSelectorTextContains('button.auth-submit', 'Se connecter');
+        self::assertSelectorTextContains('body', 'Renvoyer l’e-mail de confirmation');
+    }
+
+    public function testPageInscriptionPresenteLesEtapesEtLesChampsSecurises(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/register');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1#inscription-titre', 'Créer ton compte');
+        self::assertSelectorExists('input[name="registration_form[pseudo]"][maxlength="24"]');
+        self::assertSelectorExists('input[name="registration_form[email]"][type="email"]');
+        self::assertSelectorExists('input[name="registration_form[plainPassword]"][autocomplete="new-password"]');
+        self::assertSelectorTextContains('body', 'Confirme ton e-mail');
+        self::assertSelectorTextContains('body', 'Le lien reçu est valable 24 heures.');
+    }
+
     public function testNavigationPubliqueAfficheSeulementLesLiensPublics(): void
     {
         $client = static::createClient();
@@ -47,7 +75,7 @@ final class SecurityControllerTest extends WebTestCase
 
             $client->submit(
                 $pageConnexion
-                    ->selectButton('Sign in')
+                    ->selectButton('Se connecter')
                     ->form([
                         '_username' => $email,
                         '_password' => 'mot-de-passe-incorrect',
@@ -60,8 +88,8 @@ final class SecurityControllerTest extends WebTestCase
         }
 
         self::assertSelectorTextContains(
-            '.alert-danger',
-            'Too many failed login attempts',
+            '.auth-alert--error',
+            'Plusieurs tentatives de connexion ont échoué',
         );
     }
 }

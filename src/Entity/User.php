@@ -18,7 +18,10 @@ use InvalidArgumentException;
     name: 'UNIQ_USER_VERIFICATION_EMAIL_HASH',
     fields: ['jetonVerificationEmailHash'],
 )]
-#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+#[UniqueEntity(
+    fields: ['email'],
+    message: 'Un compte existe déjà avec cette adresse e-mail.',
+)]
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est déjà utilisé.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -126,7 +129,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        // Les adresses e-mail sont comparées sans tenir compte des espaces ni
+        // de la casse afin d’éviter deux comptes pour la même boîte.
+        $this->email = strtolower(trim($email));
 
         return $this;
     }
