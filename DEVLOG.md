@@ -8638,6 +8638,7 @@ Renforcer la sécurité des comptes joueurs et préparer la mise à jour automat
 - Sécurisation des relations Doctrine afin de supprimer les données personnelles associées sans laisser de références orphelines.
 - Ajout des migrations pour les champs de vérification et les contraintes de suppression.
 - Ajout d'un workflow GitHub Actions qui récupère le code, applique les migrations, reconstruit les assets et recharge PHP-FPM après chaque push sur `main`.
+- Exécution de Composer sans scripts automatiques dans le workflow afin que le cache de production soit toujours construit par `www-data`.
 - Ajout de la documentation de configuration des secrets SSH et du transport SMTP.
 - Ajout de tests unitaires pour le cycle de vérification e-mail.
 
