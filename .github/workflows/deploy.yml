@@ -38,6 +38,7 @@ jobs:
                   git pull --ff-only origin main
                   composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
                   sudo -u www-data php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+                  sudo -u www-data php bin/console cache:clear --env=prod
                   sudo -u www-data php bin/console importmap:install --env=prod
                   sudo -u www-data php bin/console asset-map:compile --env=prod
                   sudo -u www-data php bin/console cache:clear --env=prod
