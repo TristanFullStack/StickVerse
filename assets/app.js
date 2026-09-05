@@ -9,6 +9,34 @@ import './styles/app.css';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
 
+document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element
+        ? event.target.closest('[data-password-visibility-toggle]')
+        : null;
+
+    if (!(target instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    const field = target.closest('[data-password-visibility]');
+    const input = field?.querySelector('input[type="password"], input[type="text"]');
+
+    if (!(input instanceof HTMLInputElement)) {
+        return;
+    }
+
+    const isVisible = input.type === 'text';
+    input.type = isVisible ? 'password' : 'text';
+
+    const label = isVisible ? 'Afficher le mot de passe' : 'Masquer le mot de passe';
+    target.setAttribute('aria-label', label);
+    target.setAttribute('title', label);
+    target.setAttribute('aria-pressed', String(!isVisible));
+
+    field.querySelector('[data-password-visibility-icon="show"]')?.toggleAttribute('hidden', !isVisible);
+    field.querySelector('[data-password-visibility-icon="hide"]')?.toggleAttribute('hidden', isVisible);
+});
+
 document.addEventListener('submit', async (event) => {
     const form = event.target;
 

@@ -17,7 +17,7 @@ final class SecurityControllerTest extends WebTestCase
         self::assertSelectorExists('input#username[autocomplete="email"]');
         self::assertSelectorExists('input#password[autocomplete="current-password"]');
         self::assertSelectorExists(
-            '[data-controller="password-visibility"] button.auth-password-toggle[aria-controls="password"][aria-label="Afficher le mot de passe"]',
+            '[data-password-visibility] button.auth-password-toggle[data-password-visibility-toggle][aria-controls="password"][aria-label="Afficher le mot de passe"]',
         );
         self::assertSelectorTextContains('button.auth-submit', 'Se connecter');
         self::assertSelectorTextContains('body', 'Renvoyer l’e-mail de confirmation');
@@ -34,7 +34,7 @@ final class SecurityControllerTest extends WebTestCase
         self::assertSelectorExists('input[name="registration_form[email]"][type="email"]');
         self::assertSelectorExists('input[name="registration_form[plainPassword]"][autocomplete="new-password"]');
         self::assertSelectorExists(
-            '[data-controller="password-visibility"] button.auth-password-toggle[aria-controls="registration_form_plainPassword"][aria-label="Afficher le mot de passe"]',
+            '[data-password-visibility] button.auth-password-toggle[data-password-visibility-toggle][aria-controls="registration_form_plainPassword"][aria-label="Afficher le mot de passe"]',
         );
         self::assertSelectorTextContains('body', 'Confirme ton e-mail');
         self::assertSelectorTextContains('body', 'Le lien reçu est valable 24 heures.');
