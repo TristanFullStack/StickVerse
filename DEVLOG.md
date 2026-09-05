@@ -8704,6 +8704,18 @@ de compte.
 
 - Ajout de tests de non-régression sur l’œil unique et le bouton d’ouverture.
 
+## J106 — Garantir l’exécution des interactions en production
+
+- La feuille de style est chargée comme une ressource CSS dédiée dans le layout,
+  au lieu d’être importée comme un module JavaScript.
+- Le module applicatif peut ainsi s’exécuter jusqu’aux gestionnaires de clic,
+  même lorsque les contrôleurs Stimulus sont chargés de façon asynchrone.
+
+### Vérifications
+
+- Suite complète PHPUnit : 289 tests réussis, 2 178 assertions.
+- Compilation des assets de production et linter Twig validés.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
