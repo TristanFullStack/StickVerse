@@ -41,7 +41,7 @@
                         <form method="post" action="{{ path('app_caisse_ouvrir', {id: caisse.id}) }}" data-action="submit->caisse-ouverture#ouvrir" data-caisse-ouverture-target="form">
                             <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse.id) }}">
                             <input type="hidden" name="_ouverture" value="{{ jetons_ouverture[possession.id] }}">
-                            <button type="submit" data-opening-submit>Ouvrir</button>
+                            <button type="submit" data-opening-submit data-action="click->caisse-ouverture#ouvrir">Ouvrir</button>
                         </form>
                     </article>
                 {% endfor %}
@@ -54,7 +54,7 @@
                         <form method="post" action="{{ path('app_caisse_ouvrir', {id: caisse_depart.id}) }}" data-action="submit->caisse-ouverture#ouvrir" data-caisse-ouverture-target="form">
                             <input type="hidden" name="_token" value="{{ csrf_token('ouvrir' ~ caisse_depart.id) }}">
                             <input type="hidden" name="_ouverture" value="{{ jetons_ouverture['legacy-' ~ loop.index0] }}">
-                            <button type="submit" data-opening-submit>Ouvrir</button>
+                            <button type="submit" data-opening-submit data-action="click->caisse-ouverture#ouvrir">Ouvrir</button>
                         </form>
                     </article>
                 {% endfor %}

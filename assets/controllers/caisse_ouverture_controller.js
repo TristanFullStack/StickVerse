@@ -60,16 +60,19 @@ export default class extends Controller {
             return;
         }
 
-        const form = event.currentTarget;
+        const cible = event.currentTarget instanceof Element ? event.currentTarget : null;
+        const form = cible instanceof HTMLFormElement ? cible : cible?.closest('form');
         if (!(form instanceof HTMLFormElement)) {
             return;
         }
 
         this.processing = true;
         this.activeForm = form;
-        this.activeButton = event.submitter instanceof HTMLButtonElement
-            ? event.submitter
-            : form.querySelector('[data-opening-submit]');
+        this.activeButton = cible instanceof HTMLButtonElement && cible.matches('[data-opening-submit]')
+            ? cible
+            : event.submitter instanceof HTMLButtonElement
+                ? event.submitter
+                : form.querySelector('[data-opening-submit]');
         this.originalButtonText = this.activeButton?.textContent ?? 'Ouvrir la caisse';
         this.lastFocusedElement = document.activeElement;
         this.activeCanOpenAgain = true;

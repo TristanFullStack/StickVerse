@@ -1,4 +1,3 @@
-import './stimulus_bootstrap.js';
 /*
  * Welcome to your app's main JavaScript file!
  *
@@ -33,8 +32,14 @@ document.addEventListener('click', (event) => {
     target.setAttribute('title', label);
     target.setAttribute('aria-pressed', String(!isVisible));
 
-    field.querySelector('[data-password-visibility-icon="show"]')?.toggleAttribute('hidden', !isVisible);
-    field.querySelector('[data-password-visibility-icon="hide"]')?.toggleAttribute('hidden', isVisible);
+    field.querySelector('[data-password-visibility-slash]')?.toggleAttribute('hidden', !isVisible);
+});
+
+// Le contrôle visuel doit rester disponible même si un contrôleur Stimulus
+// est encore en cours de chargement. Les contrôleurs métier sont chargés juste
+// après l'installation de ces interactions de base.
+import('./stimulus_bootstrap.js').catch((error) => {
+    console.error('Impossible de charger les interactions StickVerse.', error);
 });
 
 document.addEventListener('submit', async (event) => {

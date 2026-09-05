@@ -68,8 +68,8 @@
                                 {% if not app.user or app.user.pieces < caisse.prix %}disabled{% endif %}
                             >{% if app.user and app.user.pieces >= caisse.prix %}Acheter{% else %}Solde insuffisant{% endif %}</button>
                         </form>
-                        {# Route conservée pour les anciennes pages et signets ; les
-                           ouvertures normales se font désormais depuis l’inventaire. #}
+                        {# L’ouverture reste disponible depuis la boutique, avec la
+                           même roulette que dans l’inventaire. #}
                         <form
                             method="post"
                             action="{{ path('app_caisse_ouvrir', {'id': caisse.id}) }}"
@@ -83,6 +83,7 @@
                             <button
                                 type="submit"
                                 data-opening-submit
+                                data-action="click->caisse-ouverture#ouvrir"
                                 {% if app.user.pieces < caisse.prix %}disabled{% endif %}
                             >
                                 Ouvrir

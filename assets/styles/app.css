@@ -304,7 +304,8 @@ fieldset {
 .caisse-buy-quantity { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; }
 .caisse-buy-quantity input { width: 74px; padding: 5px 6px; border: 1px solid #9aa7b4; border-radius: 4px; font: inherit; }
 .caisse-buy-total { margin: 8px 0; font-size: 14px; }
-.caisse-legacy-open-form { display: none; }
+.caisse-legacy-open-form { margin-top: 10px; }
+.caisse-legacy-open-form button { width: 100%; background: #245b8e; border-color: #173e63; }
 .inventory-crates-section,
 .inventory-cards-section { margin-top: 24px; }
 .section-heading { align-items: center; margin-bottom: 10px; }

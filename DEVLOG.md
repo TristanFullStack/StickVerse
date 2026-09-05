@@ -8686,6 +8686,24 @@ de compte.
 - Linter Twig et compilation des assets de production validés.
 - Suite complète PHPUnit : 289 tests réussis, 2 173 assertions.
 
+## J105 — Corriger les interactions de visibilité et d’ouverture
+
+### Correctif
+
+- Remplacement des deux pictogrammes du mot de passe par un seul œil qui
+  bascule entre « afficher » et « masquer » avec un état accessible.
+- Chargement des contrôleurs Stimulus après les interactions essentielles afin
+  que l’œil reste fonctionnel même pendant le chargement des assets.
+- Le bouton « Ouvrir » intercepte aussi le clic direct, retrouve son formulaire
+  associé et lance la roulette au lieu de laisser le navigateur revenir sur la
+  page de détails.
+- Réactivation du bouton d’ouverture depuis la boutique pour proposer le même
+  parcours animé que dans l’inventaire.
+
+### Vérifications
+
+- Ajout de tests de non-régression sur l’œil unique et le bouton d’ouverture.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

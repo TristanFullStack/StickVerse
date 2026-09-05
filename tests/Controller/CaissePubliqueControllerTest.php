@@ -299,6 +299,10 @@ final class CaissePubliqueControllerTest extends WebTestCase
             $caisse->getId(),
         ))->attr('value');
         self::assertMatchesRegularExpression('/^[a-f0-9]{64}$/', (string) $jeton);
+        self::assertSelectorExists(sprintf(
+            'form[action="/caisses/%d/ouvrir"] button[data-opening-submit][data-action="click->caisse-ouverture#ouvrir"]',
+            $caisse->getId(),
+        ));
     }
 
     public function testRetourneLaProgressionEtLaCompletionDeCollection(): void

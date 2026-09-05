@@ -19,6 +19,8 @@ final class SecurityControllerTest extends WebTestCase
         self::assertSelectorExists(
             '[data-password-visibility] button.auth-password-toggle[data-password-visibility-toggle][aria-controls="password"][aria-label="Afficher le mot de passe"]',
         );
+        self::assertSame(1, $client->getCrawler()->filter('[data-password-visibility] button.auth-password-toggle')->count());
+        self::assertSame(1, $client->getCrawler()->filter('[data-password-visibility] [data-password-visibility-slash][hidden]')->count());
         self::assertSelectorTextContains('button.auth-submit', 'Se connecter');
         self::assertSelectorTextContains('body', 'Renvoyer l’e-mail de confirmation');
     }
@@ -36,6 +38,8 @@ final class SecurityControllerTest extends WebTestCase
         self::assertSelectorExists(
             '[data-password-visibility] button.auth-password-toggle[data-password-visibility-toggle][aria-controls="registration_form_plainPassword"][aria-label="Afficher le mot de passe"]',
         );
+        self::assertSame(1, $client->getCrawler()->filter('[data-password-visibility] button.auth-password-toggle')->count());
+        self::assertSame(1, $client->getCrawler()->filter('[data-password-visibility] [data-password-visibility-slash][hidden]')->count());
         self::assertSelectorTextContains('body', 'Confirme ton e-mail');
         self::assertSelectorTextContains('body', 'Le lien reçu est valable 24 heures.');
     }

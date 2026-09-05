@@ -60,6 +60,7 @@
                     <button
                         type="submit"
                         data-opening-submit
+                        data-action="click->caisse-ouverture#ouvrir"
                         {% if app.user.pieces < caisse.prix %}disabled{% endif %}
                     >
                         Ouvrir
