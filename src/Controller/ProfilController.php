@@ -8,6 +8,7 @@ use App\Service\RecompenseQuotidienneService;
 use App\Service\ObjectifJoueurService;
 use App\Service\MissionsJoueurService;
 use App\Service\RecompenseHoraireService;
+use App\Service\LimitationActionsSensiblesService;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,6 +45,7 @@ final class ProfilController extends AbstractController
     public function reclamerRecompenseQuotidienne(
         Request $request,
         RecompenseQuotidienneService $recompenseQuotidienneService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         if (!$this->isCsrfTokenValid(
             'recompense-quotidienne',
@@ -56,6 +58,10 @@ final class ProfilController extends AbstractController
 
         if (!$joueur instanceof User) {
             throw $this->createAccessDeniedException();
+        }
+
+        if ($this->tropDeTentativesDeRecompense($joueur, $request, $limitationService)) {
+            return $this->redirectToRoute('app_recompenses');
         }
 
         $montant = $recompenseQuotidienneService->reclamer($joueur);
@@ -83,6 +89,7 @@ final class ProfilController extends AbstractController
     public function reclamerRecompenseHoraire(
         Request $request,
         RecompenseHoraireService $recompenseHoraireService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         if (!$this->isCsrfTokenValid(
             'recompense-horaire',
@@ -94,6 +101,10 @@ final class ProfilController extends AbstractController
         $joueur = $this->getUser();
         if (!$joueur instanceof User) {
             throw $this->createAccessDeniedException();
+        }
+
+        if ($this->tropDeTentativesDeRecompense($joueur, $request, $limitationService)) {
+            return $this->redirectToRoute('app_recompenses');
         }
 
         $montant = $recompenseHoraireService->reclamer($joueur);
@@ -113,6 +124,7 @@ final class ProfilController extends AbstractController
         Request $request,
         string $objectif,
         ObjectifJoueurService $objectifJoueurService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         if (!$this->isCsrfTokenValid(
             'objectif-'.$objectif,
@@ -125,6 +137,10 @@ final class ProfilController extends AbstractController
 
         if (!$joueur instanceof User) {
             throw $this->createAccessDeniedException();
+        }
+
+        if ($this->tropDeTentativesDeRecompense($joueur, $request, $limitationService)) {
+            return $this->redirectToRoute('app_recompenses');
         }
 
         try {
@@ -155,6 +171,7 @@ final class ProfilController extends AbstractController
         string $periode,
         string $mission,
         MissionsJoueurService $missionsJoueurService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         if (!$this->isCsrfTokenValid(
             'mission-'.$periode.'-'.$mission,
@@ -166,6 +183,10 @@ final class ProfilController extends AbstractController
         $joueur = $this->getUser();
         if (!$joueur instanceof User) {
             throw $this->createAccessDeniedException();
+        }
+
+        if ($this->tropDeTentativesDeRecompense($joueur, $request, $limitationService)) {
+            return $this->redirectToRoute('app_recompenses');
         }
 
         try {
@@ -182,5 +203,26 @@ final class ProfilController extends AbstractController
         );
 
         return $this->redirectToRoute('app_recompenses');
+    }
+
+    private function tropDeTentativesDeRecompense(
+        User $joueur,
+        Request $request,
+        LimitationActionsSensiblesService $limitationService,
+    ): bool {
+        if ($limitationService->consommer(
+            $joueur,
+            'recompense',
+            $request->getClientIp(),
+        ) === null) {
+            return false;
+        }
+
+        $this->addFlash(
+            'error',
+            'Trop de tentatives de récupération. Réessaie dans quelques instants.',
+        );
+
+        return true;
     }
 }

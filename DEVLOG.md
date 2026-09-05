@@ -8611,6 +8611,19 @@ chaque étape de préparation d’un tour immédiatement compréhensible.
 - Conservation des divisions Éclaireur, Sentinelle, Stratège, Champion et Légende ainsi que leurs récompenses.
 - Validation Twig et suite complète : 284 tests réussis, 2135 assertions.
 
+## J101 — Durcissement avant mise en production
+
+- Ajout d’une migration Doctrine pour réaligner les index de `caisse_possedee` avec le mapping ORM.
+- Ajout de limites anti-abus pour les ouvertures et achats de caisses, les ventes, les récompenses, le matchmaking, les actions de combat et les demandes de réinitialisation de mot de passe.
+- Ajout des en-têtes de sécurité HTTP : CSP, anti-iframe, `nosniff`, politique de référent, permissions et HSTS sous HTTPS.
+- Renforcement des cookies de session (`Secure`, `HttpOnly`, `SameSite`).
+- Mot de passe d’inscription relevé à 8 caractères minimum et route d’inscription limitée à GET/POST.
+- Protection de la récompense de fin de saison par limitation anti-abus.
+- Vérifications finales : 284 tests PHPUnit, 2 135 assertions, 63 templates Twig, 25 fichiers YAML et schéma Doctrine synchronisé.
+- Audit Composer effectué : aucune vulnérabilité connue.
+
+La configuration d’hébergement reste à appliquer lors de la mise en ligne : environnement prod, HTTPS, SMTP, sauvegardes, firewall et migration Doctrine.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

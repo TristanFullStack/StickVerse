@@ -4,3 +4,41 @@ framework:
             policy: fixed_window
             limit: 10
             interval: '1 minute'
+
+        # Limites applicatives complémentaires. Elles protègent les actions
+        # mutantes tout en laissant une marge suffisante pour une utilisation
+        # normale (ouverture rapide de plusieurs caisses, ventes en lot, etc.).
+        caisse_ouverture:
+            policy: fixed_window
+            limit: 30
+            interval: '1 minute'
+
+        caisse_achat:
+            policy: fixed_window
+            limit: 20
+            interval: '1 minute'
+
+        inventaire_vente:
+            policy: fixed_window
+            limit: 30
+            interval: '1 minute'
+
+        recompense:
+            policy: fixed_window
+            limit: 12
+            interval: '1 minute'
+
+        matchmaking:
+            policy: fixed_window
+            limit: 10
+            interval: '1 minute'
+
+        combat_action:
+            policy: fixed_window
+            limit: 120
+            interval: '1 minute'
+
+        demande_reinitialisation:
+            policy: fixed_window
+            limit: 5
+            interval: '1 hour'

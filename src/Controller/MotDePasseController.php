@@ -7,6 +7,7 @@ use App\Form\DemandeReinitialisationMotDePasseType;
 use App\Form\ModifierMotDePasseType;
 use App\Form\ReinitialiserMotDePasseType;
 use App\Service\ModificationMotDePasseService;
+use App\Service\LimitationActionsSensiblesService;
 use App\Service\RecuperationMotDePasseService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -84,6 +85,7 @@ final class MotDePasseController extends AbstractController
     public function demanderReinitialisation(
         Request $request,
         RecuperationMotDePasseService $recuperationMotDePasseService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         $form = $this->createForm(
             DemandeReinitialisationMotDePasseType::class
@@ -91,9 +93,14 @@ final class MotDePasseController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $recuperationMotDePasseService->demander(
-                (string) $form->get('email')->getData()
-            );
+            $email = (string) $form->get('email')->getData();
+            if ($limitationService->consommerPourIdentifiant(
+                $email,
+                'demande_reinitialisation',
+                $request->getClientIp(),
+            ) === null) {
+                $recuperationMotDePasseService->demander($email);
+            }
 
             $this->addFlash(
                 'success',

@@ -17,6 +17,7 @@ use App\Service\AnnulationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\ExpirationPlanCombatEnLigneService;
 use App\Service\ExpirationPreparationCombatEnLigneService;
+use App\Service\LimitationActionsSensiblesService;
 use App\Service\PreparationCombatEnLigneService;
 use App\Service\ReglesMatchmakingService;
 use App\Service\RecompenseCombatService;
@@ -288,6 +289,7 @@ final class CombatEnLigneController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         PreparationCombatEnLigneService $preparationService,
+        LimitationActionsSensiblesService $limitationService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::JOUER,
@@ -314,6 +316,15 @@ final class CombatEnLigneController extends AbstractController
                 ],
                 Response::HTTP_FORBIDDEN,
             );
+        }
+
+        $retryAfter = $limitationService->consommer(
+            $utilisateur,
+            'combat_action',
+            $request->getClientIp(),
+        );
+        if ($retryAfter !== null) {
+            return $this->reponseTropDeTentatives($limitationService, $retryAfter);
         }
 
         $combatId = $combat->getId();
@@ -410,6 +421,7 @@ final class CombatEnLigneController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         SoumissionPlanCombatService $soumissionService,
+        LimitationActionsSensiblesService $limitationService,
         ResolutionRoundCombatEnLigneService $resolutionService,
         ExpirationPlanCombatEnLigneService $expirationPlanService,
         RecompenseCombatService $recompenseService,
@@ -483,6 +495,15 @@ final class CombatEnLigneController extends AbstractController
             );
         }
 
+        $retryAfter = $limitationService->consommer(
+            $utilisateur,
+            'combat_action',
+            $request->getClientIp(),
+        );
+        if ($retryAfter !== null) {
+            return $this->reponseTropDeTentatives($limitationService, $retryAfter);
+        }
+
         try {
             $soumissionService->soumettre(
                 $combatId,
@@ -539,6 +560,7 @@ final class CombatEnLigneController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         AbandonCombatService $abandonService,
+        LimitationActionsSensiblesService $limitationService,
         RecompenseCombatService $recompenseService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
@@ -566,6 +588,15 @@ final class CombatEnLigneController extends AbstractController
                 ],
                 Response::HTTP_FORBIDDEN,
             );
+        }
+
+        $retryAfter = $limitationService->consommer(
+            $utilisateur,
+            'combat_action',
+            $request->getClientIp(),
+        );
+        if ($retryAfter !== null) {
+            return $this->reponseTropDeTentatives($limitationService, $retryAfter);
         }
 
         $combatId = $combat->getId();
@@ -618,6 +649,7 @@ final class CombatEnLigneController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         AnnulationCombatEnLigneService $annulationService,
+        LimitationActionsSensiblesService $limitationService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             CombatVoter::JOUER,
@@ -644,6 +676,15 @@ final class CombatEnLigneController extends AbstractController
                 ],
                 Response::HTTP_FORBIDDEN,
             );
+        }
+
+        $retryAfter = $limitationService->consommer(
+            $utilisateur,
+            'combat_action',
+            $request->getClientIp(),
+        );
+        if ($retryAfter !== null) {
+            return $this->reponseTropDeTentatives($limitationService, $retryAfter);
         }
 
         $combatId = $combat->getId();
@@ -770,5 +811,21 @@ final class CombatEnLigneController extends AbstractController
         }
 
         return 'combat_'.$action.'_'.$combatId;
+    }
+
+    private function reponseTropDeTentatives(
+        LimitationActionsSensiblesService $limitationService,
+        \DateTimeImmutable $retryAfter,
+    ): JsonResponse {
+        $reponse = $this->json(
+            ['erreur' => 'Trop de tentatives. Réessaie dans quelques instants.'],
+            Response::HTTP_TOO_MANY_REQUESTS,
+        );
+        $reponse->headers->set(
+            'Retry-After',
+            (string) $limitationService->secondesAvant($retryAfter),
+        );
+
+        return $reponse;
     }
 }

@@ -8,6 +8,7 @@ use App\Repository\ClassementSaisonJoueurRepository;
 use App\Repository\CollectionJeuRepository;
 use App\Repository\UserRepository;
 use App\Service\DivisionClassementService;
+use App\Service\LimitationActionsSensiblesService;
 use App\Service\RecompenseClassementSaisonService;
 use App\Service\ScorePuissanceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -81,6 +82,7 @@ final class ClassementController extends AbstractController
         Request $request,
         CollectionJeu $saison,
         RecompenseClassementSaisonService $recompenseService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         if (!$this->isCsrfTokenValid(
             'recompense-saison-'.$saison->getId(),
@@ -93,6 +95,19 @@ final class ClassementController extends AbstractController
 
         if (!$joueur instanceof User) {
             throw $this->createAccessDeniedException();
+        }
+
+        if ($limitationService->consommer(
+            $joueur,
+            'recompense',
+            $request->getClientIp(),
+        ) !== null) {
+            $this->addFlash(
+                'error',
+                'Trop de tentatives de récupération. Réessaie dans quelques instants.',
+            );
+
+            return $this->redirectToRoute('app_recompenses');
         }
 
         $montant = $recompenseService->reclamer($joueur, $saison);

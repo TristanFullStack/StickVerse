@@ -185,7 +185,7 @@ export default class extends Controller {
         }
 
         this.titleTarget.textContent = payload.crate?.name ?? 'Ouverture de caisse';
-        this.statusTarget.textContent = 'Le rouleau ralentit…';
+        this.statusTarget.textContent = 'Le rouleau défile…';
         this.overlayTarget.classList.add(`crate-opening-overlay--r${gain.rarity}`);
         if (this.hasLoadingPhaseTarget) {
             this.loadingPhaseTarget.hidden = true;
@@ -204,11 +204,17 @@ export default class extends Controller {
         const styleTrack = window.getComputedStyle(this.trackTarget);
         const gap = Number.parseFloat(styleTrack.columnGap || styleTrack.gap || '0');
         const centreGagnant = indexGagnant * (carteWidth + gap) + carteWidth / 2;
-        const positionFinale = viewportWidth / 2 - centreGagnant;
+        // Le serveur a déjà choisi la carte gagnante. Cette variation ne fait
+        // que déplacer le marqueur dans cette même carte pour rendre chaque
+        // arrêt visuellement différent, sans jamais modifier le résultat.
+        const amplitudeArret = Math.max(8, carteWidth * 0.38);
+        const positionFinale = viewportWidth / 2
+            - centreGagnant
+            + this.decalageArretVisuel(amplitudeArret);
         const positionInitiale = viewportWidth * 0.82;
         const duree = window.matchMedia('(prefers-reduced-motion: reduce)').matches
             ? 900
-            : 4300 + Math.min(5, Number(gain.rarity ?? 1)) * 160;
+            : 6200 + Math.min(5, Number(gain.rarity ?? 1)) * 280;
 
         this.trackTarget.style.transform = `translate3d(${positionInitiale}px, 0, 0)`;
         this.trackTarget.getBoundingClientRect();
@@ -236,6 +242,24 @@ export default class extends Controller {
         this.restaurerBouton(Boolean(payload.canOpenAgain));
 
         return true;
+    }
+
+    decalageArretVisuel(amplitude) {
+        if (!Number.isFinite(amplitude) || amplitude <= 0) {
+            return 0;
+        }
+
+        // Utiliser l’aléa cryptographique évite de confondre cette variation
+        // purement visuelle avec le tirage, qui reste entièrement serveur.
+        if (window.crypto?.getRandomValues) {
+            const valeur = new Uint32Array(1);
+            window.crypto.getRandomValues(valeur);
+            const facteur = (valeur[0] / 0x100000000) * 2 - 1;
+
+            return facteur * amplitude;
+        }
+
+        return 0;
     }
 
     creerCarteRoulette(stickman, gagnante) {

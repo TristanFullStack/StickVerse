@@ -8,6 +8,7 @@ use App\Repository\CaisseRepository;
 use App\Repository\EquipeRepository;
 use App\Repository\InventaireRepository;
 use App\Service\InventaireCaisseService;
+use App\Service\LimitationActionsSensiblesService;
 use App\Service\ScorePuissanceService;
 use App\Service\VenteInventaireService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -82,10 +83,28 @@ final class InventaireController extends AbstractController
     }
 
     #[Route('/inventaire/vendre', name: 'app_inventaire_vendre', methods: ['POST'])]
-    public function vendre(Request $request, VenteInventaireService $venteInventaireService): Response
+    public function vendre(
+        Request $request,
+        VenteInventaireService $venteInventaireService,
+        LimitationActionsSensiblesService $limitationService,
+    ): Response
     {
         if (!$this->isCsrfTokenValid('vendre-inventaire', $request->getPayload()->getString('_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+        if ($limitationService->secondesAvant(
+            $limitationService->consommer(
+                $this->joueur(),
+                'inventaire_vente',
+                $request->getClientIp(),
+            ),
+        ) > 0) {
+            $this->addFlash(
+                'error',
+                'Trop de tentatives de vente. Réessaie dans quelques instants.',
+            );
+
+            return $this->redirectToRoute('app_inventaire', ['vente' => 1]);
         }
         $ventes = $request->getPayload()->all('ventes');
         if (!is_array($ventes)) {

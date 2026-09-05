@@ -11,6 +11,7 @@ use App\Repository\EquipeRepository;
 use App\Service\CreationCombatEnLigneService;
 use App\Service\ExpirationCombatEnAttenteService;
 use App\Service\LimitationTentativesInvitationCombatService;
+use App\Service\LimitationActionsSensiblesService;
 use App\Service\MatchmakingCombatEnLigneService;
 use App\Service\RejoindreCombatEnLigneService;
 use App\Service\ScorePuissanceService;
@@ -394,6 +395,7 @@ final class SalonCombatEnLigneController extends AbstractController
         EquipeRepository $equipeRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
         MatchmakingCombatEnLigneService $matchmakingService,
+        LimitationActionsSensiblesService $limitationService,
     ): JsonResponse {
         $utilisateur = $this->getUser();
 
@@ -412,6 +414,24 @@ final class SalonCombatEnLigneController extends AbstractController
                 ['erreur' => 'Le jeton CSRF de recherche est invalide.'],
                 Response::HTTP_FORBIDDEN,
             );
+        }
+
+        $retryAfter = $limitationService->consommer(
+            $utilisateur,
+            'matchmaking',
+            $request->getClientIp(),
+        );
+        if ($retryAfter !== null) {
+            $reponse = $this->json(
+                ['erreur' => 'Trop de recherches. Réessaie dans quelques instants.'],
+                Response::HTTP_TOO_MANY_REQUESTS,
+            );
+            $reponse->headers->set(
+                'Retry-After',
+                (string) $limitationService->secondesAvant($retryAfter),
+            );
+
+            return $reponse;
         }
 
         try {

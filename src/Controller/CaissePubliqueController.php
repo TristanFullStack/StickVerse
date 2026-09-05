@@ -10,6 +10,7 @@ use App\Exception\OuvertureCaisseImpossibleException;
 use App\Exception\SoldePiecesInsuffisantException;
 use App\Repository\CaisseRepository;
 use App\Service\BoutiqueService;
+use App\Service\LimitationActionsSensiblesService;
 use App\Service\OuvertureCaisseService;
 use App\Service\ScorePuissanceService;
 use DateTimeImmutable;
@@ -41,6 +42,7 @@ final class CaissePubliqueController extends AbstractController
         Request $request,
         Caisse $caisse,
         BoutiqueService $boutiqueService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         $this->verifierDisponibilite($caisse);
         if (!$this->isCsrfTokenValid(
@@ -62,6 +64,21 @@ final class CaissePubliqueController extends AbstractController
         );
         if ($quantite === false) {
             $this->addFlash('error', 'La quantité demandée est invalide.');
+            return $this->redirectToRoute('app_boutique');
+        }
+
+        if ($limitationService->secondesAvant(
+            $limitationService->consommer(
+                $joueur,
+                'caisse_achat',
+                $request->getClientIp(),
+            ),
+        ) > 0) {
+            $this->addFlash(
+                'error',
+                'Trop de tentatives d’achat. Réessaie dans quelques instants.',
+            );
+
             return $this->redirectToRoute('app_boutique');
         }
 
@@ -97,6 +114,7 @@ final class CaissePubliqueController extends AbstractController
         Caisse $caisse,
         OuvertureCaisseService $ouvertureCaisseService,
         ScorePuissanceService $scorePuissanceService,
+        LimitationActionsSensiblesService $limitationService,
     ): Response {
         $this->verifierDisponibilite($caisse);
         $requeteJson = $request->isXmlHttpRequest()
@@ -116,6 +134,29 @@ final class CaissePubliqueController extends AbstractController
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof User) {
             throw $this->createAccessDeniedException();
+        }
+
+        $retryAfter = $limitationService->consommer(
+            $utilisateur,
+            'caisse_ouverture',
+            $request->getClientIp(),
+        );
+        if ($retryAfter !== null) {
+            $secondes = $limitationService->secondesAvant($retryAfter);
+            if ($requeteJson) {
+                return $this->reponseJsonErreur(
+                    'Trop de tentatives d’ouverture. Réessaie dans quelques instants.',
+                    Response::HTTP_TOO_MANY_REQUESTS,
+                    $secondes,
+                );
+            }
+
+            $this->addFlash(
+                'error',
+                'Trop de tentatives d’ouverture. Réessaie dans quelques instants.',
+            );
+
+            return $this->redirectToRoute('app_caisse_publique');
         }
 
         try {
@@ -263,7 +304,11 @@ final class CaissePubliqueController extends AbstractController
         ];
     }
 
-    private function reponseJsonErreur(string $message, int $statut): JsonResponse
+    private function reponseJsonErreur(
+        string $message,
+        int $statut,
+        ?int $retryAfter = null,
+    ): JsonResponse
     {
         $reponse = $this->json([
             'ok' => false,
@@ -272,6 +317,9 @@ final class CaissePubliqueController extends AbstractController
         $reponse->setPrivate();
         $reponse->setMaxAge(0);
         $reponse->headers->addCacheControlDirective('no-store');
+        if ($retryAfter !== null) {
+            $reponse->headers->set('Retry-After', (string) $retryAfter);
+        }
 
         return $reponse;
     }
