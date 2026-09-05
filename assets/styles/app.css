@@ -2460,6 +2460,46 @@ body.crate-opening-active {
     box-shadow: 0 0 0 3px rgba(29, 109, 157, .16);
 }
 
+.auth-password-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-password-control input {
+    padding-right: 48px;
+}
+
+.auth-password-toggle {
+    position: absolute;
+    right: 7px;
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #426277;
+    cursor: pointer;
+}
+
+.auth-password-toggle:hover {
+    background: #e8f2f7;
+    color: #15577f;
+}
+
+.auth-password-toggle:focus-visible {
+    outline: 3px solid rgba(29, 109, 157, .28);
+    outline-offset: 1px;
+}
+
+.auth-password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
 .auth-field > small,
 .auth-field .form-help {
     color: #637582;
