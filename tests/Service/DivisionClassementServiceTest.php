@@ -13,11 +13,11 @@ final class DivisionClassementServiceTest extends TestCase
      */
     public static function fournirDivisions(): iterable
     {
-        yield 'bronze' => [999, 'Bronze', 100];
-        yield 'argent' => [1000, 'Argent', 200];
-        yield 'or' => [1200, 'Or', 350];
-        yield 'platine' => [1400, 'Platine', 550];
-        yield 'diamant' => [1600, 'Diamant', 800];
+        yield 'eclaireur' => [500, 'Éclaireur', 1000];
+        yield 'sentinelle' => [501, 'Sentinelle', 5000];
+        yield 'stratege' => [1001, 'Stratège', 10000];
+        yield 'champion' => [1501, 'Champion', 50000];
+        yield 'legende' => [2001, 'Légende', 100000];
     }
 
     #[DataProvider('fournirDivisions')]
@@ -36,11 +36,22 @@ final class DivisionClassementServiceTest extends TestCase
     public function testIndiqueLaProgressionVersLePalierSuivant(): void
     {
         $informations = (new DivisionClassementService())
-            ->informationsPour(1150);
+            ->informationsPour(1200);
 
-        self::assertSame('Argent', $informations['nom']);
-        self::assertSame(75, $informations['progression']);
-        self::assertSame(1200, $informations['prochainPalier']);
-        self::assertSame(50, $informations['pointsRestants']);
+        self::assertSame('Stratège', $informations['nom']);
+        self::assertSame(39, $informations['progression']);
+        self::assertSame(1501, $informations['prochainPalier']);
+        self::assertSame(301, $informations['pointsRestants']);
+    }
+
+    public function testLePalier2500TermineLaProgressionDeLaLegende(): void
+    {
+        $informations = (new DivisionClassementService())
+            ->informationsPour(2500);
+
+        self::assertSame('Légende', $informations['nom']);
+        self::assertSame(100, $informations['progression']);
+        self::assertNull($informations['prochainPalier']);
+        self::assertSame(0, $informations['pointsRestants']);
     }
 }

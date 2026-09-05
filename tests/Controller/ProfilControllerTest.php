@@ -3,6 +3,8 @@
 namespace App\Tests\Controller;
 
 use App\Entity\Combat;
+use App\Entity\ClassementSaisonJoueur;
+use App\Entity\CollectionJeu;
 use App\Entity\MouvementPieces;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -175,6 +177,35 @@ final class ProfilControllerTest extends WebTestCase
             'Administrateur',
         );
         self::assertSelectorExists('[data-navigation-admin]');
+    }
+
+    public function testAfficheLesTropheesSaisonniersDuJoueur(): void
+    {
+        $joueur = (new User())
+            ->setEmail('profil-trophee@example.com')
+            ->setPassword('mot-de-passe-test');
+        $saison = (new CollectionJeu())
+            ->setNom('Saison trophée')
+            ->setSlug('saison-trophee-'.bin2hex(random_bytes(3)))
+            ->setDescription('Saison utilisée pour le trophée du profil.')
+            ->setSaison(1)
+            ->setDateFin(new DateTimeImmutable('2026-08-31 23:59:59'));
+        $classement = (new ClassementSaisonJoueur($joueur, $saison))
+            ->enregistrerResultat(200, 1.0);
+
+        $this->entityManager->persist($joueur);
+        $this->entityManager->persist($saison);
+        $this->entityManager->persist($classement);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($joueur);
+        $this->client->request('GET', '/profil');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('[data-profile-trophees]', 'Saison 1');
+        self::assertSelectorTextContains('[data-profile-trophees]', 'Sentinelle');
+        self::assertSelectorTextContains('[data-profile-trophees]', '5000 pièces');
+        self::assertSelectorTextContains('[data-profile-trophees]', 'Saison terminée');
     }
 
     public function testReclameLaRecompenseQuotidienne(): void

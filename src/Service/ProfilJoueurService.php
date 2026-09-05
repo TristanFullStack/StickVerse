@@ -8,6 +8,7 @@ use App\Repository\CombatRepository;
 use App\Repository\EquipeRepository;
 use App\Repository\InventaireRepository;
 use App\Repository\MouvementPiecesRepository;
+use App\Repository\ClassementSaisonJoueurRepository;
 
 final readonly class ProfilJoueurService
 {
@@ -20,6 +21,8 @@ final readonly class ProfilJoueurService
         private ?ObjectifJoueurService $objectifJoueurService = null,
         private ?RecompenseHoraireService $recompenseHoraireService = null,
         private ?MissionsJoueurService $missionsJoueurService = null,
+        private ?ClassementSaisonJoueurRepository $classementRepository = null,
+        private ?DivisionClassementService $divisionService = null,
     ) {
     }
 
@@ -35,6 +38,7 @@ final readonly class ProfilJoueurService
      *         matchsNuls: int
      *     },
      *     mouvementsPieces: list<\App\Entity\MouvementPieces>
+     *     trophees: list<array{classement: \App\Entity\ClassementSaisonJoueur, saison: \App\Entity\CollectionJeu, elo: int, division: array<string, mixed>, recompense: int, terminee: bool}>
      *     recompenseQuotidienneDisponible: bool
      *     recompenseHoraireDisponible: int
      *     objectifs: list<array{id: string, libelle: string, description: string, progression: int, cible: int, recompense: int, reclame: bool, disponible: bool}>
@@ -43,6 +47,29 @@ final readonly class ProfilJoueurService
      */
     public function construire(User $joueur, ?int $saison = null): array
     {
+        $trophees = [];
+
+        if (
+            $this->classementRepository instanceof ClassementSaisonJoueurRepository
+            && $this->divisionService instanceof DivisionClassementService
+        ) {
+            foreach ($this->classementRepository->trouverPourJoueur($joueur) as $classement) {
+                $division = $this->divisionService->informationsPour(
+                    $classement->getElo(),
+                );
+                $trophees[] = [
+                    'classement' => $classement,
+                    'saison' => $classement->getSaison(),
+                    'elo' => $classement->getElo(),
+                    'division' => $division,
+                    'recompense' => $division['recompense'],
+                    'terminee' => $classement->getSaison()->estTermineeA(
+                        new \DateTimeImmutable(),
+                    ),
+                ];
+            }
+        }
+
         return [
             'nombreStickmen' => $this->inventaireRepository->count([
                 'utilisateur' => $joueur,
@@ -68,6 +95,7 @@ final readonly class ProfilJoueurService
                 'quotidiennes' => [],
                 'hebdomadaires' => [],
             ],
+            'trophees' => $trophees,
         ];
     }
 }

@@ -16,7 +16,42 @@
         Compare le classement de la saison et la progression générale des joueurs.
     </p>
 
-    <section class="dashboard-section" aria-labelledby="classement-saison-titre">
+    <section class="dashboard-section classement-general" aria-labelledby="classement-global-titre">
+        <h2 id="classement-global-titre">Classement général</h2>
+
+        <p>L’ELO général conserve les résultats de toutes les saisons.</p>
+
+        {% if joueurs is empty %}
+            <p>Aucun joueur inscrit pour le moment.</p>
+        {% else %}
+            <div class="classement-table-scroll">
+                <table data-classement>
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Pseudo</th>
+                            <th>ELO général</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for joueur in joueurs %}
+                            <tr
+                                {% if app.user and app.user.id == joueur.id %}
+                                    data-classement-joueur
+                                {% endif %}
+                            >
+                                <td>{{ loop.index }}</td>
+                                <td>{{ joueur.pseudo }}</td>
+                                <td>{{ joueur.elo }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="dashboard-section classement-saison" aria-labelledby="classement-saison-titre">
         <h2 id="classement-saison-titre">
             {% if saisonSelectionnee %}
                 Saison {{ saisonSelectionnee.saison }} — {{ saisonSelectionnee.nom }}
@@ -90,72 +125,119 @@
                 <a href="{{ path('app_combats_en_ligne') }}">Lancer un combat public</a>
             </div>
         {% else %}
-            <table data-classement-saison>
-                <thead>
-                    <tr>
-                        <th>Rang</th>
-                        <th>Pseudo</th>
-                        <th>ELO saison</th>
-                        <th>Division</th>
-                        <th>Parties</th>
-                        <th>Victoires</th>
-                        <th>Défaites</th>
-                        <th>Nuls</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for classement in classementSaison %}
-                        {% set division = divisionsSaison[classement.id] %}
-                        <tr
-                            {% if app.user and app.user.id == classement.joueur.id %}
-                                data-classement-joueur
-                            {% endif %}
-                        >
-                            <td>{{ loop.index }}</td>
-                            <td>{{ classement.joueur.pseudo }}</td>
-                            <td>{{ classement.elo }}</td>
-                            <td data-division>{{ division.nom }}</td>
-                            <td>{{ classement.parties }}</td>
-                            <td>{{ classement.victoires }}</td>
-                            <td>{{ classement.defaites }}</td>
-                            <td>{{ classement.matchsNuls }}</td>
+            <div class="classement-table-scroll">
+                <table data-classement-saison>
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Pseudo</th>
+                            <th>ELO saison</th>
+                            <th>Division</th>
+                            <th>Parties</th>
+                            <th>Victoires</th>
+                            <th>Défaites</th>
+                            <th>Nuls</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for classement in classementSaison %}
+                            {% set division = divisionsSaison[classement.id] %}
+                            <tr
+                                {% if app.user and app.user.id == classement.joueur.id %}
+                                    data-classement-joueur
+                                {% endif %}
+                            >
+                                <td>{{ loop.index }}</td>
+                                <td>{{ classement.joueur.pseudo }}</td>
+                                <td>{{ classement.elo }}</td>
+                                <td data-division>{{ division.nom }}</td>
+                                <td>{{ classement.parties }}</td>
+                                <td>{{ classement.victoires }}</td>
+                                <td>{{ classement.defaites }}</td>
+                                <td>{{ classement.matchsNuls }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </section>
 
-    <section class="dashboard-section" aria-labelledby="classement-global-titre">
-        <h2 id="classement-global-titre">Classement général</h2>
+    <section class="dashboard-section classement-recompenses" aria-labelledby="recompenses-classement-titre">
+        <h2 id="recompenses-classement-titre">Récompenses de fin de saison</h2>
 
-        <p>L’ELO général conserve les résultats de toutes les saisons.</p>
+        <p>
+            Ces récompenses sont versées une seule fois après la fin de la saison et restent
+            conservées dans ton historique de trophées.
+        </p>
+        <p>Au-delà de 2500 ELO, tu restes dans la division Légende et conserves le barème maximal.</p>
 
-        {% if joueurs is empty %}
-            <p>Aucun joueur inscrit pour le moment.</p>
-        {% else %}
-            <table data-classement>
+        <div class="classement-table-scroll">
+            <table data-recompenses-divisions>
                 <thead>
                     <tr>
-                        <th>Rang</th>
-                        <th>Pseudo</th>
-                        <th>ELO général</th>
+                        <th>Division</th>
+                        <th>Palier ELO</th>
+                        <th>Récompense</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for joueur in joueurs %}
-                        <tr
-                            {% if app.user and app.user.id == joueur.id %}
-                                data-classement-joueur
-                            {% endif %}
-                        >
-                            <td>{{ loop.index }}</td>
-                            <td>{{ joueur.pseudo }}</td>
-                            <td>{{ joueur.elo }}</td>
+                    {% for division in divisions %}
+                        <tr>
+                            <td>{{ division.nom }}</td>
+                            <td>
+                                {{ division.minimum }}{% if division.maximum is not null %} – {{ division.maximum }}{% else %} et plus{% endif %}
+                            </td>
+                            <td><strong>{{ division.recompense }} pièces</strong></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </section>
+
+    <section class="dashboard-section classement-guide" aria-labelledby="classement-guide-titre">
+        <h2 id="classement-guide-titre">Comprendre l’ELO, le classement et la puissance</h2>
+
+        <p>
+            L’ELO mesure ton niveau en combats publics classés. Une victoire ou une défaite le fait
+            évoluer selon la différence d’ELO et de puissance entre les deux équipes.
+            Les combats privés n’ont aucun effet sur l’ELO.
+        </p>
+        <p>
+            Ton rang de saison est calculé avec ton ELO saisonnier : il détermine ta division,
+            ta position dans le tableau et la récompense de fin de saison associée.
+        </p>
+
+        <h3>Puissance maximale de l’équipe</h3>
+        <p>
+            Pour garder des parties équilibrées, la puissance totale de ton équipe est limitée
+            selon ton ELO actuel.
+        </p>
+        {% if limitePuissanceJoueur is not null %}
+            <p data-classement-limite-joueur>
+                Avec ton ELO actuel, tu peux composer une équipe jusqu’à
+                <strong>{{ limitePuissanceJoueur }} puissance d’équipe</strong>.
+            </p>
         {% endif %}
+
+        <div class="classement-table-scroll">
+            <table data-classement-puissance>
+                <thead>
+                    <tr>
+                        <th>Palier ELO</th>
+                        <th>Puissance maximale</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for palier in paliersPuissance %}
+                        <tr>
+                            <td>{{ palier.libelle }}</td>
+                            <td>{{ palier.puissance }} puissance</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </section>
 {% endblock %}

@@ -108,5 +108,6 @@ final class HomeControllerTest extends WebTestCase
         self::assertSelectorExists('a[href="/ma-collection"]');
         self::assertSelectorExists('a[href="/equipe"]');
         self::assertSelectorExists('a[href="/combats"]');
+        self::assertSelectorExists('a[href="/classement"]');
     }
 }

@@ -9,6 +9,7 @@ use App\Repository\CollectionJeuRepository;
 use App\Repository\UserRepository;
 use App\Service\DivisionClassementService;
 use App\Service\RecompenseClassementSaisonService;
+use App\Service\ScorePuissanceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,6 +26,7 @@ final class ClassementController extends AbstractController
         ClassementSaisonJoueurRepository $classementSaisonRepository,
         DivisionClassementService $divisionService,
         RecompenseClassementSaisonService $recompenseService,
+        ScorePuissanceService $scorePuissanceService,
     ): Response {
         $saisonActive = $collectionRepository->trouverSaisonActive();
         $numeroSaison = $request->query->getInt('saison');
@@ -65,6 +67,11 @@ final class ClassementController extends AbstractController
             'classementJoueur' => $classementJoueur,
             'recompenseJoueurDisponible' => $classementJoueur !== null
                 && $recompenseService->estDisponible($classementJoueur),
+            'divisions' => $divisionService->definitions(),
+            'paliersPuissance' => $scorePuissanceService->paliersLimiteEquipe(),
+            'limitePuissanceJoueur' => $joueur instanceof User
+                ? $scorePuissanceService->limiteEquipePourElo($joueur->getElo())
+                : null,
         ]);
     }
 

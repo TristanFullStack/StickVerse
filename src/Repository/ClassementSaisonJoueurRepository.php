@@ -37,6 +37,22 @@ class ClassementSaisonJoueurRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<ClassementSaisonJoueur>
+     */
+    public function trouverPourJoueur(User $joueur): array
+    {
+        return $this->createQueryBuilder('classement')
+            ->addSelect('saison')
+            ->innerJoin('classement.saison', 'saison')
+            ->andWhere('classement.joueur = :joueur')
+            ->setParameter('joueur', $joueur)
+            ->orderBy('saison.saison', 'DESC')
+            ->addOrderBy('saison.dateFin', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function trouverAvecVerrouEcriture(
         User $joueur,
         CollectionJeu $saison,

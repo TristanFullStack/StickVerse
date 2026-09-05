@@ -64,6 +64,14 @@
                         </a>
                     {% endif %}
                 </article>
+
+                <article class="dashboard-card">
+                    <h3>Classement ELO</h3>
+                    <p>{{ app.user.elo }} ELO</p>
+                    <a href="{{ path('app_classement') }}">
+                        Voir le classement
+                    </a>
+                </article>
             </div>
         </section>
 
@@ -73,6 +81,7 @@
                 <li><a href="{{ path('app_inventaire') }}">Ouvrir une caisse depuis l’inventaire</a></li>
                 <li><a href="{{ path('app_wiki') }}">Consulter le wiki</a></li>
                 <li><a href="{{ path('app_combats_en_ligne') }}">Accéder aux combats</a></li>
+                <li><a href="{{ path('app_classement') }}">Consulter le classement ELO</a></li>
             </ul>
         </section>
 

@@ -87,6 +87,32 @@
         <p><a href="{{ path('app_modifier_mot_de_passe') }}">Modifier mon mot de passe</a></p>
     </section>
 
+    <section class="profile-section profile-trophies" aria-labelledby="trophees-titre" data-profile-trophees>
+        <h2 id="trophees-titre">Trophées saisonniers</h2>
+        <p>
+            Chaque saison à laquelle tu participes laisse une trace sur ton profil.
+            Tes trophées conservent la division atteinte et la récompense associée.
+        </p>
+        {% if profil.trophees is empty %}
+            <p data-profile-trophees-vide>Aucun trophée pour le moment. Participe à un combat public classé pour commencer.</p>
+        {% else %}
+            <div class="profile-trophy-grid">
+                {% for trophee in profil.trophees %}
+                    <article class="profile-trophy" data-profile-trophee>
+                        <div class="profile-trophy-icon" aria-hidden="true">🏆</div>
+                        <div>
+                            <h3>Saison {{ trophee.saison.saison }} — {{ trophee.division.nom }}</h3>
+                            <p>{{ trophee.elo }} ELO atteint</p>
+                            <p>Récompense : <strong>{{ trophee.recompense }} pièces</strong></p>
+                            <small>{{ trophee.terminee ? 'Saison terminée' : 'Saison en cours' }}</small>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            <p class="profile-trophy-note">Les trophées pourront être équipés sur ton profil dans une prochaine évolution.</p>
+        {% endif %}
+    </section>
+
     {% if false %}
     <section class="profile-section" aria-labelledby="mouvements-pieces-titre">
         <h2 id="mouvements-pieces-titre">Mouvements de pièces</h2>

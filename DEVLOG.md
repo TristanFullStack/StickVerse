@@ -7888,8 +7888,6 @@ StickVerse possède maintenant une progression classée lisible et motivante. Le
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 ## J86 — Enrichir les cartes et simplifier l’accès aux fiches Wiki
 
 ### Objectif
@@ -8603,6 +8601,15 @@ chaque étape de préparation d’un tour immédiatement compréhensible.
 - Templates Twig validés avec le linter Symfony.
 - Tests ciblés du salon de combat : 6 tests, 192 assertions réussis.
 - Diff Git vérifié sans erreur de format.
+
+## J100 — Refonte de la page Classement et des informations ELO
+
+- Réorganisation de la page dans un parcours plus lisible : classement général, classement de la saison, récompenses de fin de saison, puis guide explicatif.
+- Mise en avant du classement général avec rappel de l’ELO global.
+- Transformation des classements, du barème des récompenses et des paliers de puissance en tableaux structurés.
+- Ajout d’en-têtes contrastés, de lignes alternées, de bordures et d’un défilement horizontal adapté aux petits écrans.
+- Conservation des divisions Éclaireur, Sentinelle, Stratège, Champion et Légende ainsi que leurs récompenses.
+- Validation Twig et suite complète : 284 tests réussis, 2135 assertions.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

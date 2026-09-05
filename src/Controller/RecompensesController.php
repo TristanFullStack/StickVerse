@@ -49,6 +49,7 @@ final class RecompensesController extends AbstractController
         return $this->render('recompenses/index.html.twig', [
             'profil' => $profilJoueurService->construire($joueur),
             'recompensesSaison' => $recompensesSaison,
+            'divisions' => $divisionService->definitions(),
         ]);
     }
 }

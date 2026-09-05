@@ -9,36 +9,50 @@ final class DivisionClassementService
      */
     private const DIVISIONS = [
         [
-            'nom' => 'Bronze',
+            'nom' => 'Éclaireur',
             'minimum' => 0,
-            'maximum' => 999,
-            'recompense' => 100,
+            'maximum' => 500,
+            'recompense' => 1000,
         ],
         [
-            'nom' => 'Argent',
-            'minimum' => 1000,
-            'maximum' => 1199,
-            'recompense' => 200,
+            'nom' => 'Sentinelle',
+            'minimum' => 501,
+            'maximum' => 1000,
+            'recompense' => 5000,
         ],
         [
-            'nom' => 'Or',
-            'minimum' => 1200,
-            'maximum' => 1399,
-            'recompense' => 350,
+            'nom' => 'Stratège',
+            'minimum' => 1001,
+            'maximum' => 1500,
+            'recompense' => 10000,
         ],
         [
-            'nom' => 'Platine',
-            'minimum' => 1400,
-            'maximum' => 1599,
-            'recompense' => 550,
+            'nom' => 'Champion',
+            'minimum' => 1501,
+            'maximum' => 2000,
+            'recompense' => 50000,
         ],
         [
-            'nom' => 'Diamant',
-            'minimum' => 1600,
-            'maximum' => null,
-            'recompense' => 800,
+            'nom' => 'Légende',
+            'minimum' => 2001,
+            'maximum' => 2500,
+            'recompense' => 100000,
         ],
     ];
+
+    /**
+     * Retourne le barème public des divisions et des récompenses de fin de
+     * saison. Les copies évitent qu’un appelant ne modifie la configuration.
+     *
+     * @return list<array{nom: string, minimum: int, maximum: ?int, recompense: int}>
+     */
+    public function definitions(): array
+    {
+        return array_map(
+            static fn (array $division): array => $division,
+            self::DIVISIONS,
+        );
+    }
 
     /**
      * @return array{nom: string, minimum: int, maximum: ?int, recompense: int, progression: int, prochainPalier: ?int, pointsRestants: int}
@@ -55,6 +69,7 @@ final class DivisionClassementService
         }
 
         $prochainPalier = $division['maximum'] === null
+            || $elo >= $division['maximum']
             ? null
             : $division['maximum'] + 1;
         $progression = $prochainPalier === null

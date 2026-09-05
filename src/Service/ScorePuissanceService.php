@@ -158,6 +158,47 @@ final class ScorePuissanceService
         return max(500, intdiv($elo, 500) * 500);
     }
 
+    /**
+     * Paliers affichables expliquant la puissance maximale d’une équipe.
+     *
+     * @return list<array{libelle: string, minimum: int, maximum: int|null, puissance: int}>
+     */
+    public function paliersLimiteEquipe(): array
+    {
+        return [
+            [
+                'libelle' => '0 à 999 ELO',
+                'minimum' => 0,
+                'maximum' => 999,
+                'puissance' => 500,
+            ],
+            [
+                'libelle' => '1000 à 1499 ELO',
+                'minimum' => 1000,
+                'maximum' => 1499,
+                'puissance' => 1000,
+            ],
+            [
+                'libelle' => '1500 à 1999 ELO',
+                'minimum' => 1500,
+                'maximum' => 1999,
+                'puissance' => 1500,
+            ],
+            [
+                'libelle' => '2000 à 2499 ELO',
+                'minimum' => 2000,
+                'maximum' => 2499,
+                'puissance' => 2000,
+            ],
+            [
+                'libelle' => '2500 ELO et plus',
+                'minimum' => 2500,
+                'maximum' => null,
+                'puissance' => 2500,
+            ],
+        ];
+    }
+
     public function calculerCombatPourJoueur(
         Combat $combat,
         User $joueur,

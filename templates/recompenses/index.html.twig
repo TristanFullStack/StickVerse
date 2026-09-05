@@ -38,6 +38,22 @@
     <section class="profile-section reward-section"><h2>Objectifs permanents</h2>
         {% for objectif in profil.objectifs %}<div class="reward-item" data-profile-objectif="{{ objectif.id }}"><strong>{{ objectif.libelle }}</strong> — {{ objectif.description }} ({{ objectif.progression }}/{{ objectif.cible }}) — {{ objectif.recompense }} pièces {% if objectif.reclame %}<span>Réclamé</span>{% elseif objectif.disponible %}<form method="post" action="{{ path('app_objectif_reclamer', {objectif:objectif.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('objectif-' ~ objectif.id) }}"><button type="submit">Réclamer</button></form>{% endif %}</div>{% else %}<p>Aucun objectif.</p>{% endfor %}
     </section>
+    <section class="profile-section reward-section" aria-labelledby="barreme-saison-titre">
+        <h2 id="barreme-saison-titre">Barème des récompenses de saison</h2>
+        <p>Ta division saisonnière fixe la récompense versée à la fin de chaque saison.</p>
+        <table data-recompenses-divisions>
+            <thead><tr><th>Division</th><th>ELO</th><th>Récompense</th></tr></thead>
+            <tbody>
+                {% for division in divisions %}
+                    <tr>
+                        <td>{{ division.nom }}</td>
+                        <td>{{ division.minimum }}{% if division.maximum is not null %} – {{ division.maximum }}{% else %}+{% endif %}</td>
+                        <td><strong>{{ division.recompense }} pièces</strong></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
     <section class="profile-section reward-section"><h2>Récompenses de saison</h2>
         {% for recompense in recompensesSaison %}
             <div class="reward-item"><strong>Saison {{ recompense.saison.saison }} — {{ recompense.division }}</strong> — {{ recompense.montant }} pièces

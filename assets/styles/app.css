@@ -827,6 +827,36 @@ progress {
     margin-left: 0;
 }
 
+.profile-trophy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+}
+
+.profile-trophy {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #b8942e;
+    background: linear-gradient(135deg, #fff8d8, #fff);
+}
+
+.profile-trophy h3,
+.profile-trophy p {
+    margin: 0 0 5px;
+}
+
+.profile-trophy-icon {
+    font-size: 30px;
+    line-height: 1;
+}
+
+.profile-trophy-note {
+    color: #555;
+    font-size: 13px;
+}
+
 .collection-group {
     margin-bottom: 20px;
     border: 1px solid #999;
@@ -873,20 +903,73 @@ table {
     max-width: 100%;
 }
 
-[data-classement] {
+.classement-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+[data-classement],
+[data-classement-saison],
+[data-recompenses-divisions],
+[data-classement-puissance] {
     width: 100%;
     border-collapse: collapse;
+    margin: 16px 0 0;
+    background: #fff;
 }
 
 [data-classement] th,
-[data-classement] td {
-    padding: 6px;
-    border: 1px solid #999;
+[data-classement] td,
+[data-classement-saison] th,
+[data-classement-saison] td,
+[data-recompenses-divisions] th,
+[data-recompenses-divisions] td,
+[data-classement-puissance] th,
+[data-classement-puissance] td {
+    padding: 10px 12px;
+    border: 1px solid #b7c1cc;
     text-align: left;
+    white-space: nowrap;
+}
+
+[data-classement] thead th,
+[data-classement-saison] thead th,
+[data-recompenses-divisions] thead th,
+[data-classement-puissance] thead th {
+    background: #0d2638;
+    color: #fff;
+    font-weight: bold;
+}
+
+[data-classement] tbody tr:nth-child(even),
+[data-classement-saison] tbody tr:nth-child(even),
+[data-recompenses-divisions] tbody tr:nth-child(even),
+[data-classement-puissance] tbody tr:nth-child(even) {
+    background: #f5f8fb;
 }
 
 [data-classement-joueur] {
-    background: #eee;
+    background: #dff3ff !important;
+    font-weight: bold;
+}
+
+.classement-saison nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.classement-saison nav a {
+    padding: 6px 10px;
+    border: 1px solid #999;
+    background: #f5f5f5;
+    text-decoration: none;
+}
+
+.classement-saison nav a[aria-current="page"] {
+    background: #ddd;
     font-weight: bold;
 }
 
