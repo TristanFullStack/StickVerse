@@ -8671,6 +8671,21 @@ de compte.
 - Templates Twig, XLIFF et YAML validés.
 - Suite complète PHPUnit : 289 tests réussis, 2 171 assertions.
 
+## J104 — Fiabiliser l’ouverture animée des caisses
+
+### Correctif
+
+- Enregistrement explicite des contrôleurs Stimulus métier, dont la roulette
+  d’ouverture des caisses, pour éviter qu’un formulaire ne retombe sur sa
+  soumission HTML classique après un déploiement ou un cache d’assets.
+- Le bouton « Ouvrir » intercepte désormais toujours la requête et conserve la
+  séquence sécurisée : réponse serveur, rouleau, puis révélation de la carte.
+
+### Vérifications
+
+- Linter Twig et compilation des assets de production validés.
+- Suite complète PHPUnit : 289 tests réussis, 2 173 assertions.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
