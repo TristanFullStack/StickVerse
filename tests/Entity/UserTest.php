@@ -51,4 +51,25 @@ final class UserTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $joueur->debiterPieces(-1);
     }
+
+    public function testConfirmationEmailGenerePuisEffaceLeJeton(): void
+    {
+        $joueur = new User();
+        $expiration = new \DateTimeImmutable('+1 day');
+
+        $joueur->preparerVerificationEmail('jeton-test', $expiration);
+
+        self::assertFalse($joueur->isEmailVerifie());
+        self::assertSame(
+            hash('sha256', 'jeton-test'),
+            $joueur->getJetonVerificationEmailHash(),
+        );
+        self::assertSame($expiration, $joueur->getDateExpirationVerificationEmail());
+
+        $joueur->confirmerEmail();
+
+        self::assertTrue($joueur->isEmailVerifie());
+        self::assertNull($joueur->getJetonVerificationEmailHash());
+        self::assertNull($joueur->getDateExpirationVerificationEmail());
+    }
 }

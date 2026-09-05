@@ -42,3 +42,8 @@ framework:
             policy: fixed_window
             limit: 5
             interval: '1 hour'
+
+        verification_email:
+            policy: fixed_window
+            limit: 3
+            interval: '1 hour'

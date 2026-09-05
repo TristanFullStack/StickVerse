@@ -8624,6 +8624,27 @@ chaque étape de préparation d’un tour immédiatement compréhensible.
 
 La configuration d’hébergement reste à appliquer lors de la mise en ligne : environnement prod, HTTPS, SMTP, sauvegardes, firewall et migration Doctrine.
 
+## J102 - Sécurisation des comptes et déploiement automatique
+
+### Objectif
+Renforcer la sécurité des comptes joueurs et préparer la mise à jour automatique du site après chaque push sur GitHub.
+
+### Travail réalisé
+- Ajout de la confirmation d'adresse e-mail à l'inscription avec un lien valable 24 heures.
+- Blocage de la connexion tant que l'adresse e-mail n'est pas confirmée.
+- Ajout du renvoi d'e-mail de confirmation depuis la page de connexion.
+- Ajout d'une limitation anti-abus sur les renvois d'e-mails.
+- Ajout de la suppression définitive du compte depuis le profil, protégée par le mot de passe et une confirmation explicite.
+- Sécurisation des relations Doctrine afin de supprimer les données personnelles associées sans laisser de références orphelines.
+- Ajout des migrations pour les champs de vérification et les contraintes de suppression.
+- Ajout d'un workflow GitHub Actions qui récupère le code, applique les migrations, reconstruit les assets et recharge PHP-FPM après chaque push sur `main`.
+- Ajout de la documentation de configuration des secrets SSH et du transport SMTP.
+- Ajout de tests unitaires pour le cycle de vérification e-mail.
+
+### Points à configurer en production
+- Renseigner un vrai `MAILER_DSN` et une adresse `MAILER_FROM` sur le VPS pour que les e-mails soient envoyés.
+- Ajouter les secrets SSH du workflow dans GitHub avant d'activer le déploiement automatique.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

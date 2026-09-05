@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmation d’adresse e-mail — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Confirmation d’adresse e-mail</h1>
+
+    {% if valide %}
+        <p class="alert-success">Ton adresse e-mail est confirmée.</p>
+        <p><a href="{{ path('app_home') }}">Accéder à StickVerse</a></p>
+    {% else %}
+        <p class="alert-danger">
+            Ce lien de confirmation est invalide ou a expiré.
+        </p>
+        <p><a href="{{ path('app_login') }}">Retour à la connexion</a></p>
+    {% endif %}
+{% endblock %}

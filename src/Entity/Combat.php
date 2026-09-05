@@ -41,14 +41,14 @@ class Combat
     private ?int $id = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(
         message: 'Le combat doit posséder un joueur 1.'
     )]
     private User $joueur1;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $joueur2 = null;
 
     #[ORM\Column(length: 30)]
@@ -65,7 +65,7 @@ class Combat
     private int $numeroRound = 1;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $gagnant = null;
 
     #[ORM\Column(nullable: true)]

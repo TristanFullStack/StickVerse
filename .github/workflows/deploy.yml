@@ -1,0 +1,45 @@
+name: Déployer StickVerse
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+concurrency:
+    group: production
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Préparer la clé SSH
+              uses: webfactory/ssh-agent@v0.9.0
+              with:
+                  ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+            - name: Vérifier l’empreinte du serveur
+              env:
+                  DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+              run: |
+                  mkdir -p ~/.ssh
+                  printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+                  chmod 600 ~/.ssh/known_hosts
+
+            - name: Déployer en production
+              env:
+                  DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+                  DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+              run: |
+                  ssh "$DEPLOY_USER@$DEPLOY_HOST" 'bash -se' <<'REMOTE'
+                  set -e
+                  cd /var/www/stickverse
+                  git pull --ff-only origin main
+                  composer install --no-dev --optimize-autoloader --no-interaction
+                  sudo -u www-data php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+                  sudo -u www-data php bin/console importmap:install --env=prod
+                  sudo -u www-data php bin/console asset-map:compile --env=prod
+                  sudo -u www-data php bin/console cache:clear --env=prod
+                  sudo systemctl reload php8.5-fpm
+                  REMOTE

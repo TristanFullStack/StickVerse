@@ -29,6 +29,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         );
     }
 
+    public function trouverParJetonVerificationEmail(string $jeton): ?User
+    {
+        return $this->findOneBy([
+            'jetonVerificationEmailHash' => hash('sha256', $jeton),
+        ]);
+    }
+
     /**
      * @return list<User>
      */

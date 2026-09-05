@@ -5,9 +5,9 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Service\InitialisationNouveauJoueurService;
+use App\Service\VerificationEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -21,7 +21,7 @@ class RegistrationController extends AbstractController
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $entityManager,
         InitialisationNouveauJoueurService $initialisationNouveauJoueur,
-        Security $security,
+        VerificationEmailService $verificationEmailService,
     ): Response {
         $user = (new User())->setPseudo('');
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -32,19 +32,19 @@ class RegistrationController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
 
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+            $user->setEmailVerifie(false);
 
             $entityManager->persist($user);
             $initialisationNouveauJoueur->initialiser($user);
             $entityManager->flush();
-
-            $security->login($user);
+            $verificationEmailService->envoyer($user);
 
             $this->addFlash(
                 'success',
-                'Bienvenue dans StickVerse ! Ton pack de départ est prêt.'
+                'Compte créé ! Consulte ton adresse e-mail pour confirmer ton compte avant de te connecter.',
             );
 
-            return $this->redirectToRoute('app_collection');
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('registration/register.html.twig', [

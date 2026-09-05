@@ -45,4 +45,24 @@
             </a>
         </p>
     </form>
+
+    <details>
+        <summary>Renvoyer l’e-mail de confirmation</summary>
+        <form method="post" action="{{ path('app_verification_email_renvoyer') }}">
+            <label for="verification-email">Adresse e-mail</label>
+            <input
+                type="email"
+                name="email"
+                id="verification-email"
+                autocomplete="email"
+                required
+            >
+            <input
+                type="hidden"
+                name="_token"
+                value="{{ csrf_token('verification-email-renvoi') }}"
+            >
+            <button type="submit">Renvoyer</button>
+        </form>
+    </details>
 {% endblock %}

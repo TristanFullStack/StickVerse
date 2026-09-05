@@ -23,7 +23,7 @@ class Equipe
     private ?string $nom = null;
 
     #[ORM\ManyToOne(inversedBy: 'equipes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $utilisateur = null;
 
     #[ORM\ManyToOne]

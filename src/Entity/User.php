@@ -14,6 +14,10 @@ use InvalidArgumentException;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PSEUDO', fields: ['pseudo'])]
+#[ORM\UniqueConstraint(
+    name: 'UNIQ_USER_VERIFICATION_EMAIL_HASH',
+    fields: ['jetonVerificationEmailHash'],
+)]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est déjà utilisé.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -29,6 +33,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     private ?string $email = null;
+
+    #[ORM\Column(options: ['default' => true])]
+    private bool $emailVerifie = true;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $jetonVerificationEmailHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $dateExpirationVerificationEmail = null;
 
     #[ORM\Column(length: 24)]
     private string $pseudo;
@@ -114,6 +127,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function isEmailVerifie(): bool
+    {
+        return $this->emailVerifie;
+    }
+
+    public function setEmailVerifie(bool $emailVerifie): static
+    {
+        $this->emailVerifie = $emailVerifie;
+
+        return $this;
+    }
+
+    public function preparerVerificationEmail(
+        string $jeton,
+        \DateTimeImmutable $expiration,
+    ): static {
+        $this->emailVerifie = false;
+        $this->jetonVerificationEmailHash = hash('sha256', $jeton);
+        $this->dateExpirationVerificationEmail = $expiration;
+
+        return $this;
+    }
+
+    public function getJetonVerificationEmailHash(): ?string
+    {
+        return $this->jetonVerificationEmailHash;
+    }
+
+    public function getDateExpirationVerificationEmail(): ?\DateTimeImmutable
+    {
+        return $this->dateExpirationVerificationEmail;
+    }
+
+    public function confirmerEmail(): static
+    {
+        $this->emailVerifie = true;
+        $this->jetonVerificationEmailHash = null;
+        $this->dateExpirationVerificationEmail = null;
 
         return $this;
     }

@@ -22,6 +22,7 @@ final readonly class LimitationActionsSensiblesService
         private RateLimiterFactoryInterface $matchmakingLimiter,
         private RateLimiterFactoryInterface $combatActionLimiter,
         private RateLimiterFactoryInterface $demandeReinitialisationLimiter,
+        private RateLimiterFactoryInterface $verificationEmailLimiter,
     ) {
     }
 
@@ -78,6 +79,7 @@ final readonly class LimitationActionsSensiblesService
             'matchmaking' => $this->matchmakingLimiter,
             'combat_action' => $this->combatActionLimiter,
             'demande_reinitialisation' => $this->demandeReinitialisationLimiter,
+            'verification_email' => $this->verificationEmailLimiter,
             default => throw new \InvalidArgumentException('Limiteur inconnu : '.$action),
         };
     }

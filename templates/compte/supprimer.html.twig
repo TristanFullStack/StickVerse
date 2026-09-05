@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Supprimer mon compte — StickVerse{% endblock %}
+
+{% block body %}
+    <h1>Supprimer mon compte</h1>
+
+    <p class="alert-danger">
+        Cette action supprime définitivement ton compte, tes équipes, ton inventaire
+        et ton historique personnel. Elle est irréversible.
+    </p>
+
+    {{ form_start(form) }}
+        {{ form_row(form.motDePasse) }}
+        {{ form_row(form.confirmation) }}
+        <button type="submit">Supprimer définitivement mon compte</button>
+        <a href="{{ path('app_profil') }}">Annuler</a>
+    {{ form_end(form) }}
+{% endblock %}

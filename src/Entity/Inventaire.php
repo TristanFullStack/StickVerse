@@ -28,7 +28,7 @@ class Inventaire
     private ?int $quantite = 1;
 
     #[ORM\ManyToOne(inversedBy: 'inventaires')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $utilisateur = null;
 
     #[ORM\ManyToOne]
