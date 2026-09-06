@@ -8795,6 +8795,16 @@ de compte.
   sur les petits écrans, tout en gardant le focus mobile discret sur les
   illustrations.
 
+## J112 — Grille combat mobile compacte 2×2
+
+- Chaque camp reprend une grille compacte de quatre cartes en 2×2 : deux
+  cartes alliées à gauche et deux cartes adverses à droite sur chaque ligne.
+- Les dimensions de l’image, des PV, des statistiques et des passifs sont
+  resserrées pour limiter fortement le défilement sans supprimer les
+  informations essentielles.
+- Le panneau tactique et la validation restent placés sous les deux grilles,
+  avec le bouton d’envoi accessible en bas à droite.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
