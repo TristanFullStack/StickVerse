@@ -8724,7 +8724,7 @@ de compte.
 - Ajout de l’option « Me connecter automatiquement après confirmation de mon e-mail » : préférence conservée côté serveur, consommée une seule fois après validation, sans mot de passe dans le navigateur.
 - Après confirmation manuelle, redirection vers la connexion avec l’adresse e-mail préremplie, sans révéler ni conserver le mot de passe.
 - Ajout d’une migration Doctrine pour la préférence d’auto-connexion et de tests fonctionnels pour remember-me, déconnexion, inscription et confirmation e-mail.
-- Validation : 294 tests PHPUnit / 2220 assertions, lint Twig/YAML, compilation des assets de production et vérification `git diff --check`.
+- Validation : 295 tests PHPUnit / 2223 assertions, lint Twig/YAML, compilation des assets de production et vérification `git diff --check`.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

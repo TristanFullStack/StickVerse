@@ -84,4 +84,23 @@ final class VerificationEmailControllerTest extends WebTestCase
         yield 'connexion automatique' => [true, '/home'];
         yield 'connexion manuelle' => [false, '/login'];
     }
+
+    public function testConfirmationRefuseUnJetonExpire(): void
+    {
+        $token = str_repeat('c', 64);
+        $user = (new User())
+            ->setEmail(('verification-expiree-'.bin2hex(random_bytes(6))).'@example.com')
+            ->setPseudo('VerificationExpiree')
+            ->setPassword('test-password-hash')
+            ->setEmailVerifie(false)
+            ->preparerVerificationEmail($token, new \DateTimeImmutable('-1 minute'));
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        $this->client->request('GET', '/verification-email/'.$token);
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertSelectorTextContains('body', 'invalide ou a expiré');
+    }
 }
