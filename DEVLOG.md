@@ -8822,6 +8822,15 @@ de compte.
 - Le rythme d’actualisation est ralenti pendant la saisie d’un brouillon et
   les cartes non actives sont moins désaturées pour conserver leur lisibilité.
 
+## J114 — Réinitialiser les choix à chaque nouveau round
+
+- Lorsqu’un nouveau round devient disponible, les quatre sélections du round
+  précédent sont explicitement remises à zéro.
+- Les previews correspondantes et une éventuelle fiche de passif sont
+  également fermées afin que l’écran représente uniquement le nouveau tour.
+- La sauvegarde reste active pour un simple refresh du même round, mais ne
+  peut plus réinjecter les anciennes cibles après la résolution du tour.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

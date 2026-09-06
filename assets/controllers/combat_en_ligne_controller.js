@@ -644,10 +644,14 @@ export default class extends Controller {
             }
 
             if (planDisponible) {
-                this.restaurerEtatPlan(
-                    etatPlanAvantActualisation,
-                    donnees,
-                );
+                if (!nouveauTour || premierChargement) {
+                    this.restaurerEtatPlan(
+                        etatPlanAvantActualisation,
+                        donnees,
+                    );
+                } else {
+                    this.effacerEtatPlan(combatId);
+                }
                 this.restaurerPassifOuvert();
             } else {
                 this.effacerEtatPlan(combatId);
@@ -1354,6 +1358,7 @@ export default class extends Controller {
 
     reinitialiserPlanPourNouveauTour() {
         this.effacerEtatPlan();
+        this.effacerPassifOuvert();
 
         for (const cle of this.clesPlan()) {
             const select = this.selectPlan(cle);
