@@ -2852,10 +2852,13 @@ export default class extends Controller {
                 // Les deux phases sont volontairement séparées : le joueur
                 // doit pouvoir lire toute la protection avant de voir les
                 // dégâts s'appliquer.
-                defense: 1400,
-                pauseDefense: 3500,
-                degats: 3000,
-                pause: 420,
+                // La séquence complète dépasse volontairement dix secondes
+                // lorsqu'une protection est affichée : chaque étape doit être
+                // lisible, même sur un écran de téléphone.
+                defense: 2400,
+                pauseDefense: 4000,
+                degats: 3800,
+                pause: 500,
             };
 
         const cartesEtapes = etapes

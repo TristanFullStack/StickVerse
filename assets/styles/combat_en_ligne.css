@@ -1743,12 +1743,12 @@ body:has(#rapport-combat) {
    le résultat du tour soit perçu comme une seule séquence. */
 #combat-en-ligne .carte-combattant.est-en-animation
     .carte-combattant-vie-preview[data-mode="defense"] {
-    transition: left 1400ms ease-out, width 1400ms ease-out;
+    transition: left 2400ms ease-out, width 2400ms ease-out;
 }
 
 #combat-en-ligne .carte-combattant.est-en-animation
     .carte-combattant-vie-remplissage {
-    transition: width 3000ms ease-in-out;
+    transition: width 3800ms ease-in-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

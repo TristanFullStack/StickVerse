@@ -8959,6 +8959,11 @@ de compte.
 - Le résultat défensif reste visible pendant 3,5 secondes avant le début des dégâts.
 - Les barres de vie des cartes touchées descendent ensuite lentement et simultanément.
 
+## J130 — Ralentissement pédagogique de la résolution
+
+- La montée des protections et la descente des dégâts sont désormais beaucoup plus lentes.
+- Avec une défense affichée, la séquence complète dépasse dix secondes pour laisser le temps de lire chaque résultat.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
