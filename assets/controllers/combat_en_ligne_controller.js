@@ -88,6 +88,7 @@ export default class extends Controller {
         this.combatActifIdCourant = null;
         this.requeteEnCours = null;
         this.minuterieActualisation = null;
+        this.minuterieCompteARebours = null;
         this.actionEnCours = false;
         this.actionPlanActive = 'cibleAttaqueX';
         this.selectionPlanEnAttente = null;
@@ -2190,6 +2191,10 @@ export default class extends Controller {
         const dejaVisible = !bande.hidden && bande.dataset.mode === mode;
         const bordDroit = Math.min(100, position + largeur);
         bande.dataset.mode = mode;
+        bande.style.setProperty(
+            '--preview-origin',
+            mode === 'defense' ? 'left center' : 'right center',
+        );
 
         if (!animer) {
             bande.style.left = `${position}%`;
@@ -2322,6 +2327,7 @@ export default class extends Controller {
                 'est-previsualise',
                 estPrevisualisation,
             );
+            valeur.classList.remove('est-previsualise-defense');
         }
 
         if (barre) {
@@ -2331,6 +2337,29 @@ export default class extends Controller {
                 estPrevisualisation
                     ? `${valeurPv} points de vie sur ${maximum} — aperçu`
                     : `${valeurPv} points de vie sur ${maximum}`,
+            );
+        }
+    }
+
+    afficherPvDefensePrevisualises(carte, pv, maximum) {
+        const valeurPv = Math.max(0, Math.round(Number(pv) || 0));
+        const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+        const barre = carte.querySelector('.carte-combattant-vie-barre');
+
+        if (valeur) {
+            valeur.textContent = `PV ${valeurPv} / ${maximum}`;
+            valeur.classList.remove('est-previsualise');
+            valeur.classList.add('est-previsualise-defense');
+        }
+
+        if (barre) {
+            barre.setAttribute(
+                'aria-valuenow',
+                String(Math.min(maximum, valeurPv)),
+            );
+            barre.setAttribute(
+                'aria-valuetext',
+                `${valeurPv} points de vie sur ${maximum} — aperçu avec défense`,
             );
         }
     }
@@ -2386,21 +2415,34 @@ export default class extends Controller {
         }
 
         const pvMaximum = Number(carte.dataset.pvMaximum ?? 0);
+        this.afficherPvDefensePrevisualises(
+            carte,
+            pvMaximum > 0
+                ? Number(carte.dataset.pvActuels ?? 0) + defense
+                : defense,
+            pvMaximum,
+        );
+
         const pourcentageActuel = Number(carte.dataset.pourcentageVie ?? 0);
-        const pourcentageDefense = pvMaximum > 0
+        const largeur = pvMaximum > 0
             ? Math.min(100, (defense / pvMaximum) * 100)
             : 0;
-        const largeur = Math.min(pourcentageActuel, pourcentageDefense);
+        const position = Math.max(
+            0,
+            100 - largeur < pourcentageActuel
+                ? 100 - largeur
+                : pourcentageActuel,
+        );
 
         this.animerBandePreview(
             bande,
             'defense',
-            Math.max(0, pourcentageActuel - largeur),
+            position,
             largeur,
             largeur > 0,
             animer,
         );
-        previsualisation.textContent = `+${defense} DÉF sur cette carte`;
+        previsualisation.textContent = `+${defense} PV avec défense`;
         previsualisation.hidden = false;
         carte.classList.add('affiche-preview-defense');
     }
@@ -2808,25 +2850,43 @@ export default class extends Controller {
             ? { defense: 80, degats: 100, pause: 30 }
             : { defense: 1050, degats: 1350, pause: 420 };
 
-        for (const etape of etapes) {
+        const cartesEtapes = etapes
+            .map((etape) => ({
+                etape,
+                carte: this.carteCombattant(etape.camp, etape.slot),
+            }))
+            .filter(({ carte }) => carte !== null);
+
+        for (const { etape, carte } of cartesEtapes) {
             if (generation !== this.generationAnimation) {
                 return;
             }
 
-            const carte = this.carteCombattant(etape.camp, etape.slot);
-
-            if (!carte) {
-                continue;
-            }
-
             this.preparerCartePourAnimation(carte, etape);
+        }
+
+        const cartesDefendues = cartesEtapes.filter(
+            ({ etape }) => etape.bloque > 0,
+        );
+
+        for (const { etape, carte } of cartesDefendues) {
+            this.appliquerDefenseAnimation(carte, etape);
             this.afficherPhaseAnimation(
                 carte,
                 'defense',
                 `🛡 Protection : ${etape.bloque} point${etape.bloque > 1 ? 's' : ''} défendu${etape.bloque > 1 ? 's' : ''}`,
             );
+        }
+
+        if (cartesDefendues.length > 0) {
             await this.attendreAnimation(durees.defense, generation);
 
+            if (generation !== this.generationAnimation) {
+                return;
+            }
+        }
+
+        for (const { etape, carte } of cartesEtapes) {
             if (generation !== this.generationAnimation) {
                 return;
             }
@@ -2839,10 +2899,19 @@ export default class extends Controller {
                     ? `⚔ Dégâts infligés : −${etape.degats} PV`
                     : '⚔ Dégâts infligés : 0',
             );
-            await this.attendreAnimation(durees.degats, generation);
-            this.masquerPhaseAnimation(carte);
-            await this.attendreAnimation(durees.pause, generation);
         }
+
+        await this.attendreAnimation(durees.degats, generation);
+
+        if (generation !== this.generationAnimation) {
+            return;
+        }
+
+        for (const { carte } of cartesEtapes) {
+            this.masquerPhaseAnimation(carte);
+        }
+
+        await this.attendreAnimation(durees.pause, generation);
 
         if (generation !== this.generationAnimation) {
             return;
@@ -2857,9 +2926,19 @@ export default class extends Controller {
     preparerCartePourAnimation(carte, etape) {
         const maximum = Number(carte.dataset.pvMaximum ?? 0);
         const barre = carte.querySelector('.carte-combattant-vie-remplissage');
+        const preview = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
         const valeur = carte.querySelector('.carte-combattant-vie-valeur');
 
         carte.classList.add('est-en-animation');
+
+        if (preview) {
+            preview.hidden = true;
+            preview.style.left = '0';
+            preview.style.width = '0';
+            delete preview.dataset.mode;
+        }
 
         if (barre && maximum > 0) {
             barre.style.width = `${Math.min(100, (etape.pvAvant / maximum) * 100)}%`;
@@ -2867,13 +2946,69 @@ export default class extends Controller {
 
         if (valeur) {
             valeur.textContent = `PV ${etape.pvAvant} / ${maximum}`;
+            valeur.classList.remove('est-previsualise');
+            valeur.classList.remove('est-previsualise-defense');
+        }
+    }
+
+    appliquerDefenseAnimation(carte, etape) {
+        const maximum = Number(carte.dataset.pvMaximum ?? 0);
+        const preview = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
+        const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+        const pvAvant = Math.max(0, Number(etape.pvAvant) || 0);
+        const bloque = Math.max(0, Number(etape.bloque) || 0);
+        const pvAvecDefense = pvAvant + bloque;
+        const largeur = maximum > 0
+            ? Math.min(100, (bloque / maximum) * 100)
+            : 0;
+        const pourcentageAvant = maximum > 0
+            ? Math.min(100, (pvAvant / maximum) * 100)
+            : 0;
+        const position = Math.max(
+            0,
+            100 - largeur < pourcentageAvant
+                ? 100 - largeur
+                : pourcentageAvant,
+        );
+
+        if (preview && maximum > 0 && bloque > 0) {
+            preview.dataset.mode = 'defense';
+            preview.style.left = `${position}%`;
+            preview.style.width = '0%';
+            preview.hidden = false;
+
+            requestAnimationFrame(() => {
+                if (!preview.isConnected || preview.hidden) {
+                    return;
+                }
+
+                preview.style.width = `${largeur}%`;
+            });
+        }
+
+        if (valeur) {
+            valeur.textContent = `PV ${pvAvecDefense} / ${maximum}`;
+            valeur.classList.remove('est-previsualise');
+            valeur.classList.add('est-previsualise-defense');
         }
     }
 
     appliquerDegatsAnimation(carte, etape) {
         const maximum = Number(carte.dataset.pvMaximum ?? 0);
         const barre = carte.querySelector('.carte-combattant-vie-remplissage');
+        const preview = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
         const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+
+        if (preview) {
+            preview.hidden = true;
+            preview.style.left = '0';
+            preview.style.width = '0';
+            delete preview.dataset.mode;
+        }
 
         if (barre && maximum > 0) {
             barre.style.width = `${Math.min(100, (etape.pvRestants / maximum) * 100)}%`;
@@ -2881,6 +3016,8 @@ export default class extends Controller {
 
         if (valeur) {
             valeur.textContent = `PV ${etape.pvRestants} / ${maximum}`;
+            valeur.classList.remove('est-previsualise');
+            valeur.classList.remove('est-previsualise-defense');
         }
     }
 
@@ -2903,6 +3040,21 @@ export default class extends Controller {
             panneau.hidden = true;
             panneau.dataset.phase = '';
         }
+
+        const preview = carte.querySelector(
+            '.carte-combattant-vie-preview'
+        );
+        const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+
+        if (preview) {
+            preview.hidden = true;
+            preview.style.left = '0';
+            preview.style.width = '0';
+            delete preview.dataset.mode;
+        }
+
+        valeur?.classList.remove('est-previsualise');
+        valeur?.classList.remove('est-previsualise-defense');
 
         carte.classList.remove('est-en-animation');
     }
@@ -2936,6 +3088,8 @@ export default class extends Controller {
         ) {
             return;
         }
+
+        this.programmerCompteARebours();
 
         const brouillonActif = this.planEstDisponible(this.combat)
             && (
@@ -2995,6 +3149,54 @@ export default class extends Controller {
         if (this.minuterieActualisation !== null) {
             window.clearTimeout(this.minuterieActualisation);
             this.minuterieActualisation = null;
+        }
+
+        this.annulerCompteARebours();
+    }
+
+    programmerCompteARebours() {
+        this.annulerCompteARebours();
+
+        if (
+            !this.combat
+            || this.combat.statut !== 'en_cours'
+                && this.combat.statut !== 'en_attente'
+        ) {
+            return;
+        }
+
+        const expirationPlan = Date.parse(
+            this.combat.expirationPlan ?? ''
+        );
+        const expirationPreparation = Date.parse(
+            this.combat.preparation?.expiration ?? ''
+        );
+
+        if (
+            Number.isNaN(expirationPlan)
+            && Number.isNaN(expirationPreparation)
+        ) {
+            return;
+        }
+
+        this.minuterieCompteARebours = window.setInterval(() => {
+            if (
+                this.actionEnCours
+                || this.animationRoundEnCours
+                || !this.combat
+            ) {
+                return;
+            }
+
+            this.afficherPreparation();
+            this.afficherEtatRound();
+        }, 1000);
+    }
+
+    annulerCompteARebours() {
+        if (this.minuterieCompteARebours !== null) {
+            window.clearInterval(this.minuterieCompteARebours);
+            this.minuterieCompteARebours = null;
         }
     }
 

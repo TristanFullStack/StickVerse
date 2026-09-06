@@ -498,9 +498,14 @@ body:has(#rapport-combat) {
     font-weight: 900;
 }
 
+#combat-en-ligne .carte-combattant-vie-valeur.est-previsualise-defense {
+    color: #0b5cad;
+    font-weight: 900;
+}
+
 #combat-en-ligne .carte-combattant-vie-barre {
     height: 11px;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid #93a6b8;
     border-radius: 999px;
     background: #c7d1db;
@@ -1737,13 +1742,13 @@ body:has(#rapport-combat) {
     from {
         opacity: 0.35;
         transform: scaleX(0.08);
-        transform-origin: right center;
+        transform-origin: var(--preview-origin, right center);
     }
 
     to {
         opacity: 1;
         transform: scaleX(1);
-        transform-origin: right center;
+        transform-origin: var(--preview-origin, right center);
     }
 }
 
@@ -1770,10 +1775,14 @@ body:has(#rapport-combat) {
 #combat-en-ligne .carte-combattant-animation {
     position: absolute;
     z-index: 8;
-    inset: 0;
+    right: 5px;
+    bottom: 30px;
+    left: 5px;
+    min-height: 30px;
     display: grid;
     place-items: center;
     padding: 12px;
+    border-radius: 4px;
     color: #fff;
     background: rgba(24, 91, 170, 0.78);
     font-size: clamp(16px, 2vw, 25px);

@@ -8943,6 +8943,16 @@ de compte.
 - Cliquer sur un bouton ATK ou DEF vide maintenant son ancien choix pour
   permettre de le modifier proprement sans superposer plusieurs previews.
 
+## J128 — Compte à rebours et résolution de round synchronisée
+
+- Les délais d’abandon et de forfait sont maintenant recalculés chaque seconde
+  côté interface à partir de l’échéance serveur, sans attendre le prochain
+  rafraîchissement réseau.
+- La défense affiche temporairement les PV augmentés en bleu, avec une barre
+  de protection qui se développe au-dessus de la vie actuelle.
+- La résolution anime désormais toutes les protections ensemble, puis tous les
+  dégâts ensemble, avant de nettoyer les cartes et d’ouvrir le nouveau tour.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
