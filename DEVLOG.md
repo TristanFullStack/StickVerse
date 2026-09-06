@@ -8964,6 +8964,12 @@ de compte.
 - La montée des protections et la descente des dégâts sont désormais beaucoup plus lentes.
 - Avec une défense affichée, la séquence complète dépasse dix secondes pour laisser le temps de lire chaque résultat.
 
+## J131 — Affichage complet des cibles pendant la résolution
+
+- Les quatre cartes issues du résultat du round restent visibles ensemble pendant la phase défense.
+- Les cartes sans protection affichent explicitement l’absence de bouclier au lieu de disparaître de la séquence.
+- La phase dégâts s’applique ensuite à ce même groupe complet de cartes alliées et adverses.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

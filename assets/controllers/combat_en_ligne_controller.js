@@ -2876,20 +2876,24 @@ export default class extends Controller {
             this.preparerCartePourAnimation(carte, etape);
         }
 
-        const cartesDefendues = cartesEtapes.filter(
-            ({ etape }) => etape.bloque > 0,
-        );
+        // Le résultat du round contient au maximum quatre cibles : deux
+        // cartes alliées et deux cartes adverses. Elles doivent toutes rester
+        // visibles pendant la phase défense, même lorsqu'une cible n'a reçu
+        // aucun point de protection.
+        const cartesPhaseDefense = cartesEtapes;
 
-        for (const { etape, carte } of cartesDefendues) {
+        for (const { etape, carte } of cartesPhaseDefense) {
             this.appliquerDefenseAnimation(carte, etape);
             this.afficherPhaseAnimation(
                 carte,
                 'defense',
-                `🛡 Protection : ${etape.bloque} point${etape.bloque > 1 ? 's' : ''} défendu${etape.bloque > 1 ? 's' : ''}`,
+                etape.bloque > 0
+                    ? `🛡 Protection : ${etape.bloque} point${etape.bloque > 1 ? 's' : ''} défendu${etape.bloque > 1 ? 's' : ''}`
+                    : '🛡 Aucune protection sur cette carte',
             );
         }
 
-        if (cartesDefendues.length > 0) {
+        if (cartesPhaseDefense.length > 0) {
             await this.attendreAnimation(durees.defense, generation);
 
             if (generation !== this.generationAnimation) {
@@ -3010,7 +3014,7 @@ export default class extends Controller {
         if (valeur) {
             valeur.textContent = `PV ${pvAvecDefense} / ${maximum}`;
             valeur.classList.remove('est-previsualise');
-            valeur.classList.add('est-previsualise-defense');
+            valeur.classList.toggle('est-previsualise-defense', bloque > 0);
         }
     }
 
