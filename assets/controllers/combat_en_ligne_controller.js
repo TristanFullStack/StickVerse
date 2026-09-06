@@ -2178,7 +2178,7 @@ export default class extends Controller {
         carte.classList.add('affiche-preview-degats');
     }
 
-    afficherPvPrevisualises(carte, pv) {
+    afficherPvPrevisualises(carte, pv, estPrevisualisation = true) {
         const maximum = Math.max(
             0,
             Math.round(Number(carte.dataset.pvMaximum ?? 0)),
@@ -2192,13 +2192,19 @@ export default class extends Controller {
 
         if (valeur) {
             valeur.textContent = `PV ${valeurPv} / ${maximum}`;
+            valeur.classList.toggle(
+                'est-previsualise',
+                estPrevisualisation,
+            );
         }
 
         if (barre) {
             barre.setAttribute('aria-valuenow', String(valeurPv));
             barre.setAttribute(
                 'aria-valuetext',
-                `${valeurPv} points de vie sur ${maximum} — aperçu`,
+                estPrevisualisation
+                    ? `${valeurPv} points de vie sur ${maximum} — aperçu`
+                    : `${valeurPv} points de vie sur ${maximum}`,
             );
         }
     }
@@ -2282,7 +2288,11 @@ export default class extends Controller {
             previsualisation.hidden = true;
         }
 
-        this.afficherPvPrevisualises(carte, carte.dataset.pvActuels);
+        this.afficherPvPrevisualises(
+            carte,
+            carte.dataset.pvActuels,
+            false,
+        );
         carte.classList.remove('affiche-preview-degats');
         carte.classList.remove('affiche-preview-defense');
     }

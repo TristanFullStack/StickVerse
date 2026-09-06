@@ -493,6 +493,11 @@ body:has(#rapport-combat) {
     color: #19703b;
 }
 
+#combat-en-ligne .carte-combattant-vie-valeur.est-previsualise {
+    color: #c62828;
+    font-weight: 900;
+}
+
 #combat-en-ligne .carte-combattant-vie-barre {
     height: 11px;
     overflow: hidden;
@@ -1716,7 +1721,7 @@ body:has(#rapport-combat) {
     background: #f01818;
     box-shadow: 0 0 7px rgba(255, 0, 0, 0.75);
     pointer-events: none;
-    transition: left 120ms ease, width 120ms ease;
+    transition: left 420ms ease-out, width 420ms ease-out;
 }
 
 #combat-en-ligne .carte-combattant-vie-preview[data-mode="defense"] {

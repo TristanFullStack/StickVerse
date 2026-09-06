@@ -8909,6 +8909,14 @@ de compte.
 - La carte ignore explicitement les clics provenant de son passif ou de son
   infobulle.
 
+## J124 — PV de preview rouges et barre de dégâts fluide
+
+- Le nombre de PV affiché en preview de dégâts passe en rouge pour distinguer
+  clairement la valeur temporaire des PV réels.
+- La barre de dégâts prévisualisée utilise maintenant une transition fluide
+  lorsqu’elle s’étend après une nouvelle attaque sélectionnée.
+- La couleur et l’indication d’aperçu sont retirées dès que la preview disparaît.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
