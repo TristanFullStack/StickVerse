@@ -2088,10 +2088,7 @@ export default class extends Controller {
     }
 
     afficherApercuCible(carte, camp, slot) {
-        if (
-            this.planEstComplet()
-            || this.carteEstCiblePlan(carte)
-        ) {
+        if (this.planEstComplet()) {
             return;
         }
 
@@ -2110,6 +2107,52 @@ export default class extends Controller {
         ) {
             this.afficherApercuDefense(carte, camp, slot);
         }
+    }
+
+    animerBandePreview(bande, mode, left, width, visible = true) {
+        const largeur = Math.max(0, Number(width) || 0);
+        const position = Math.min(100, Math.max(0, Number(left) || 0));
+        const generation = (Number(bande.dataset.previewGeneration) || 0) + 1;
+
+        bande.dataset.previewGeneration = String(generation);
+
+        if (!visible || largeur <= 0) {
+            bande.hidden = true;
+            bande.style.left = '0';
+            bande.style.width = '0';
+            delete bande.dataset.mode;
+
+            return;
+        }
+
+        const dejaVisible = !bande.hidden && bande.dataset.mode === mode;
+        const bordDroit = Math.min(100, position + largeur);
+        bande.dataset.mode = mode;
+
+        if (!dejaVisible) {
+            bande.style.left = `${bordDroit}%`;
+            bande.style.width = '0%';
+            bande.hidden = false;
+            requestAnimationFrame(() => {
+                if (
+                    !bande.isConnected
+                    || bande.hidden
+                    || bande.dataset.mode !== mode
+                    || bande.dataset.previewGeneration !== String(generation)
+                ) {
+                    return;
+                }
+
+                bande.style.left = `${position}%`;
+                bande.style.width = `${largeur}%`;
+            });
+
+            return;
+        }
+
+        bande.style.left = `${position}%`;
+        bande.style.width = `${largeur}%`;
+        bande.hidden = false;
     }
 
     afficherApercuDegats(carte, camp, slot, inclureCibleActive = true) {
@@ -2164,13 +2207,17 @@ export default class extends Controller {
         this.afficherPvPrevisualises(carte, apercu.pvRestants);
 
         const pourcentageActuel = Number(carte.dataset.pourcentageVie ?? 0);
-        bande.dataset.mode = 'degats';
-        bande.style.left = `${apercu.pourcentageRestant}%`;
-        bande.style.width = `${Math.max(
+        const largeurDegats = Math.max(
             0,
             pourcentageActuel - apercu.pourcentageRestant,
-        )}%`;
-        bande.hidden = apercu.degats === 0;
+        );
+        this.animerBandePreview(
+            bande,
+            'degats',
+            apercu.pourcentageRestant,
+            largeurDegats,
+            apercu.degats > 0,
+        );
         previsualisation.textContent = apercu.degats > 0
             ? `−${apercu.degats} PV sans défense`
             : '0 dégât sans défense';
@@ -2260,10 +2307,13 @@ export default class extends Controller {
             : 0;
         const largeur = Math.min(pourcentageActuel, pourcentageDefense);
 
-        bande.dataset.mode = 'defense';
-        bande.style.left = `${Math.max(0, pourcentageActuel - largeur)}%`;
-        bande.style.width = `${largeur}%`;
-        bande.hidden = largeur <= 0;
+        this.animerBandePreview(
+            bande,
+            'defense',
+            Math.max(0, pourcentageActuel - largeur),
+            largeur,
+            largeur > 0,
+        );
         previsualisation.textContent = `+${defense} DÉF sur cette carte`;
         previsualisation.hidden = false;
         carte.classList.add('affiche-preview-defense');
@@ -2278,6 +2328,9 @@ export default class extends Controller {
         );
 
         if (bande) {
+            bande.dataset.previewGeneration = String(
+                (Number(bande.dataset.previewGeneration) || 0) + 1,
+            );
             bande.hidden = true;
             bande.style.left = '0';
             bande.style.width = '0';

@@ -8917,6 +8917,14 @@ de compte.
   lorsqu’elle s’étend après une nouvelle attaque sélectionnée.
 - La couleur et l’indication d’aperçu sont retirées dès que la preview disparaît.
 
+## J125 — Preview animée au survol des cartes ciblées
+
+- Le survol d’une carte affiche maintenant la preview même si elle a déjà été
+  ciblée par le premier choix, afin de préparer sereinement un focus au second
+  clic.
+- L’apparition et l’évolution de la barre de dégâts ou de défense sont
+  animées progressivement au lieu d’apparaître instantanément.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

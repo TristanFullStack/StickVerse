@@ -1722,6 +1722,7 @@ body:has(#rapport-combat) {
     box-shadow: 0 0 7px rgba(255, 0, 0, 0.75);
     pointer-events: none;
     transition: left 420ms ease-out, width 420ms ease-out;
+    will-change: left, width;
 }
 
 #combat-en-ligne .carte-combattant-vie-preview[data-mode="defense"] {
