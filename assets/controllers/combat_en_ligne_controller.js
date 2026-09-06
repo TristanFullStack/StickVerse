@@ -664,7 +664,7 @@ export default class extends Controller {
                 this.reinitialiserPlanPourNouveauTour();
             }
 
-            const signature = JSON.stringify(donnees);
+            const signature = this.signatureCombatPourAffichage(donnees);
             const combatModifie = signature !== this.signatureCombatAffiche;
 
             this.combat = donnees;
@@ -678,15 +678,20 @@ export default class extends Controller {
             }
 
             if (planDisponible) {
-                if (!nouveauTour || premierChargement) {
+                if (
+                    (!nouveauTour || premierChargement)
+                    && combatModifie
+                ) {
                     this.restaurerEtatPlan(
                         etatPlanAvantActualisation,
                         donnees,
                     );
-                } else {
+                } else if (nouveauTour && !premierChargement) {
                     this.effacerEtatPlan(combatId);
                 }
-                this.restaurerPassifOuvert();
+                if (combatModifie || premierChargement) {
+                    this.restaurerPassifOuvert();
+                }
             } else {
                 this.effacerEtatPlan(combatId);
             }
@@ -1252,6 +1257,21 @@ export default class extends Controller {
             && combat?.adversaire !== undefined
             && combat?.preparation?.active !== true
             && combat?.planSoumis === false;
+    }
+
+    signatureCombatPourAffichage(combat) {
+        const {
+            csrf,
+            expirationPlan,
+            expirationAutomatique,
+            forfaitAutomatique,
+            forfaitPreparationAutomatique,
+            annulationPreparationAutomatique,
+            resolutionAutomatique,
+            ...donneesStables
+        } = combat ?? {};
+
+        return JSON.stringify(donneesStables);
     }
 
     cleEtatPlan(combatId = this.combatActifIdCourant) {
@@ -2294,6 +2314,32 @@ export default class extends Controller {
                 this.afficherApercuDefense(carte, camp, slot, false);
             }
         }
+
+        const selectionEnAttente = this.selectionPlanEnAttente;
+
+        if (selectionEnAttente && !this.planEstComplet()) {
+            const camp = this.campPourActionPlan(selectionEnAttente.cle);
+            const carte = this.carteCombattant(
+                camp,
+                selectionEnAttente.slot,
+            );
+
+            if (carte) {
+                if (selectionEnAttente.cle.startsWith('cibleAttaque')) {
+                    this.afficherApercuDegats(
+                        carte,
+                        camp,
+                        selectionEnAttente.slot,
+                    );
+                } else {
+                    this.afficherApercuDefense(
+                        carte,
+                        camp,
+                        selectionEnAttente.slot,
+                    );
+                }
+            }
+        }
     }
 
     carteEstCiblePlan(carte) {
@@ -2304,6 +2350,11 @@ export default class extends Controller {
         return this.clesPlan().some((cle) =>
             this.campPourActionPlan(cle) === carte.dataset.camp
             && this.selectPlan(cle)?.value === carte.dataset.slot
+        ) || (
+            this.selectionPlanEnAttente?.slot === carte.dataset.slot
+            && this.campPourActionPlan(
+                this.selectionPlanEnAttente.cle,
+            ) === carte.dataset.camp
         );
     }
 

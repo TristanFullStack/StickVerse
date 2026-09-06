@@ -8866,6 +8866,9 @@ de compte.
   une actualisation du même round, jusqu’au second clic de confirmation.
 - Le guidage qui désaturait un camp est retiré dès que les quatre choix sont
   terminés afin de garder les huit cartes visibles avec leurs previews.
+- La preview de dégâts ou de défense de la carte en attente est restaurée et
+  les cartes ne sont plus reconstruites lorsque le polling ne rapporte aucun
+  changement utile.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
