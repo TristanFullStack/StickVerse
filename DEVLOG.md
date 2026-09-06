@@ -8934,6 +8934,15 @@ de compte.
 - Les états en attente restaurés depuis le brouillon ne sont conservés que sur
   les appareils tactiles afin d’éviter une confirmation inutile sur PC.
 
+## J127 — Preview au survol et modification d’un choix
+
+- Chaque survol relance désormais explicitement l’animation de la preview, y
+  compris après un rafraîchissement ou plusieurs changements de cible.
+- Le départ de la souris restaure la preview persistante de la carte au lieu de
+  conserver une somme temporaire de l’attaque suivante.
+- Cliquer sur un bouton ATK ou DEF vide maintenant son ancien choix pour
+  permettre de le modifier proprement sans superposer plusieurs previews.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

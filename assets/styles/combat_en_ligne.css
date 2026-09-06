@@ -643,6 +643,14 @@ body:has(#rapport-combat) {
         transition: none;
     }
 
+    #combat-en-ligne .carte-combattant-vie-preview {
+        transition: none;
+    }
+
+    #combat-en-ligne .carte-combattant-vie-preview.est-animation-preview {
+        animation: none !important;
+    }
+
     #combat-en-ligne .combat-actif[data-guidage-phase] .carte-combattant {
         transition: none;
     }
@@ -1723,6 +1731,24 @@ body:has(#rapport-combat) {
     pointer-events: none;
     transition: left 420ms ease-out, width 420ms ease-out;
     will-change: left, width;
+}
+
+@keyframes combat-preview-entree {
+    from {
+        opacity: 0.35;
+        transform: scaleX(0.08);
+        transform-origin: right center;
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleX(1);
+        transform-origin: right center;
+    }
+}
+
+#combat-en-ligne .carte-combattant-vie-preview.est-animation-preview {
+    animation: combat-preview-entree 420ms ease-out both;
 }
 
 #combat-en-ligne .carte-combattant-vie-preview[data-mode="defense"] {

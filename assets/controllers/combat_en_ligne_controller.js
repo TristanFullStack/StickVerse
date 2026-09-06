@@ -151,10 +151,13 @@ export default class extends Controller {
             return;
         }
 
-        if (this.actionPlanActive !== cle) {
-            this.selectionPlanEnAttente = null;
+        const select = this.selectPlan(cle);
+
+        if (select) {
+            select.value = '';
         }
 
+        this.selectionPlanEnAttente = null;
         this.actionPlanActive = cle;
         this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();
@@ -2154,7 +2157,20 @@ export default class extends Controller {
         }
     }
 
-    animerBandePreview(bande, mode, left, width, visible = true) {
+    relancerAnimationBandePreview(bande) {
+        bande.classList.remove('est-animation-preview');
+        void bande.offsetWidth;
+        bande.classList.add('est-animation-preview');
+    }
+
+    animerBandePreview(
+        bande,
+        mode,
+        left,
+        width,
+        visible = true,
+        animer = true,
+    ) {
         const largeur = Math.max(0, Number(width) || 0);
         const position = Math.min(100, Math.max(0, Number(left) || 0));
         const generation = (Number(bande.dataset.previewGeneration) || 0) + 1;
@@ -2165,6 +2181,7 @@ export default class extends Controller {
             bande.hidden = true;
             bande.style.left = '0';
             bande.style.width = '0';
+            bande.classList.remove('est-animation-preview');
             delete bande.dataset.mode;
 
             return;
@@ -2173,6 +2190,14 @@ export default class extends Controller {
         const dejaVisible = !bande.hidden && bande.dataset.mode === mode;
         const bordDroit = Math.min(100, position + largeur);
         bande.dataset.mode = mode;
+
+        if (!animer) {
+            bande.style.left = `${position}%`;
+            bande.style.width = `${largeur}%`;
+            bande.hidden = false;
+
+            return;
+        }
 
         if (!dejaVisible) {
             bande.style.left = `${bordDroit}%`;
@@ -2190,6 +2215,7 @@ export default class extends Controller {
 
                 bande.style.left = `${position}%`;
                 bande.style.width = `${largeur}%`;
+                this.relancerAnimationBandePreview(bande);
             });
 
             return;
@@ -2198,9 +2224,16 @@ export default class extends Controller {
         bande.style.left = `${position}%`;
         bande.style.width = `${largeur}%`;
         bande.hidden = false;
+        this.relancerAnimationBandePreview(bande);
     }
 
-    afficherApercuDegats(carte, camp, slot, inclureCibleActive = true) {
+    afficherApercuDegats(
+        carte,
+        camp,
+        slot,
+        inclureCibleActive = true,
+        animer = true,
+    ) {
         if (
             camp !== 'adversaire'
             || this.planSectionTarget.hidden
@@ -2262,6 +2295,7 @@ export default class extends Controller {
             apercu.pourcentageRestant,
             largeurDegats,
             apercu.degats > 0,
+            animer,
         );
         previsualisation.textContent = apercu.degats > 0
             ? `−${apercu.degats} PV sans défense`
@@ -2301,7 +2335,13 @@ export default class extends Controller {
         }
     }
 
-    afficherApercuDefense(carte, camp, slot, inclureCibleActive = true) {
+    afficherApercuDefense(
+        carte,
+        camp,
+        slot,
+        inclureCibleActive = true,
+        animer = true,
+    ) {
         if (
             camp !== 'moi'
             || this.planSectionTarget.hidden
@@ -2358,6 +2398,7 @@ export default class extends Controller {
             Math.max(0, pourcentageActuel - largeur),
             largeur,
             largeur > 0,
+            animer,
         );
         previsualisation.textContent = `+${defense} DÉF sur cette carte`;
         previsualisation.hidden = false;
@@ -2379,6 +2420,7 @@ export default class extends Controller {
             bande.hidden = true;
             bande.style.left = '0';
             bande.style.width = '0';
+            bande.classList.remove('est-animation-preview');
             delete bande.dataset.mode;
         }
 
@@ -2396,10 +2438,13 @@ export default class extends Controller {
     }
 
     masquerApercuCible(carte) {
-        if (
-            this.planEstComplet()
-            || this.carteEstCiblePlan(carte)
-        ) {
+        if (this.planEstComplet()) {
+            return;
+        }
+
+        if (this.carteEstCiblePlan(carte)) {
+            this.restaurerApercuPlanCarte(carte);
+
             return;
         }
 
@@ -2460,9 +2505,21 @@ export default class extends Controller {
             }
 
             if (cle.startsWith('cibleAttaque')) {
-                this.afficherApercuDegats(carte, camp, slot, false);
+                this.afficherApercuDegats(
+                    carte,
+                    camp,
+                    slot,
+                    false,
+                    false,
+                );
             } else {
-                this.afficherApercuDefense(carte, camp, slot, false);
+                this.afficherApercuDefense(
+                    carte,
+                    camp,
+                    slot,
+                    false,
+                    false,
+                );
             }
         }
 
@@ -2490,6 +2547,75 @@ export default class extends Controller {
                     );
                 }
             }
+        }
+    }
+
+    restaurerApercuPlanCarte(carte) {
+        this.masquerApercuDegats(carte);
+
+        for (const cle of this.clesPlan()) {
+            const slot = this.selectPlan(cle)?.value;
+
+            if (!slot) {
+                continue;
+            }
+
+            const camp = this.campPourActionPlan(cle);
+            if (
+                carte.dataset.camp !== camp
+                || carte.dataset.slot !== slot
+            ) {
+                continue;
+            }
+
+            if (cle.startsWith('cibleAttaque')) {
+                this.afficherApercuDegats(
+                    carte,
+                    camp,
+                    slot,
+                    false,
+                    false,
+                );
+            } else {
+                this.afficherApercuDefense(
+                    carte,
+                    camp,
+                    slot,
+                    false,
+                    false,
+                );
+            }
+        }
+
+        const selectionEnAttente = this.selectionPlanEnAttente;
+
+        if (
+            !selectionEnAttente
+            || this.planEstComplet()
+            || carte.dataset.camp !== this.campPourActionPlan(
+                selectionEnAttente.cle,
+            )
+            || carte.dataset.slot !== selectionEnAttente.slot
+        ) {
+            return;
+        }
+
+        if (selectionEnAttente.cle.startsWith('cibleAttaque')) {
+            this.afficherApercuDegats(
+                carte,
+                carte.dataset.camp,
+                carte.dataset.slot,
+                true,
+                false,
+            );
+        } else {
+            this.afficherApercuDefense(
+                carte,
+                carte.dataset.camp,
+                carte.dataset.slot,
+                true,
+                false,
+            );
         }
     }
 
