@@ -1455,23 +1455,6 @@ export default class extends Controller {
             ciblesAttaque.length === 0
             || ciblesDefense.length === 0;
 
-        this.remplirCibleUnique(
-            this.cibleAttaqueXTarget,
-            ciblesAttaque,
-        );
-        this.remplirCibleUnique(
-            this.cibleAttaqueYTarget,
-            ciblesAttaque,
-        );
-        this.remplirCibleUnique(
-            this.cibleDefenseXTarget,
-            ciblesDefense,
-        );
-        this.remplirCibleUnique(
-            this.cibleDefenseYTarget,
-            ciblesDefense,
-        );
-
         if (!this.clesPlan().includes(this.actionPlanActive)) {
             this.actionPlanActive = 'cibleAttaqueX';
         }
@@ -1598,6 +1581,7 @@ export default class extends Controller {
         select.value = slot;
         this.actionPlanActive = this.prochaineActionPlan(
             this.actionPlanActive,
+            true,
         );
         this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();

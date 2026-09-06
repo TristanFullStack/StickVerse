@@ -8831,6 +8831,16 @@ de compte.
 - La sauvegarde reste active pour un simple refresh du même round, mais ne
   peut plus réinjecter les anciennes cibles après la résolution du tour.
 
+## J115 — Parcours de sélection du plan de tour
+
+- Les quatre emplacements ATK X, ATK Y, DEF X et DEF Y restent vides au début
+  de chaque round : aucune cible ni preview n’est imposée automatiquement.
+- Après les deux attaques, la sélection passe bien aux deux défenses, puis
+  reste sur le résumé global quand les quatre choix sont terminés au lieu de
+  reboucler vers ATK X.
+- Le joueur peut ainsi vérifier les previews des quatre actions avant de
+  valider le tour.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
