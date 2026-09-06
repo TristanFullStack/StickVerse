@@ -8852,6 +8852,13 @@ de compte.
 - Les sélections en attente ne sont jamais restaurées après un refresh et les
   cartes deviennent non sélectionnables une fois le plan complet.
 
+## J117 — Correction du reset des sélections
+
+- Le reset du formulaire HTML ne réinjecte plus les anciennes options par
+  défaut des listes de cibles.
+- La remise à zéro manuelle et celle déclenchée par un nouveau round vident
+  désormais réellement les quatre choix et leurs previews.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

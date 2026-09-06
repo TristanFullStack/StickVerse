@@ -232,7 +232,6 @@ export default class extends Controller {
             }
         }
 
-        this.planFormTarget.reset();
         this.actionPlanActive = 'cibleAttaqueX';
         this.mettreAJourPlanTactique();
         this.afficherInformation('Tes choix ont été réinitialisés.');
@@ -1410,7 +1409,6 @@ export default class extends Controller {
             }
         }
 
-        this.planFormTarget.reset();
         this.actionPlanActive = 'cibleAttaqueX';
         this.mettreAJourPlanTactique();
     }
