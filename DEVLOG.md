@@ -8726,6 +8726,25 @@ de compte.
 - Ajout d’une migration Doctrine pour la préférence d’auto-connexion et de tests fonctionnels pour remember-me, déconnexion, inscription et confirmation e-mail.
 - Validation : 295 tests PHPUnit / 2223 assertions, lint Twig/YAML, compilation des assets de production et vérification `git diff --check`.
 
+## J108 — Collection portrait et HUD combat mobile
+
+- Les collections et inventaires conservent un format de carte portrait sur
+  téléphone, avec deux cartes visibles par ligne quand l’espace le permet pour
+  limiter le défilement vertical sans réduire les informations essentielles.
+- Le HUD de combat adopte un mode compact dédié aux petits écrans : navigation
+  secondaire masquée pendant le combat, équipes et commandes réunies dans une
+  arène en trois zones, textes et barres de vie resserrés, actions tactiques
+  toujours accessibles et zones de résultats défilables indépendamment.
+- Les passifs des cartes de combat ne dépendent plus du survol : chaque icône
+  est un contrôle tactile et clavier qui ouvre une description lisible dans un
+  panneau contextualisé, avec focus visible, libellés ARIA et fermeture par
+  appui ou touche Échap.
+- Conservation de la logique de sélection, des animations et des règles de
+  combat existantes ; les interactions des passifs empêchent seulement la
+  sélection accidentelle d’une cible.
+- Validation : 295 tests PHPUnit / 2223 assertions, lint Twig/YAML,
+  compilation des assets de production et `git diff --check`.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

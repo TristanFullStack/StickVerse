@@ -89,6 +89,7 @@ export default class extends Controller {
         this.minuterieActualisation = null;
         this.actionEnCours = false;
         this.actionPlanActive = 'cibleAttaqueX';
+        this.passifDetailsCompteur = 0;
         this.etatsInteractions = new Map();
         this.animationRoundEnCours = false;
         this.generationAnimation = 0;
@@ -2440,6 +2441,7 @@ export default class extends Controller {
         const vieRemplissage = document.createElement('span');
         const viePrevisualisation = document.createElement('span');
         const passifs = document.createElement('div');
+        const passifDetails = document.createElement('div');
         const statistiques = document.createElement('p');
 
         carte.className = 'carte-combattant';
@@ -2463,6 +2465,11 @@ export default class extends Controller {
         viePrevisualisation.hidden = true;
         passifs.className = 'carte-combattant-passifs';
         passifs.setAttribute('aria-label', 'Emplacements de passifs');
+        passifDetails.className = 'carte-combattant-passif-details';
+        passifDetails.id = `combat-passif-details-${++this.passifDetailsCompteur}`;
+        passifDetails.setAttribute('role', 'status');
+        passifDetails.setAttribute('aria-live', 'polite');
+        passifDetails.hidden = true;
 
         // Les emplacements restent prêts pour les futurs passifs, mais une
         // carte sans passif ne doit afficher aucun carré.
@@ -2471,10 +2478,13 @@ export default class extends Controller {
             : [];
 
         for (const [index, passif] of passifsCarte.entries()) {
-            const emplacement = document.createElement('span');
+            const estPassifLisible = passif && typeof passif === 'object';
+            const emplacement = document.createElement(
+                estPassifLisible ? 'button' : 'span'
+            );
             emplacement.className = 'carte-combattant-passif';
             emplacement.dataset.passifIndex = String(index + 1);
-            if (passif && typeof passif === 'object') {
+            if (estPassifLisible) {
                 const nom = typeof passif.nom === 'string' && passif.nom.trim() !== ''
                     ? passif.nom.trim()
                     : 'Passif';
@@ -2482,12 +2492,49 @@ export default class extends Controller {
                     ? passif.description.trim()
                     : '';
                 const libelle = description ? `${nom} — ${description}` : nom;
-                // Une lettre compacte garde les six emplacements lisibles.
-                // Le nom et la description restent accessibles au survol et
-                // aux lecteurs d'écran.
+                emplacement.type = 'button';
                 emplacement.textContent = nom.charAt(0).toUpperCase();
                 emplacement.title = libelle;
                 emplacement.setAttribute('aria-label', libelle);
+                emplacement.setAttribute('aria-controls', passifDetails.id);
+                emplacement.setAttribute('aria-expanded', 'false');
+                emplacement.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const estOuvert = !passifDetails.hidden
+                        && passifDetails.dataset.passifIndex
+                            === emplacement.dataset.passifIndex;
+
+                    if (estOuvert) {
+                        passifDetails.hidden = true;
+                        passifDetails.textContent = '';
+                        delete passifDetails.dataset.passifIndex;
+                        emplacement.setAttribute('aria-expanded', 'false');
+
+                        return;
+                    }
+
+                    passifDetails.textContent = libelle;
+                    passifDetails.dataset.passifIndex = emplacement.dataset.passifIndex;
+                    passifDetails.hidden = false;
+
+                    passifs.querySelectorAll('.carte-combattant-passif[aria-expanded="true"]')
+                        .forEach((bouton) => bouton.setAttribute('aria-expanded', 'false'));
+                    emplacement.setAttribute('aria-expanded', 'true');
+                });
+                emplacement.addEventListener('keydown', (event) => {
+                    event.stopPropagation();
+
+                    if (event.key !== 'Escape') {
+                        return;
+                    }
+
+                    passifDetails.hidden = true;
+                    passifDetails.textContent = '';
+                    delete passifDetails.dataset.passifIndex;
+                    emplacement.setAttribute('aria-expanded', 'false');
+                });
             } else {
                 emplacement.setAttribute('aria-hidden', 'true');
             }
@@ -2618,6 +2665,7 @@ export default class extends Controller {
             image,
             vie,
             passifs,
+            passifDetails,
             statistiques,
         );
 
