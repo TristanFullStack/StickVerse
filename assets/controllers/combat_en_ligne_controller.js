@@ -585,10 +585,6 @@ export default class extends Controller {
     async chargerCombat(combatId) {
         const etatPlanAvantActualisation =
             this.sauvegarderEtatPlan() ?? this.lireEtatPlan(combatId);
-        // Une cible choisie avec un seul clic reste locale : un refresh ne
-        // doit jamais la transformer en choix confirmé.
-        this.selectionPlanEnAttente = null;
-
         this.annulerActualisation();
         this.requeteEnCours?.abort();
 
@@ -1266,6 +1262,23 @@ export default class extends Controller {
             : `stickverse.combat.${id}.plan-brouillon`;
     }
 
+    selectionPlanEnAttenteDepuisEtat(valeur) {
+        if (
+            !valeur
+            || typeof valeur !== 'object'
+            || !this.clesPlan().includes(valeur.cle)
+            || typeof valeur.slot !== 'string'
+            || valeur.slot === ''
+        ) {
+            return null;
+        }
+
+        return {
+            cle: valeur.cle,
+            slot: valeur.slot,
+        };
+    }
+
     lireEtatPlan(combatId = this.combatActifIdCourant) {
         const cle = this.cleEtatPlan(combatId);
 
@@ -1303,6 +1316,9 @@ export default class extends Controller {
                         valeur.selections[planCle],
                     ])
                 ),
+                selectionPlanEnAttente: this.selectionPlanEnAttenteDepuisEtat(
+                    valeur.selectionPlanEnAttente,
+                ),
             };
         } catch {
             return null;
@@ -1328,6 +1344,9 @@ export default class extends Controller {
                     this.selectPlan(cle)?.value ?? '',
                 ])
             ),
+            selectionPlanEnAttente: this.selectionPlanEnAttente
+                ? { ...this.selectionPlanEnAttente }
+                : null,
         };
 
         if (etat.numeroRound === null) {
@@ -1375,8 +1394,6 @@ export default class extends Controller {
             return;
         }
 
-        this.selectionPlanEnAttente = null;
-
         for (const cle of this.clesPlan()) {
             const select = this.selectPlan(cle);
             const valeur = etat.selections?.[cle] ?? '';
@@ -1391,6 +1408,22 @@ export default class extends Controller {
         if (this.clesPlan().includes(etat.actionPlanActive)) {
             this.actionPlanActive = etat.actionPlanActive;
         }
+
+        const selectionEnAttente =
+            this.selectionPlanEnAttenteDepuisEtat(
+                etat.selectionPlanEnAttente,
+            );
+        const selectEnAttente = this.selectPlan(selectionEnAttente?.cle);
+        const optionEnAttenteValide = selectionEnAttente
+            && Array.from(selectEnAttente?.options ?? [])
+                .some((option) => (
+                    option.value === selectionEnAttente.slot
+                    && !option.disabled
+                ));
+
+        this.selectionPlanEnAttente = optionEnAttenteValide
+            ? selectionEnAttente
+            : null;
 
         this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();
@@ -1577,6 +1610,7 @@ export default class extends Controller {
         if (
             this.planSectionTarget.hidden
             || !this.planEstDisponible(this.combat)
+            || this.planEstComplet()
         ) {
             delete this.combatActifTarget.dataset.guidagePhase;
 

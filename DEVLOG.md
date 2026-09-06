@@ -8849,8 +8849,9 @@ de compte.
   y compris sur téléphone et au clavier.
 - Un bouton permet de vider manuellement les quatre choix, les previews et les
   passifs avant de recommencer le round en cours.
-- Les sélections en attente ne sont jamais restaurées après un refresh et les
-  cartes deviennent non sélectionnables une fois le plan complet.
+- Les sélections en attente sont conservées pendant un refresh du même round,
+  mais sont supprimées dès qu’un nouveau round commence ; les cartes restent
+  non sélectionnables une fois le plan complet.
 
 ## J117 — Correction du reset des sélections
 
@@ -8858,6 +8859,13 @@ de compte.
   défaut des listes de cibles.
 - La remise à zéro manuelle et celle déclenchée par un nouveau round vident
   désormais réellement les quatre choix et leurs previews.
+
+## J118 — Conserver la confirmation en attente et afficher l’arène complète
+
+- Une carte choisie au premier clic reste signalée comme « en attente » après
+  une actualisation du même round, jusqu’au second clic de confirmation.
+- Le guidage qui désaturait un camp est retiré dès que les quatre choix sont
+  terminés afin de garder les huit cartes visibles avec leurs previews.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
