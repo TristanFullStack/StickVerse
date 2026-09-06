@@ -8953,6 +8953,12 @@ de compte.
 - La résolution anime désormais toutes les protections ensemble, puis tous les
   dégâts ensemble, avant de nettoyer les cartes et d’ouvrir le nouveau tour.
 
+## J129 — Résolution de round plus lisible
+
+- Les protections bleues montent progressivement sur toutes les cartes concernées.
+- Le résultat défensif reste visible pendant 3,5 secondes avant le début des dégâts.
+- Les barres de vie des cartes touchées descendent ensuite lentement et simultanément.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

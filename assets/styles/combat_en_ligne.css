@@ -1738,6 +1738,28 @@ body:has(#rapport-combat) {
     will-change: left, width;
 }
 
+/* La protection doit monter lentement puis rester lisible avant la phase de
+   dégâts. Les dégâts utilisent la même durée sur toutes les cartes afin que
+   le résultat du tour soit perçu comme une seule séquence. */
+#combat-en-ligne .carte-combattant.est-en-animation
+    .carte-combattant-vie-preview[data-mode="defense"] {
+    transition: left 1400ms ease-out, width 1400ms ease-out;
+}
+
+#combat-en-ligne .carte-combattant.est-en-animation
+    .carte-combattant-vie-remplissage {
+    transition: width 3000ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #combat-en-ligne .carte-combattant.est-en-animation
+        .carte-combattant-vie-preview[data-mode="defense"],
+    #combat-en-ligne .carte-combattant.est-en-animation
+        .carte-combattant-vie-remplissage {
+        transition: none;
+    }
+}
+
 @keyframes combat-preview-entree {
     from {
         opacity: 0.35;

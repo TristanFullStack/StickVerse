@@ -2847,8 +2847,16 @@ export default class extends Controller {
             '(prefers-reduced-motion: reduce)'
         ).matches;
         const durees = mouvementReduit
-            ? { defense: 80, degats: 100, pause: 30 }
-            : { defense: 1050, degats: 1350, pause: 420 };
+            ? { defense: 80, pauseDefense: 0, degats: 100, pause: 30 }
+            : {
+                // Les deux phases sont volontairement séparées : le joueur
+                // doit pouvoir lire toute la protection avant de voir les
+                // dégâts s'appliquer.
+                defense: 1400,
+                pauseDefense: 3500,
+                degats: 3000,
+                pause: 420,
+            };
 
         const cartesEtapes = etapes
             .map((etape) => ({
@@ -2880,6 +2888,14 @@ export default class extends Controller {
 
         if (cartesDefendues.length > 0) {
             await this.attendreAnimation(durees.defense, generation);
+
+            if (generation !== this.generationAnimation) {
+                return;
+            }
+
+            // Maintient la protection bleue complète à l'écran afin de rendre
+            // la lecture du résultat de défense réellement compréhensible.
+            await this.attendreAnimation(durees.pauseDefense, generation);
 
             if (generation !== this.generationAnimation) {
                 return;
