@@ -8745,6 +8745,24 @@ de compte.
 - Validation : 295 tests PHPUnit / 2223 assertions, lint Twig/YAML,
   compilation des assets de production et `git diff --check`.
 
+## J109 — Salon multijoueur mobile et passifs persistants
+
+- Réduction de l’aperçu d’équipe dans le salon multijoueur sur téléphone :
+  cartes en grille compacte, textes et visuels mieux proportionnés, blocs de
+  lancement public/privé resserrés et espace mieux utilisé.
+- Remplacement du libellé trop long « Sélectionner une cible » par un choix
+  court « Choisir… » dans les listes tactiques, avec des garde-fous de taille
+  pour éviter les débordements sur les petits écrans.
+- Agrandissement du panneau de description des passifs sur mobile : il s’ouvre
+  dans une fiche lisible au-dessus de l’interface, avec une hauteur défilable
+  et un contraste conservé.
+- Mémorisation côté navigateur du passif consulté pour le combat en cours,
+  puis restauration après chaque rafraîchissement des données ; aucune donnée
+  sensible n’est stockée et la sélection est effacée en quittant le combat.
+- La logique de combat et l’arène V1 restent inchangées.
+- Validation : 295 tests PHPUnit / 2223 assertions, lint Twig/YAML,
+  compilation des assets de production et `git diff --check`.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

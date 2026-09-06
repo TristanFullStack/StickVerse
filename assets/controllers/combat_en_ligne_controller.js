@@ -90,6 +90,7 @@ export default class extends Controller {
         this.actionEnCours = false;
         this.actionPlanActive = 'cibleAttaqueX';
         this.passifDetailsCompteur = 0;
+        this.passifOuvert = this.lirePassifOuvert();
         this.etatsInteractions = new Map();
         this.animationRoundEnCours = false;
         this.generationAnimation = 0;
@@ -131,6 +132,7 @@ export default class extends Controller {
         this.combatActifIdCourant = null;
         this.combat = null;
         this.signatureCombatAffiche = null;
+        this.effacerPassifOuvert();
         this.annulerActualisation();
         await this.chargerSalon();
     }
@@ -669,6 +671,8 @@ export default class extends Controller {
     }
 
     afficherCombat() {
+        this.sauvegarderPassifOuvert();
+
         const statuts = {
             en_attente: 'En attente',
             en_cours: 'En cours',
@@ -736,6 +740,8 @@ export default class extends Controller {
             'Équipe adverse',
             'adversaire',
         );
+
+        this.restaurerPassifOuvert();
 
         this.afficherCapacitesTactiques();
         this.afficherMenacesFocus();
@@ -1344,7 +1350,7 @@ export default class extends Controller {
 
         const invitation = document.createElement('option');
         invitation.value = '';
-        invitation.textContent = 'Sélectionner une cible';
+        invitation.textContent = 'Choisir…';
         invitation.disabled = true;
         invitation.selected = true;
         select.append(invitation);
@@ -2425,6 +2431,102 @@ export default class extends Controller {
         this.equipeApercuTarget.append(liste);
     }
 
+    lirePassifOuvert() {
+        try {
+            const valeur = JSON.parse(
+                window.sessionStorage.getItem('stickverse.combat.passif-ouvert')
+                ?? 'null'
+            );
+
+            if (
+                !valeur
+                || !Number.isInteger(Number(valeur.combatId))
+                || !['moi', 'adversaire'].includes(valeur.camp)
+                || !/^[A-D]$/.test(String(valeur.slot))
+                || !/^\d+$/.test(String(valeur.index))
+            ) {
+                return null;
+            }
+
+            return {
+                combatId: Number(valeur.combatId),
+                camp: valeur.camp,
+                slot: String(valeur.slot),
+                index: String(valeur.index),
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    enregistrerPassifOuvert(carte, index) {
+        if (
+            !this.combatActifIdCourant
+            || !['moi', 'adversaire'].includes(carte.dataset.camp)
+        ) {
+            return;
+        }
+
+        this.passifOuvert = {
+            combatId: this.combatActifIdCourant,
+            camp: carte.dataset.camp,
+            slot: carte.dataset.slot ?? '',
+            index: String(index),
+        };
+
+        try {
+            window.sessionStorage.setItem(
+                'stickverse.combat.passif-ouvert',
+                JSON.stringify(this.passifOuvert),
+            );
+        } catch {
+            // Le panneau reste utilisable si le stockage de session est bloqué.
+        }
+    }
+
+    effacerPassifOuvert() {
+        this.passifOuvert = null;
+
+        try {
+            window.sessionStorage.removeItem('stickverse.combat.passif-ouvert');
+        } catch {
+            // Rien à faire : l’état local est déjà réinitialisé.
+        }
+    }
+
+    sauvegarderPassifOuvert() {
+        const bouton = this.participantsTarget?.querySelector(
+            '.carte-combattant-passif[aria-expanded="true"]'
+        );
+        const carte = bouton?.closest('.carte-combattant');
+
+        if (!bouton || !carte) {
+            return;
+        }
+
+        this.enregistrerPassifOuvert(carte, bouton.dataset.passifIndex);
+    }
+
+    restaurerPassifOuvert() {
+        const ouvert = this.passifOuvert;
+
+        if (
+            !ouvert
+            || ouvert.combatId !== this.combatActifIdCourant
+        ) {
+            return;
+        }
+
+        const carte = this.carteCombattant(ouvert.camp, ouvert.slot);
+        const bouton = carte?.querySelector(
+            `.carte-combattant-passif[data-passif-index="${ouvert.index}"]`
+        );
+
+        if (bouton) {
+            bouton.click();
+        }
+    }
+
     creerCarteCombattant(combattant, pourcentagePrecedent = null) {
         const carte = document.createElement('article');
         const choixPlan = document.createElement('div');
@@ -2511,6 +2613,7 @@ export default class extends Controller {
                         passifDetails.textContent = '';
                         delete passifDetails.dataset.passifIndex;
                         emplacement.setAttribute('aria-expanded', 'false');
+                        this.effacerPassifOuvert();
 
                         return;
                     }
@@ -2522,6 +2625,10 @@ export default class extends Controller {
                     passifs.querySelectorAll('.carte-combattant-passif[aria-expanded="true"]')
                         .forEach((bouton) => bouton.setAttribute('aria-expanded', 'false'));
                     emplacement.setAttribute('aria-expanded', 'true');
+                    this.enregistrerPassifOuvert(
+                        carte,
+                        emplacement.dataset.passifIndex,
+                    );
                 });
                 emplacement.addEventListener('keydown', (event) => {
                     event.stopPropagation();
@@ -2534,6 +2641,7 @@ export default class extends Controller {
                     passifDetails.textContent = '';
                     delete passifDetails.dataset.passifIndex;
                     emplacement.setAttribute('aria-expanded', 'false');
+                    this.effacerPassifOuvert();
                 });
             } else {
                 emplacement.setAttribute('aria-hidden', 'true');

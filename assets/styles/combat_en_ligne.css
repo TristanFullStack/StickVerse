@@ -2190,6 +2190,141 @@ body:has(#rapport-combat) {
     }
 }
 
+/* Salon mobile : l'aperçu d'équipe doit rester une collection compacte,
+   sans reprendre les dimensions de lecture de l'arène desktop. */
+@media (max-width: 720px) {
+    #combat-en-ligne [data-combat-en-ligne-target="salon"] > section {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="salon"] h2 {
+        margin-bottom: 8px;
+        font-size: clamp(19px, 6vw, 24px);
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] {
+        margin: 10px 0;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .grille-combattants {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant {
+        min-height: 0;
+        border-radius: 6px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-titre {
+        min-height: 32px;
+        padding: 5px 4px 2px;
+        font-size: 11px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-image {
+        height: clamp(72px, 23vw, 112px);
+        padding: 3px 4px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-vie {
+        padding: 5px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-vie-informations {
+        margin-bottom: 3px;
+        font-size: 9px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-vie-barre {
+        height: 6px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-passifs {
+        min-height: 25px;
+        gap: 3px;
+        padding: 3px 4px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-passif {
+        width: 18px;
+        height: 18px;
+        flex-basis: 18px;
+        font-size: 9px;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .carte-combattant-statistiques {
+        padding: 5px 3px;
+        font-size: 9px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    /* Une fiche lisible reste au-dessus de l'arène, au lieu d'être écrasée
+       dans la largeur minuscule d'une carte de téléphone. */
+    #combat-en-ligne .carte-combattant-passif-details {
+        position: fixed;
+        z-index: 100;
+        right: max(8px, env(safe-area-inset-right));
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        left: max(8px, env(safe-area-inset-left));
+        max-height: min(34dvh, 240px);
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.45;
+        text-align: left;
+    }
+}
+
+@media (max-width: 430px) {
+    #combat-en-ligne [data-combat-en-ligne-target="salon"] > section {
+        padding: 8px;
+    }
+
+    #combat-en-ligne .choix-mode-combat {
+        gap: 7px;
+    }
+
+    #combat-en-ligne .choix-mode-combat article {
+        padding: 10px;
+        border-radius: 7px;
+    }
+
+    #combat-en-ligne .choix-mode-combat article h3 {
+        font-size: 14px;
+    }
+
+    #combat-en-ligne .choix-mode-combat article p {
+        margin: 5px 0 8px;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    #combat-en-ligne [data-combat-en-ligne-target="equipeApercu"] .grille-combattants {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    #combat-en-ligne .carte-combattant-menace,
+    #combat-en-ligne .carte-combattant-preview-degats {
+        max-width: calc(100% - 8px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 7px;
+    }
+
+    #combat-en-ligne .combat-centre .plan-tactique-instruction {
+        overflow-wrap: anywhere;
+        font-size: 9px;
+        line-height: 1.25;
+    }
+}
+
 /* Contrastes du thème V24 : tous les textes restent lisibles sur fond sombre. */
 #combat-en-ligne .combat-actif-entete .pression-combat {
     color: #ffe0a3;
