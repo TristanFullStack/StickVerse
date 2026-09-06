@@ -4,9 +4,11 @@ namespace App\Tests\Service;
 
 use App\Entity\Caisse;
 use App\Entity\CaisseStickman;
+use App\Entity\CollectionJeu;
 use App\Entity\Stickman;
 use App\Repository\CaisseRepository;
 use App\Repository\CaisseStickmanRepository;
+use App\Repository\CollectionJeuRepository;
 use App\Repository\StickmanRepository;
 use App\Service\CatalogueJeuService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -166,6 +168,92 @@ final class CatalogueJeuServiceTest extends TestCase
             ['stickmans' => 1, 'caisses' => 1, 'associations' => 1],
             $totaux,
         );
+    }
+
+    public function testImporteRattacheLesCartesAlaCollectionDeLaCaisse(): void
+    {
+        $fichier = tempnam(sys_get_temp_dir(), 'stickverse-catalogue-');
+        self::assertNotFalse($fichier);
+        file_put_contents(
+            $fichier,
+            json_encode([
+                'version' => 1,
+                'stickmans' => [[
+                    'slug' => 'recrue',
+                    'nom' => 'Recrue',
+                    'description' => 'Une jeune recrue.',
+                    'image' => '11-Recrue.png',
+                    'rarete' => 1,
+                    'pv' => 60,
+                    'attaque' => 12,
+                    'defense' => 14,
+                    'actif' => true,
+                ]],
+                'caisses' => [[
+                    'slug' => 'caisse-origine',
+                    'nom' => 'Caisse Origine',
+                    'description' => 'La caisse de départ.',
+                    'image' => 'caisse-origine.png',
+                    'prix' => 120,
+                    'actif' => true,
+                    'contenus' => [['stickman' => 'recrue', 'poids' => 100]],
+                ]],
+            ], JSON_THROW_ON_ERROR),
+        );
+
+        $collection = (new CollectionJeu())
+            ->setNom('Collection Origine')
+            ->setSlug('collection-origine')
+            ->setDescription('Les premiers Stickmen.')
+            ->setSaison(0)
+            ->setStatutActif(true);
+        $stickmanRepository = $this->createStub(StickmanRepository::class);
+        $stickmanRepository->method('findBy')->willReturn([]);
+        $caisseRepository = $this->createStub(CaisseRepository::class);
+        $caisseRepository->method('findOneBy')->willReturn(null);
+        $associationRepository = $this->createStub(CaisseStickmanRepository::class);
+        $associationRepository->method('findOneBy')->willReturn(null);
+        $collectionRepository = $this->createStub(CollectionJeuRepository::class);
+        $collectionRepository->method('findOneBy')->willReturn($collection);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $persisted = [];
+        $entityManager
+            ->expects(self::exactly(3))
+            ->method('persist')
+            ->willReturnCallback(static function (object $entity) use (&$persisted): void {
+                $persisted[] = $entity;
+            });
+        $entityManager->method('wrapInTransaction')->willReturnCallback(
+            static fn (callable $transaction): mixed => $transaction(),
+        );
+
+        try {
+            (new CatalogueJeuService(
+                $stickmanRepository,
+                $caisseRepository,
+                $associationRepository,
+                $entityManager,
+                $collectionRepository,
+            ))->importerDepuisFichier($fichier);
+        } finally {
+            unlink($fichier);
+        }
+
+        $stickman = null;
+        $caisse = null;
+        foreach ($persisted as $entity) {
+            if ($entity instanceof Stickman) {
+                $stickman = $entity;
+            }
+            if ($entity instanceof Caisse) {
+                $caisse = $entity;
+            }
+        }
+
+        self::assertInstanceOf(Stickman::class, $stickman);
+        self::assertInstanceOf(Caisse::class, $caisse);
+        self::assertSame($collection, $stickman->getCollectionJeu());
+        self::assertSame($collection, $caisse->getCollectionJeu());
     }
 
     public function testRefuseUneReferenceVersUnStickmanAbsentDuCatalogue(): void

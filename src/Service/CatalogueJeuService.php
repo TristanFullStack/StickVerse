@@ -4,9 +4,11 @@ namespace App\Service;
 
 use App\Entity\Caisse;
 use App\Entity\CaisseStickman;
+use App\Entity\CollectionJeu;
 use App\Entity\Stickman;
 use App\Repository\CaisseRepository;
 use App\Repository\CaisseStickmanRepository;
+use App\Repository\CollectionJeuRepository;
 use App\Repository\StickmanRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use JsonException;
@@ -22,6 +24,7 @@ final class CatalogueJeuService
         private readonly CaisseRepository $caisseRepository,
         private readonly CaisseStickmanRepository $caisseStickmanRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ?CollectionJeuRepository $collectionRepository = null,
     ) {
     }
 
@@ -226,6 +229,11 @@ final class CatalogueJeuService
                         ->setPrix($donnees['prix'])
                         ->setStatutActif($donnees['actif']);
 
+                    $collection = $this->collectionPourCaisse($caisse);
+                    if ($collection !== null) {
+                        $caisse->setCollectionJeu($collection);
+                    }
+
                     if (null === $caisse->getId()) {
                         $this->entityManager->persist($caisse);
                     }
@@ -241,6 +249,10 @@ final class CatalogueJeuService
                             ->setCaisse($caisse)
                             ->setStickman($stickman)
                             ->setPoids($donneesContenu['poids']);
+
+                        if ($collection !== null && $stickman->getCollectionJeu() === null) {
+                            $stickman->setCollectionJeu($collection);
+                        }
 
                         if (null === $association->getId()) {
                             $caisse->addContenu($association);
@@ -258,6 +270,24 @@ final class CatalogueJeuService
                 ];
             },
         );
+    }
+
+    private function collectionPourCaisse(Caisse $caisse): ?CollectionJeu
+    {
+        $collection = $caisse->getCollectionJeu();
+        if ($collection !== null || $this->collectionRepository === null) {
+            return $collection;
+        }
+
+        $slugCollection = match ($caisse->getSlug()) {
+            'caisse-origine' => 'collection-origine',
+            Caisse::SLUG_PREMIERS_RENFORTS => 'saison-1-premiers-renforts',
+            default => null,
+        };
+
+        return $slugCollection === null
+            ? null
+            : $this->collectionRepository->findOneBy(['slug' => $slugCollection]);
     }
 
     /**

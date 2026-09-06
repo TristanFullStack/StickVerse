@@ -9378,3 +9378,11 @@ de compte.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+## J133 — Réparer les collections vides après import du catalogue
+
+- Les caisses et les Stickmans déjà présents sont maintenant rattachés à leur
+  collection par une migration de remise en cohérence.
+- L’import du catalogue conserve les liens existants et rattache les nouvelles
+  caisses « Origine » et « Saison 1 » avec leurs cartes.
+- La collection ne s’affiche plus à `0 / 0` alors que les cartes existent en
+  base.
