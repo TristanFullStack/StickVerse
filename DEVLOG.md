@@ -8763,6 +8763,23 @@ de compte.
 - Validation : 295 tests PHPUnit / 2223 assertions, lint Twig/YAML,
   compilation des assets de production et `git diff --check`.
 
+## J110 — Synthèse tactique et résolution de tour plus lisible
+
+- Après les quatre choix, le plan tactique passe en mode synthèse globale :
+  l’interface confirme les attaques et les protections sans revenir à une
+  seule cible active.
+- Les previews restent affichées sur les cibles réellement choisies, même
+  sans survol : dégâts prévus sur les adversaires, PV protégés sur les alliés,
+  badges ⚔ attaque et 🛡 protection, et résumé explicite du plan.
+- La résolution d’un round est ralentie et clarifiée avec des messages
+  distincts de protection et de dégâts, afin de rendre chaque étape lisible
+  avant le passage au résultat suivant.
+- Sur téléphone, l’avertissement de focus devient un symbole discret dans un
+  badge compact ; son libellé complet reste accessible au toucher et aux
+  technologies d’assistance sans masquer l’illustration du Stickman.
+- Conservation des règles serveur, des protections de sélection et du mode
+  réduit pour les utilisateurs qui le préfèrent.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

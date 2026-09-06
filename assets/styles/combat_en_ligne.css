@@ -413,6 +413,19 @@ body:has(#rapport-combat) {
     font-weight: 900;
 }
 
+#combat-en-ligne .carte-combattant-choix span::before {
+    margin-right: 3px;
+    font-size: 0.9em;
+}
+
+#combat-en-ligne .carte-combattant-choix [data-type="attaque"]::before {
+    content: '⚔';
+}
+
+#combat-en-ligne .carte-combattant-choix [data-type="defense"]::before {
+    content: '🛡';
+}
+
 #combat-en-ligne .carte-combattant-choix [data-type="defense"] {
     background: #666;
 }
@@ -798,6 +811,18 @@ body:has(#rapport-combat) {
     margin-bottom: 0;
     border-color: #888;
     font-weight: 800;
+}
+
+#combat-en-ligne .plan-combat.plan-complet .plan-tactique-instruction {
+    color: #fff3c4;
+    border-color: #d69b26;
+    background: linear-gradient(110deg, #45300a, #1c2b3a);
+    box-shadow: 0 0 0 1px rgba(255, 205, 91, 0.18);
+}
+
+#combat-en-ligne .plan-combat.plan-complet .plan-tactique-resume {
+    border-color: #3da4d5;
+    background: #102c43;
 }
 
 #combat-en-ligne .plan-selects-secours {
@@ -1629,6 +1654,11 @@ body:has(#rapport-combat) {
     pointer-events: none;
 }
 
+#combat-en-ligne .carte-combattant-preview-degats::before {
+    margin-right: 3px;
+    content: '⚔';
+}
+
 #combat-en-ligne .carte-combattant-vie-preview {
     position: absolute;
     z-index: 2;
@@ -1653,6 +1683,11 @@ body:has(#rapport-combat) {
     background: rgba(17, 102, 194, 0.95);
 }
 
+#combat-en-ligne .carte-combattant.affiche-preview-defense
+    .carte-combattant-preview-degats::before {
+    content: '🛡';
+}
+
 #combat-en-ligne .carte-combattant-animation {
     position: absolute;
     z-index: 8;
@@ -1666,7 +1701,7 @@ body:has(#rapport-combat) {
     font-weight: 900;
     text-align: center;
     pointer-events: none;
-    animation: phase-combat-apparition 300ms ease both;
+    animation: phase-combat-apparition 520ms ease both;
 }
 
 #combat-en-ligne .carte-combattant-animation[data-phase="degats"] {
@@ -2385,5 +2420,65 @@ body:has(#rapport-combat) {
 @media (min-width: 800px) and (min-height: 560px) {
     #combat-en-ligne .combat-arene .carte-combattant-image {
         height: clamp(70px, 14dvh, 150px);
+    }
+}
+
+/* Sur téléphone, le niveau de focus reste identifiable sans recouvrir le
+   Stickman : le libellé complet reste disponible au lecteur d’écran et au
+   toucher via le title, tandis que l’écran montre seulement son symbole. */
+@media (max-width: 560px) {
+    #combat-en-ligne .combat-arene .carte-combattant-menace {
+        top: 3px;
+        right: 3px;
+        left: auto;
+        display: grid;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border-radius: 50%;
+        opacity: 0.76;
+        place-items: center;
+        font-size: 11px;
+        line-height: 1;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-menace-symbole {
+        display: block;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-menace-texte {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        clip-path: inset(50%);
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-preview-degats {
+        right: 3px;
+        max-width: calc(100% - 28px);
+        padding: 2px 4px;
+        font-size: 7px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-choix {
+        top: 3px;
+        right: 25px;
+        gap: 2px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-choix span {
+        padding: 2px 3px;
+        font-size: 7px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-animation {
+        padding: 5px;
+        font-size: clamp(10px, 3.6vw, 15px);
+        line-height: 1.2;
     }
 }

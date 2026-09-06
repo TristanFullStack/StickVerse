@@ -1477,12 +1477,15 @@ export default class extends Controller {
             return;
         }
 
+        const planComplet = this.planEstComplet();
         const libelles = {
             cibleAttaqueX: 'ATTAQUES — Sélectionne la cible de ATK X.',
             cibleAttaqueY: 'ATTAQUES — Sélectionne la cible de ATK Y.',
             cibleDefenseX: 'DÉFENSES — Sélectionne l’allié de DEF X.',
             cibleDefenseY: 'DÉFENSES — Sélectionne l’allié de DEF Y.',
         };
+
+        this.planSectionTarget.classList.toggle('plan-complet', planComplet);
 
         for (const bouton of this.planActionButtonTargets) {
             const cle = bouton.dataset.planCle;
@@ -1493,7 +1496,7 @@ export default class extends Controller {
 
             bouton.classList.toggle(
                 'est-active',
-                cle === this.actionPlanActive,
+                !planComplet && cle === this.actionPlanActive,
             );
             bouton.classList.toggle(
                 'est-complete',
@@ -1505,8 +1508,9 @@ export default class extends Controller {
             }
         }
 
-        this.instructionPlanTarget.textContent =
-            libelles[this.actionPlanActive] ?? 'Choisis une cible.';
+        this.instructionPlanTarget.textContent = planComplet
+            ? 'Plan complet — vérifie les attaques et les protections avant de lancer le tour.'
+            : libelles[this.actionPlanActive] ?? 'Choisis une cible.';
         this.envoyerPlanButtonTarget.disabled = this.clesPlan().some(
             (cle) => this.selectPlan(cle)?.value === ''
         );
@@ -1516,10 +1520,17 @@ export default class extends Controller {
         this.actualiserApercusSurvoles();
     }
 
+    planEstComplet() {
+        return this.clesPlan().every(
+            (cle) => Boolean(this.selectPlan(cle)?.value)
+        );
+    }
+
     mettreAJourCartesPlan() {
         const cartes = this.participantsTarget.querySelectorAll(
             '.carte-combattant[data-slot][data-camp]'
         );
+        const planComplet = this.planEstComplet();
         const campActif = this.campPourActionPlan(this.actionPlanActive);
         const choixParCarte = new Map();
         const libelles = {
@@ -1544,7 +1555,8 @@ export default class extends Controller {
 
         for (const carte of cartes) {
             const estVivante = carte.dataset.vivant !== 'false';
-            const estSelectionnable = estVivante
+            const estSelectionnable = !planComplet
+                && estVivante
                 && carte.dataset.camp === campActif;
             const identifiant = `${carte.dataset.camp}:${carte.dataset.slot}`;
             const choix = choixParCarte.get(identifiant) ?? [];
@@ -1581,6 +1593,9 @@ export default class extends Controller {
                     badge.dataset.type = choixTexte.startsWith('ATQ')
                         ? 'attaque'
                         : 'defense';
+                    badge.title = badge.dataset.type === 'attaque'
+                        ? 'Cible d’attaque'
+                        : 'Allié protégé';
                     conteneur.append(badge);
                 }
             }
@@ -1617,7 +1632,10 @@ export default class extends Controller {
             ? `Double défense sur ${selections.cibleDefenseX} : ${defenseX + defenseY} DÉF.`
             : `Défense : X protège ${selections.cibleDefenseX} (${defenseX}), Y protège ${selections.cibleDefenseY} (${defenseY}).`;
 
-        this.resumePlanTarget.textContent = `${attaque} ${defense}`;
+        this.resumePlanTarget.textContent = [
+            `⚔ Attaques : ${attaque.replace(/^Focus sur |^Split : /, '')}`,
+            `🛡 Protections : ${defense.replace(/^Double défense sur |^Défense : /, '')}`,
+        ].join('  ');
     }
 
     puissanceGroupe(groupe, statistique) {
@@ -1712,9 +1730,26 @@ export default class extends Controller {
 
                 carte.dataset.menace = menace?.niveau ?? '';
                 badge.hidden = menace === null;
-                badge.textContent = menace
-                    ? `${menace.symbole} ${menace.texte}`
-                    : '';
+                badge.replaceChildren();
+
+                if (menace) {
+                    const symbole = document.createElement('span');
+                    const texte = document.createElement('span');
+
+                    symbole.className = 'carte-combattant-menace-symbole';
+                    texte.className = 'carte-combattant-menace-texte';
+                    symbole.textContent = menace.symbole;
+                    texte.textContent = menace.texte;
+                    badge.append(symbole, document.createTextNode(' '), texte);
+                    badge.title = menace.texte;
+                    badge.setAttribute(
+                        'aria-label',
+                        `Avertissement : ${menace.texte}`,
+                    );
+                } else {
+                    badge.removeAttribute('title');
+                    badge.removeAttribute('aria-label');
+                }
             }
         }
     }
@@ -1788,6 +1823,10 @@ export default class extends Controller {
     }
 
     afficherApercuCible(carte, camp, slot) {
+        if (this.planEstComplet()) {
+            return;
+        }
+
         if (
             camp === 'adversaire'
             && this.actionPlanActive.startsWith('cibleAttaque')
@@ -1805,7 +1844,7 @@ export default class extends Controller {
         }
     }
 
-    afficherApercuDegats(carte, camp, slot) {
+    afficherApercuDegats(carte, camp, slot, inclureCibleActive = true) {
         if (
             camp !== 'adversaire'
             || this.planSectionTarget.hidden
@@ -1825,7 +1864,8 @@ export default class extends Controller {
             if (
                 cible === slot
                 || (
-                    cle === this.actionPlanActive
+                    inclureCibleActive
+                    && cle === this.actionPlanActive
                     && this.actionPlanActive.startsWith('cibleAttaque')
                 )
             ) {
@@ -1868,7 +1908,7 @@ export default class extends Controller {
         carte.classList.add('affiche-preview-degats');
     }
 
-    afficherApercuDefense(carte, camp, slot) {
+    afficherApercuDefense(carte, camp, slot, inclureCibleActive = true) {
         if (
             camp !== 'moi'
             || this.planSectionTarget.hidden
@@ -1888,7 +1928,8 @@ export default class extends Controller {
             if (
                 cible === slot
                 || (
-                    cle === this.actionPlanActive
+                    inclureCibleActive
+                    && cle === this.actionPlanActive
                     && this.actionPlanActive.startsWith('cibleDefense')
                 )
             ) {
@@ -1951,10 +1992,20 @@ export default class extends Controller {
     }
 
     masquerApercuCible(carte) {
+        if (this.planEstComplet()) {
+            return;
+        }
+
         this.masquerApercuDegats(carte);
     }
 
     actualiserApercusSurvoles() {
+        if (this.planEstComplet()) {
+            this.actualiserApercusPlan();
+
+            return;
+        }
+
         for (const carte of this.participantsTarget.querySelectorAll(
             '.carte-combattant.affiche-preview-degats, '
             + '.carte-combattant.affiche-preview-defense'
@@ -1980,6 +2031,36 @@ export default class extends Controller {
                 carte.dataset.camp,
                 carte.dataset.slot,
             );
+        }
+    }
+
+    actualiserApercusPlan() {
+        for (const carte of this.participantsTarget.querySelectorAll(
+            '.carte-combattant.affiche-preview-degats, '
+            + '.carte-combattant.affiche-preview-defense'
+        )) {
+            this.masquerApercuCible(carte);
+        }
+
+        for (const cle of this.clesPlan()) {
+            const slot = this.selectPlan(cle)?.value;
+
+            if (!slot) {
+                continue;
+            }
+
+            const camp = this.campPourActionPlan(cle);
+            const carte = this.carteCombattant(camp, slot);
+
+            if (!carte) {
+                continue;
+            }
+
+            if (cle.startsWith('cibleAttaque')) {
+                this.afficherApercuDegats(carte, camp, slot, false);
+            } else {
+                this.afficherApercuDefense(carte, camp, slot, false);
+            }
         }
     }
 
@@ -2154,7 +2235,7 @@ export default class extends Controller {
         ).matches;
         const durees = mouvementReduit
             ? { defense: 80, degats: 100, pause: 30 }
-            : { defense: 850, degats: 1050, pause: 280 };
+            : { defense: 1050, degats: 1350, pause: 420 };
 
         for (const etape of etapes) {
             if (generation !== this.generationAnimation) {
@@ -2171,7 +2252,7 @@ export default class extends Controller {
             this.afficherPhaseAnimation(
                 carte,
                 'defense',
-                `🛡 ${etape.bloque} point${etape.bloque > 1 ? 's' : ''} défendu${etape.bloque > 1 ? 's' : ''}`,
+                `🛡 Protection : ${etape.bloque} point${etape.bloque > 1 ? 's' : ''} défendu${etape.bloque > 1 ? 's' : ''}`,
             );
             await this.attendreAnimation(durees.defense, generation);
 
@@ -2184,8 +2265,8 @@ export default class extends Controller {
                 carte,
                 'degats',
                 etape.degats > 0
-                    ? `−${etape.degats} PV`
-                    : '0 dégât',
+                    ? `⚔ Dégâts infligés : −${etape.degats} PV`
+                    : '⚔ Dégâts infligés : 0',
             );
             await this.attendreAnimation(durees.degats, generation);
             this.masquerPhaseAnimation(carte);
