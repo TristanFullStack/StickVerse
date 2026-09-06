@@ -8902,6 +8902,13 @@ de compte.
 - L’infobulle mobile est légèrement plus haute et son texte encore réduit
   pour laisser davantage de place aux descriptions longues.
 
+## J123 — Fermeture des passifs sans sélectionner la carte
+
+- La fermeture d’une infobulle absorbe maintenant aussi l’interaction tactile
+  afin de ne pas déclencher le clic de la carte située derrière.
+- La carte ignore explicitement les clics provenant de son passif ou de son
+  infobulle.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

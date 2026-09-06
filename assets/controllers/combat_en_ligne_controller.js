@@ -2050,7 +2050,19 @@ export default class extends Controller {
             );
 
             carte.dataset.camp = camp;
-            carte.addEventListener('click', () => {
+            carte.addEventListener('click', (event) => {
+                const cible = event.target;
+
+                if (
+                    cible instanceof Element
+                    && cible.closest(
+                        '.carte-combattant-passif, '
+                        + '.carte-combattant-passif-details'
+                    )
+                ) {
+                    return;
+                }
+
                 this.selectionnerCiblePlan(camp, combattant.slot);
             });
             carte.addEventListener('mouseenter', () => {
@@ -3056,6 +3068,9 @@ export default class extends Controller {
             event.preventDefault();
             event.stopPropagation();
             fermerPassif();
+        });
+        passifDetails.addEventListener('pointerdown', (event) => {
+            event.stopPropagation();
         });
 
         // Les emplacements restent prêts pour les futurs passifs, mais une
