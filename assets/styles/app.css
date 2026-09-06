@@ -230,6 +230,57 @@ fieldset {
     font-size: 9px;
     font-weight: 800;
     line-height: 1;
+    cursor: help;
+    touch-action: manipulation;
+}
+
+[data-passif-viewer-trigger][aria-expanded="true"] {
+    outline: 2px solid #245b8e;
+    outline-offset: 2px;
+}
+
+.passif-viewer-popover {
+    position: fixed;
+    z-index: 1200;
+    width: min(330px, calc(100vw - 20px));
+    max-height: min(48vh, 310px);
+    overflow-y: auto;
+    padding: 13px 15px;
+    border: 2px solid #245b8e;
+    border-radius: 10px;
+    background: #fff;
+    color: #18232d;
+    box-shadow: 0 10px 28px rgba(16, 36, 54, .32);
+    font-size: 14px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+}
+
+.passif-viewer-popover strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #17324b;
+    font-size: 16px;
+}
+
+.passif-viewer-popover p {
+    margin: 0 0 8px;
+}
+
+.passif-viewer-popover small {
+    color: #536574;
+    font-size: 11px;
+}
+
+.wiki-passifs-list [data-passif-viewer-trigger],
+.team-member-mini-passif,
+.team-slot-passif,
+.team-inventory-card-passif {
+    cursor: help;
+    touch-action: manipulation;
 }
 
 .wiki-passifs-list,

@@ -52,6 +52,13 @@
                                             <span
                                                 class="team-member-mini-passif"
                                                 title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                                                aria-label="Lire le passif {{ nomPassif }}"
+                                                data-passif-viewer-trigger
+                                                data-passif-name="{{ nomPassif|e('html_attr') }}"
+                                                data-passif-description="{{ descriptionPassif|e('html_attr') }}"
+                                                role="button"
+                                                tabindex="0"
+                                                aria-expanded="false"
                                             >{{ nomPassif }}</span>
                                         {% else %}
                                             <small>Aucun passif</small>

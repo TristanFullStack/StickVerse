@@ -41,6 +41,12 @@
                     class="stickman-card-passif"
                     title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
                     aria-label="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                    data-passif-viewer-trigger
+                    data-passif-name="{{ nomPassif|e('html_attr') }}"
+                    data-passif-description="{{ descriptionPassif|e('html_attr') }}"
+                    role="button"
+                    tabindex="0"
+                    aria-expanded="false"
                 >{{ nomPassif|slice(0, 2)|upper }}</span>
             {% endfor %}
         </div>

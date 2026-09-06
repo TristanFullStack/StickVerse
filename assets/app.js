@@ -33,6 +33,165 @@ document.addEventListener('click', (event) => {
     field.querySelector('[data-password-visibility-slash]')?.toggleAttribute('hidden', !isVisible);
 });
 
+/*
+ * Lecture tactile des passifs.
+ *
+ * Les badges de passif vivent parfois dans un lien ou dans un bouton de
+ * sélection de carte. La capture permet donc d'intercepter l'appui avant que
+ * la carte parente ne soit ouverte ou sélectionnée. Une seule infobulle est
+ * conservée à la fois et sa description peut défiler sur petit écran.
+ */
+const passifViewer = {
+    trigger: null,
+    popover: null,
+    popoverId: 0,
+};
+
+const passifViewerSelector = '[data-passif-viewer-trigger]';
+
+function passifViewerTrigger(event) {
+    return event.target instanceof Element
+        ? event.target.closest(passifViewerSelector)
+        : null;
+}
+
+function fermerPassifViewer() {
+    if (passifViewer.trigger instanceof HTMLElement) {
+        passifViewer.trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    passifViewer.popover?.remove();
+    passifViewer.trigger = null;
+    passifViewer.popover = null;
+}
+
+function positionnerPassifViewer() {
+    const trigger = passifViewer.trigger;
+    const popover = passifViewer.popover;
+
+    if (!(trigger instanceof HTMLElement) || !(popover instanceof HTMLElement)) {
+        return;
+    }
+
+    const marge = 10;
+    const declencheur = trigger.getBoundingClientRect();
+    const dimensions = popover.getBoundingClientRect();
+    const largeurViewport = document.documentElement.clientWidth;
+    const hauteurViewport = window.innerHeight;
+    const gaucheMaximale = Math.max(
+        marge,
+        largeurViewport - dimensions.width - marge,
+    );
+    const gaucheCentre = declencheur.left
+        + ((declencheur.width - dimensions.width) / 2);
+    const gauche = Math.min(
+        gaucheMaximale,
+        Math.max(marge, gaucheCentre),
+    );
+    const placeDessus = declencheur.top - dimensions.height - marge;
+    const placeDessous = declencheur.bottom + marge;
+    const haut = placeDessus >= marge || placeDessous + dimensions.height > hauteurViewport - marge
+        ? Math.max(marge, placeDessus)
+        : placeDessous;
+
+    popover.style.left = `${gauche}px`;
+    popover.style.top = `${Math.min(haut, Math.max(marge, hauteurViewport - dimensions.height - marge))}px`;
+}
+
+function ouvrirPassifViewer(trigger) {
+    const nom = String(trigger.dataset.passifName ?? 'Passif').trim() || 'Passif';
+    const description = String(trigger.dataset.passifDescription ?? '').trim();
+    const popover = document.createElement('aside');
+    const titre = document.createElement('strong');
+    const texte = document.createElement('p');
+    const aide = document.createElement('small');
+
+    fermerPassifViewer();
+
+    passifViewer.popoverId += 1;
+    popover.id = `passif-viewer-${passifViewer.popoverId}`;
+    popover.className = 'passif-viewer-popover';
+    popover.setAttribute('role', 'dialog');
+    popover.setAttribute('aria-label', `Description du passif ${nom}`);
+    popover.tabIndex = 0;
+
+    titre.textContent = nom;
+    texte.textContent = description || 'Aucune description disponible.';
+    aide.textContent = 'Appuie ici pour fermer';
+    popover.append(titre, texte, aide);
+    document.body.append(popover);
+
+    passifViewer.trigger = trigger;
+    passifViewer.popover = popover;
+    trigger.setAttribute('aria-expanded', 'true');
+    trigger.setAttribute('aria-controls', popover.id);
+
+    requestAnimationFrame(positionnerPassifViewer);
+    popover.focus({ preventScroll: true });
+}
+
+function basculerPassifViewer(trigger) {
+    if (passifViewer.trigger === trigger) {
+        fermerPassifViewer();
+
+        return;
+    }
+
+    ouvrirPassifViewer(trigger);
+}
+
+document.addEventListener('click', (event) => {
+    const cible = event.target instanceof Element ? event.target : null;
+
+    if (passifViewer.popover instanceof HTMLElement && cible
+        && passifViewer.popover.contains(cible)) {
+        event.preventDefault();
+        event.stopPropagation();
+        fermerPassifViewer();
+
+        return;
+    }
+
+    const trigger = passifViewerTrigger(event);
+    if (!(trigger instanceof HTMLElement)) {
+        if (passifViewer.popover) {
+            fermerPassifViewer();
+        }
+
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    basculerPassifViewer(trigger);
+}, true);
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && passifViewer.popover) {
+        event.preventDefault();
+        event.stopPropagation();
+        fermerPassifViewer();
+
+        return;
+    }
+
+    if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+    }
+
+    const trigger = passifViewerTrigger(event);
+    if (!(trigger instanceof HTMLElement)) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    basculerPassifViewer(trigger);
+}, true);
+
+window.addEventListener('resize', positionnerPassifViewer);
+window.addEventListener('scroll', positionnerPassifViewer, true);
+
 // Le contrôle visuel doit rester disponible même si un contrôleur Stimulus
 // est encore en cours de chargement. Les contrôleurs métier sont chargés juste
 // après l'installation de ces interactions de base.

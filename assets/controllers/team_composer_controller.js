@@ -159,7 +159,16 @@ export default class extends Controller {
                     const badge = document.createElement('span');
                     badge.className = 'team-slot-passif';
                     badge.textContent = String(passif.nom ?? 'Passif');
-                    badge.title = [passif.nom, passif.description].filter(Boolean).join(' — ');
+                    const nomPassif = String(passif.nom ?? 'Passif');
+                    const descriptionPassif = String(passif.description ?? '');
+                    badge.title = [nomPassif, descriptionPassif].filter(Boolean).join(' — ');
+                    badge.dataset.passifViewerTrigger = '';
+                    badge.dataset.passifName = nomPassif;
+                    badge.dataset.passifDescription = descriptionPassif;
+                    badge.setAttribute('aria-label', `Lire le passif ${nomPassif}`);
+                    badge.setAttribute('role', 'button');
+                    badge.setAttribute('aria-expanded', 'false');
+                    badge.tabIndex = 0;
                     passifs.append(badge);
                 });
             }

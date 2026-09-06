@@ -18,7 +18,16 @@
             {% if stickman.passifs is not empty %}
                 <ul class="wiki-passifs-list">
                     {% for passif in stickman.passifs|slice(0, 6) %}
-                        <li><strong>{{ passif.nom|default('Passif') }}</strong>{% if passif.description|default('') %} — {{ passif.description }}{% endif %}</li>
+                        {% set nomPassif = passif.nom|default('Passif') %}
+                        {% set descriptionPassif = passif.description|default('') %}
+                        <li
+                            data-passif-viewer-trigger
+                            data-passif-name="{{ nomPassif|e('html_attr') }}"
+                            data-passif-description="{{ descriptionPassif|e('html_attr') }}"
+                            role="button"
+                            tabindex="0"
+                            aria-expanded="false"
+                        ><strong>{{ nomPassif }}</strong>{% if descriptionPassif %} — {{ descriptionPassif }}{% endif %}</li>
                     {% endfor %}
                 </ul>
             {% else %}

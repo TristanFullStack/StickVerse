@@ -104,6 +104,25 @@
                         <img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
                         <p>Quantité : {{ inventaire.quantite }}</p>
                         <p>Puissance : {{ puissances[stickman.id]|default('—') }}</p>
+                        <span class="stickman-card-passifs" aria-label="Passifs de {{ stickman.nom }}">
+                            {% for passif in stickman.passifs|default([])|slice(0, 6) %}
+                                {% set nomPassif = passif.nom|default('Passif') %}
+                                {% set descriptionPassif = passif.description|default('') %}
+                                <span
+                                    class="stickman-card-passif"
+                                    title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                                    aria-label="Lire le passif {{ nomPassif }}"
+                                    data-passif-viewer-trigger
+                                    data-passif-name="{{ nomPassif|e('html_attr') }}"
+                                    data-passif-description="{{ descriptionPassif|e('html_attr') }}"
+                                    role="button"
+                                    tabindex="0"
+                                    aria-expanded="false"
+                                >{{ nomPassif|slice(0, 2)|upper }}</span>
+                            {% else %}
+                                <small>Aucun passif</small>
+                            {% endfor %}
+                        </span>
                         <span class="inventory-sale-price">{{ prix_vente[inventaire.id]|default(0) }} pièces / carte</span>
                         {% if equipeProtegee %}<span class="inventory-sale-protection">1 exemplaire réservé à une équipe</span>{% endif %}
                         <span class="inventory-sale-selected" data-inventory-sale-quantity>0 vendu</span>
