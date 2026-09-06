@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Service\VerificationEmailService;
 use App\Service\LimitationActionsSensiblesService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +23,7 @@ final class VerificationEmailController extends AbstractController
         string $jeton,
         VerificationEmailService $verificationEmailService,
         Security $security,
+        EntityManagerInterface $entityManager,
     ): Response {
         $utilisateur = $verificationEmailService->confirmer($jeton);
 
@@ -33,13 +35,30 @@ final class VerificationEmailController extends AbstractController
             );
         }
 
-        $security->login($utilisateur);
+        $connexionAutomatique = $utilisateur->doitSeConnecterAutomatiquementApresVerification();
+        // L’intention ne doit être utilisable qu’une seule fois, même si le
+        // lien de confirmation est ouvert dans plusieurs onglets.
+        $utilisateur->setConnexionAutomatiqueApresVerification(false);
+        $entityManager->flush();
+
+        if ($connexionAutomatique) {
+            $security->login($utilisateur);
+            $this->addFlash(
+                'success',
+                'Ton adresse e-mail est confirmée. Bienvenue sur StickVerse !',
+            );
+
+            return $this->redirectToRoute('app_home');
+        }
+
         $this->addFlash(
             'success',
-            'Ton adresse e-mail est confirmée. Bienvenue sur StickVerse !',
+            'Ton adresse e-mail est confirmée. Tu peux maintenant te connecter.',
         );
 
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute('app_login', [
+            '_username' => $utilisateur->getEmail(),
+        ]);
     }
 
     #[Route(

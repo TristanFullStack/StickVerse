@@ -46,6 +46,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $dateExpirationVerificationEmail = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $connexionAutomatiqueApresVerification = false;
+
     #[ORM\Column(length: 24)]
     private string $pseudo;
 
@@ -174,6 +177,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->emailVerifie = true;
         $this->jetonVerificationEmailHash = null;
         $this->dateExpirationVerificationEmail = null;
+
+        return $this;
+    }
+
+    public function doitSeConnecterAutomatiquementApresVerification(): bool
+    {
+        return $this->connexionAutomatiqueApresVerification;
+    }
+
+    public function setConnexionAutomatiqueApresVerification(bool $connexionAutomatique): static
+    {
+        $this->connexionAutomatiqueApresVerification = $connexionAutomatique;
 
         return $this;
     }

@@ -29,6 +29,15 @@ security:
                 max_attempts: 5
                 interval: '1 minute'
 
+            remember_me:
+                secret: '%kernel.secret%'
+                name: STICKVERSE_REMEMBER_ME
+                lifetime: 2592000
+                path: /
+                secure: auto
+                httponly: true
+                samesite: lax
+
             logout:
                 path: app_logout
                 target: app_wiki

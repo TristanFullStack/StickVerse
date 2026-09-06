@@ -2747,3 +2747,308 @@ body.crate-opening-active {
         padding: 20px 16px;
     }
 }
+
+/* Couche responsive commune : les pages partagent ces garde-fous pour rester
+   utilisables sur les petits téléphones comme sur les grands écrans. */
+html {
+    overflow-x: hidden;
+}
+
+body {
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.site-header,
+.site-content,
+.site-content > *,
+.page-heading,
+.section-heading,
+.admin-page-heading,
+.admin-caisse-group-heading,
+.team-composer,
+.auth-layout,
+.auth-card,
+.auth-aside {
+    min-width: 0;
+}
+
+.site-navigation,
+.site-account,
+.site-admin-navigation,
+.site-admin-links {
+    min-width: 0;
+}
+
+.site-navigation a,
+.site-account a,
+.site-admin-navigation a,
+.button-link,
+button,
+input[type='submit'],
+input[type='button'] {
+    min-height: 44px;
+}
+
+.site-navigation a,
+.site-account a,
+.site-admin-navigation a {
+    display: inline-flex;
+    align-items: center;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+}
+
+pre {
+    max-width: 100%;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+.dashboard-card,
+.dashboard-section,
+.profile-section,
+.reward-card,
+.reward-item,
+.actualite-card,
+.actualite-detail,
+.wiki-detail-content,
+.caisse-detail,
+.caisse-content-row,
+.team-saved-card,
+.team-form-panel,
+.admin-caisse-group,
+.auth-card,
+.auth-aside {
+    overflow-wrap: anywhere;
+}
+
+.classement-table-scroll,
+.admin-table-scroll,
+.resultat-round-tableau,
+.historique-round-tableau {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 700px) {
+    .site-header {
+        gap: 8px 10px;
+        padding: 10px 12px;
+    }
+
+    .site-name {
+        font-size: 20px;
+    }
+
+    .site-navigation {
+        display: flex;
+        width: 100%;
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding-bottom: 3px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .site-navigation a,
+    .site-account a,
+    .site-admin-navigation a {
+        flex: 0 0 auto;
+        padding: 8px 9px;
+    }
+
+    .site-account {
+        width: 100%;
+        margin-left: 0;
+        gap: 6px;
+    }
+
+    .site-account > span {
+        max-width: 100%;
+    }
+
+    .site-admin-navigation {
+        width: 100%;
+    }
+
+    .site-admin-links {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 3px;
+    }
+
+    .site-content {
+        padding: 16px 12px;
+    }
+
+    .page-heading,
+    .section-heading,
+    .admin-page-heading,
+    .admin-caisse-group-heading,
+    .team-composer-header,
+    .team-panel-heading,
+    .team-summary-heading,
+    .team-member-mini-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .page-actions,
+    .admin-caisse-group-actions,
+    .admin-table-actions {
+        width: 100%;
+    }
+
+    .page-actions > *,
+    .admin-caisse-group-actions > *,
+    .admin-table-actions > * {
+        flex: 1 1 auto;
+    }
+
+    .page-actions .button-link,
+    .admin-primary-action {
+        text-align: center;
+    }
+
+    .dashboard-grid,
+    .team-saved-list,
+    .reward-grid,
+    .wiki-detail-grid,
+    .catalogue-detail,
+    .stickmen-list,
+    .caisses-list,
+    .inventory-crates-list,
+    .inventory-cards-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .caisse-content-row {
+        align-items: flex-start;
+    }
+
+    .caisse-content-row img {
+        width: 60px;
+        height: 60px;
+        flex: 0 0 60px;
+    }
+
+    .reward-item form {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .reward-item form button {
+        width: 100%;
+    }
+
+    [data-classement] th,
+    [data-classement] td,
+    [data-classement-saison] th,
+    [data-classement-saison] td,
+    [data-recompenses-divisions] th,
+    [data-recompenses-divisions] td,
+    [data-classement-puissance] th,
+    [data-classement-puissance] td {
+        padding: 8px 9px;
+    }
+
+    .inventory-sale-cart {
+        bottom: 6px;
+        margin-inline: 0;
+        padding: 10px;
+    }
+
+    .auth-checkbox {
+        align-items: flex-start;
+    }
+
+    .auth-remember-help {
+        display: block;
+        margin-top: 3px;
+        color: #536574;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 15px;
+    }
+
+    h1 {
+        font-size: clamp(1.6rem, 8vw, 2.1rem);
+        overflow-wrap: anywhere;
+    }
+
+    h2 {
+        font-size: clamp(1.25rem, 6vw, 1.7rem);
+    }
+
+    .site-navigation a,
+    .site-account a,
+    .site-admin-navigation a {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .stickman-card-image {
+        height: 145px;
+    }
+
+    .admin-caisse-summary div {
+        min-width: 50%;
+        flex: 1 1 50%;
+    }
+
+    .admin-caisse-table {
+        font-size: 13px;
+    }
+
+    .auth-submit,
+    .auth-secondary-submit {
+        width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .site-account {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .site-account a {
+        justify-content: center;
+    }
+
+    .site-content {
+        padding-inline: 8px;
+    }
+
+    .auth-card,
+    .auth-aside {
+        padding-inline: 12px;
+    }
+}

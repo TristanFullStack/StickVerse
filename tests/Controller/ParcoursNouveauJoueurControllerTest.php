@@ -136,4 +136,27 @@ final class ParcoursNouveauJoueurControllerTest extends WebTestCase
         );
     }
 
+    public function testInscriptionMemoriseLaConnexionUniquementSurDemande(): void
+    {
+        $email = sprintf('connexion-apres-confirmation-%s@example.com', bin2hex(random_bytes(6)));
+
+        $this->client->request('GET', '/register');
+        $this->client->submitForm('Créer mon compte', [
+            'registration_form[pseudo]' => 'ConnexionAuto',
+            'registration_form[email]' => $email,
+            'registration_form[plainPassword]' => 'mot-de-passe-solide',
+            'registration_form[agreeTerms]' => '1',
+            'registration_form[connexionAutomatique]' => '1',
+        ]);
+
+        self::assertResponseRedirects('/login');
+
+        $utilisateur = static::getContainer()
+            ->get(UserRepository::class)
+            ->findOneBy(['email' => $email]);
+
+        self::assertInstanceOf(User::class, $utilisateur);
+        self::assertTrue($utilisateur->doitSeConnecterAutomatiquementApresVerification());
+    }
+
 }

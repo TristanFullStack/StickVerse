@@ -8716,6 +8716,16 @@ de compte.
 - Suite complète PHPUnit : 289 tests réussis, 2 178 assertions.
 - Compilation des assets de production et linter Twig validés.
 
+## J107 — Responsive global et connexion persistante
+
+- Audit et renforcement responsive des gabarits communs : navigation mobile défilable, grilles qui se replient, tableaux contenus dans des zones défilables, boutons tactiles et contenus longs qui ne débordent plus.
+- Ajustements dédiés aux écrans de 320 px à grand écran pour l’accueil, les formulaires, les cartes, l’inventaire, la boutique, les classements, les récompenses, les équipes et les combats.
+- Ajout de la case « Rester connecté sur cet appareil » avec le mécanisme Symfony `remember_me` (cookie HttpOnly, SameSite=Lax, Secure en HTTPS, durée de 30 jours) et suppression du cookie lors d’une connexion classique/déconnexion.
+- Ajout de l’option « Me connecter automatiquement après confirmation de mon e-mail » : préférence conservée côté serveur, consommée une seule fois après validation, sans mot de passe dans le navigateur.
+- Après confirmation manuelle, redirection vers la connexion avec l’adresse e-mail préremplie, sans révéler ni conserver le mot de passe.
+- Ajout d’une migration Doctrine pour la préférence d’auto-connexion et de tests fonctionnels pour remember-me, déconnexion, inscription et confirmation e-mail.
+- Validation : 294 tests PHPUnit / 2214 assertions, lint Twig/YAML, compilation des assets de production et vérification `git diff --check`.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

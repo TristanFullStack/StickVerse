@@ -28,8 +28,9 @@
                 }
             }) }}
                 <p id="inscription-aide" class="auth-form-intro">
-                    Tous les champs sont obligatoires. Utilise une adresse e-mail à laquelle
-                    tu as accès : un lien de confirmation y sera envoyé.
+                    Les champs d’identité sont obligatoires. Utilise une adresse e-mail à laquelle
+                    tu as accès : un lien de confirmation y sera envoyé. L’option de connexion
+                    automatique reste facultative.
                 </p>
 
                 {{ form_row(registrationForm.pseudo, {
@@ -66,6 +67,11 @@
                 {{ form_row(registrationForm.agreeTerms, {
                     label: 'J’accepte les conditions d’utilisation de StickVerse',
                     row_attr: {class: 'auth-field auth-checkbox'}
+                }) }}
+                {{ form_row(registrationForm.connexionAutomatique, {
+                    label: 'Me connecter automatiquement après confirmation de mon e-mail',
+                    help: 'Tu ne seras jamais connecté avant d’avoir confirmé ton adresse.',
+                    row_attr: {class: 'auth-field auth-checkbox auth-remember-field'}
                 }) }}
 
                 <button type="submit" class="auth-submit">Créer mon compte</button>

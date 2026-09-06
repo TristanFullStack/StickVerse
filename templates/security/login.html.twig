@@ -78,6 +78,14 @@
                         </div>
                     </div>
 
+                    <div class="auth-field auth-checkbox auth-remember-field">
+                        <input type="checkbox" name="_remember_me" id="remember_me" value="1">
+                        <div>
+                            <label for="remember_me">Rester connecté sur cet appareil</label>
+                            <small class="auth-remember-help">À utiliser uniquement sur un appareil personnel.</small>
+                        </div>
+                    </div>
+
                     <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 
                     <button class="auth-submit" type="submit">Se connecter</button>

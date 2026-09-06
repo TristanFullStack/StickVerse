@@ -33,6 +33,9 @@ class RegistrationController extends AbstractController
 
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $user->setEmailVerifie(false);
+            $user->setConnexionAutomatiqueApresVerification(
+                (bool) $form->get('connexionAutomatique')->getData(),
+            );
 
             $entityManager->persist($user);
             $initialisationNouveauJoueur->initialiser($user);

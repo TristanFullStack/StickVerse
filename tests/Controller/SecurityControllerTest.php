@@ -16,6 +16,7 @@ final class SecurityControllerTest extends WebTestCase
         self::assertSelectorExists('form.auth-form[action="/login"]');
         self::assertSelectorExists('input#username[autocomplete="email"]');
         self::assertSelectorExists('input#password[autocomplete="current-password"]');
+        self::assertSelectorExists('input#remember_me[type="checkbox"][name="_remember_me"]');
         self::assertSelectorExists(
             '[data-password-visibility] button.auth-password-toggle[data-password-visibility-toggle][aria-controls="password"][aria-label="Afficher le mot de passe"]',
         );
@@ -35,6 +36,7 @@ final class SecurityControllerTest extends WebTestCase
         self::assertSelectorExists('input[name="registration_form[pseudo]"][maxlength="24"]');
         self::assertSelectorExists('input[name="registration_form[email]"][type="email"]');
         self::assertSelectorExists('input[name="registration_form[plainPassword]"][autocomplete="new-password"]');
+        self::assertSelectorExists('input[name="registration_form[connexionAutomatique]"][type="checkbox"]');
         self::assertSelectorExists(
             '[data-password-visibility] button.auth-password-toggle[data-password-visibility-toggle][aria-controls="registration_form_plainPassword"][aria-label="Afficher le mot de passe"]',
         );
