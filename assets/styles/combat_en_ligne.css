@@ -2482,3 +2482,171 @@ body:has(#rapport-combat) {
         line-height: 1.2;
     }
 }
+
+/* HUD téléphone V2 : les cartes occupent les deux colonnes latérales et le
+   panneau de commandes retrouve toute la largeur sous les équipes. */
+@media (max-width: 560px) {
+    #combat-en-ligne .combat-arene {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "equipe-moi equipe-adverse"
+            "commandes commandes";
+        align-items: start;
+        gap: 6px;
+    }
+
+    #combat-en-ligne .combat-arene .combat-equipe-moi {
+        grid-area: equipe-moi;
+    }
+
+    #combat-en-ligne .combat-arene .combat-equipe-adversaire {
+        grid-area: equipe-adverse;
+    }
+
+    #combat-en-ligne .combat-arene .combat-centre {
+        grid-area: commandes;
+        grid-row: auto;
+        min-width: 0;
+        margin-top: 1px;
+        padding: 6px;
+    }
+
+    #combat-en-ligne .combat-arene
+        [data-combat-en-ligne-target="moiCombattants"],
+    #combat-en-ligne .combat-arene
+        [data-combat-en-ligne-target="adversaireCombattants"] {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant {
+        border-radius: 6px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-titre {
+        min-height: 28px;
+        padding: 4px 4px 2px;
+        font-size: 10px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-image {
+        height: clamp(82px, 25vw, 118px);
+        padding: 3px 5px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-vie {
+        padding: 4px 5px 5px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-vie-informations {
+        margin-bottom: 3px;
+        font-size: 9px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-vie-barre {
+        height: 6px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-passifs {
+        min-height: 30px;
+        gap: 5px;
+        padding: 4px 5px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-passif {
+        width: 24px;
+        height: 24px;
+        flex-basis: 24px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-statistiques {
+        padding: 5px 4px;
+        font-size: 9px;
+        line-height: 1.3;
+    }
+
+    #combat-en-ligne .combat-arene .carte-combattant-passif-details {
+        right: max(8px, env(safe-area-inset-right));
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        left: max(8px, env(safe-area-inset-left));
+        max-height: min(30dvh, 230px);
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    #combat-en-ligne .combat-arene .combat-centre {
+        gap: 5px;
+    }
+
+    #combat-en-ligne .combat-centre .capacites-tactiques {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #combat-en-ligne .combat-centre .plan-combat,
+    #combat-en-ligne .combat-centre .preparation-combat,
+    #combat-en-ligne .combat-centre .resultat-round-compact {
+        padding: 7px;
+    }
+
+    #combat-en-ligne .combat-centre .plan-combat h3,
+    #combat-en-ligne .combat-centre .preparation-combat h3,
+    #combat-en-ligne .combat-centre .resultat-round-compact h3 {
+        margin-bottom: 5px;
+        font-size: 11px;
+    }
+
+    #combat-en-ligne .combat-centre .plan-tactique-instruction,
+    #combat-en-ligne .combat-centre .plan-tactique-resume {
+        padding: 7px 8px;
+        font-size: 10px;
+        line-height: 1.35;
+    }
+
+    #combat-en-ligne .combat-centre .plan-tactique-actions {
+        gap: 5px;
+        margin: 5px 0;
+    }
+
+    #combat-en-ligne .combat-centre .plan-tactique-action {
+        min-height: 44px;
+        padding: 5px 4px;
+        font-size: 10px;
+    }
+
+    #combat-en-ligne .combat-centre .plan-tactique-action span {
+        margin-top: 3px;
+        font-size: 9px;
+    }
+
+    #combat-en-ligne .combat-centre
+        [data-combat-en-ligne-target="planForm"] {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 6px;
+    }
+
+    #combat-en-ligne .combat-centre
+        [data-combat-en-ligne-target="envoyerPlanButton"] {
+        grid-column: 2;
+        justify-self: end;
+        width: auto;
+        min-width: 142px;
+        min-height: 44px;
+        margin-top: 5px;
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+
+    #combat-en-ligne .combat-centre .plan-selects-secours,
+    #combat-en-ligne .combat-centre .plan-tactique {
+        grid-column: 1 / -1;
+    }
+
+    #combat-en-ligne .combat-centre .resultat-round-tableau {
+        max-height: 130px;
+    }
+}

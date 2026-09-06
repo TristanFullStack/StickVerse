@@ -8780,6 +8780,21 @@ de compte.
 - Conservation des règles serveur, des protections de sélection et du mode
   réduit pour les utilisateurs qui le préfèrent.
 
+## J111 — HUD combat mobile en colonnes lisibles
+
+- Sur téléphone, l’arène place désormais l’équipe du joueur à gauche et
+  l’équipe adverse à droite, avec une carte par ligne dans chaque colonne pour
+  préserver les illustrations, les PV et les boutons de passifs.
+- Le panneau de commandes, les capacités, le plan et les résultats passent
+  sous les deux équipes sur toute la largeur au lieu d’être comprimés dans une
+  colonne centrale étroite.
+- Le bouton « Valider le tour » reste en bas à droite du formulaire avec une
+  zone tactile confortable ; les listes de secours restent disponibles sans
+  perturber la lecture principale.
+- La fiche d’un passif est agrandie et conserve un texte lisible, y compris
+  sur les petits écrans, tout en gardant le focus mobile discret sur les
+  illustrations.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
