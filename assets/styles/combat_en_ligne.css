@@ -392,6 +392,33 @@ body:has(#rapport-combat) {
     border-color: #ffffff;
 }
 
+#combat-en-ligne .carte-combattant.est-en-attente {
+    z-index: 3;
+    outline: 3px solid #ffd34d;
+    outline-offset: 3px;
+    border-color: #fff3a6;
+    box-shadow:
+        0 0 0 2px rgba(255, 211, 77, 0.35),
+        0 12px 28px rgba(255, 175, 0, 0.35);
+}
+
+#combat-en-ligne .carte-combattant.est-en-attente::after {
+    content: "Clique à nouveau pour confirmer";
+    position: absolute;
+    z-index: 3;
+    right: 6px;
+    bottom: 6px;
+    left: 6px;
+    padding: 4px 5px;
+    color: #201500;
+    border-radius: 4px;
+    background: #ffd34d;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.15;
+    text-align: center;
+}
+
 #combat-en-ligne .carte-combattant-choix {
     position: absolute;
     z-index: 2;
@@ -869,6 +896,23 @@ body:has(#rapport-combat) {
     grid-column: 1 / -1;
     justify-self: center;
     min-width: min(100%, 340px);
+}
+
+#combat-en-ligne .plan-reinitialiser {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: 40px;
+    color: #ffe3a6;
+    border: 1px solid #9a6e24;
+    background: #2b2110;
+    box-shadow: none;
+}
+
+#combat-en-ligne .plan-reinitialiser:hover,
+#combat-en-ligne .plan-reinitialiser:focus-visible {
+    color: #241700;
+    border-color: #ffd34d;
+    background: #ffd34d;
 }
 
 #combat-en-ligne [data-combat-en-ligne-target="abandonButton"],

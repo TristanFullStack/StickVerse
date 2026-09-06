@@ -54,6 +54,7 @@ export default class extends Controller {
         'cibleDefenseX',
         'cibleAttaqueY',
         'cibleDefenseY',
+        'reinitialiserPlanButton',
         'envoyerPlanButton',
         'abandonButton',
         'annulerButton',
@@ -89,6 +90,7 @@ export default class extends Controller {
         this.minuterieActualisation = null;
         this.actionEnCours = false;
         this.actionPlanActive = 'cibleAttaqueX';
+        this.selectionPlanEnAttente = null;
         this.passifDetailsCompteur = 0;
         this.passifOuvert = this.lirePassifOuvert();
         this.etatsInteractions = new Map();
@@ -149,12 +151,18 @@ export default class extends Controller {
             return;
         }
 
+        if (this.actionPlanActive !== cle) {
+            this.selectionPlanEnAttente = null;
+        }
+
         this.actionPlanActive = cle;
         this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();
     }
 
     synchroniserPlan() {
+        this.selectionPlanEnAttente = null;
+
         if (!this.clesPlan().includes(this.actionPlanActive)) {
             this.actionPlanActive = 'cibleAttaqueX';
         }
@@ -200,6 +208,34 @@ export default class extends Controller {
 
             await this.chargerCombat(combatId);
         });
+    }
+
+    reinitialiserPlanManuellement(event) {
+        event?.preventDefault();
+
+        if (
+            this.actionEnCours
+            || !this.planEstDisponible(this.combat)
+        ) {
+            return;
+        }
+
+        this.effacerEtatPlan();
+        this.effacerPassifOuvert();
+        this.selectionPlanEnAttente = null;
+
+        for (const cle of this.clesPlan()) {
+            const select = this.selectPlan(cle);
+
+            if (select) {
+                select.value = '';
+            }
+        }
+
+        this.planFormTarget.reset();
+        this.actionPlanActive = 'cibleAttaqueX';
+        this.mettreAJourPlanTactique();
+        this.afficherInformation('Tes choix ont été réinitialisés.');
     }
 
     async confirmerPret() {
@@ -550,6 +586,9 @@ export default class extends Controller {
     async chargerCombat(combatId) {
         const etatPlanAvantActualisation =
             this.sauvegarderEtatPlan() ?? this.lireEtatPlan(combatId);
+        // Une cible choisie avec un seul clic reste locale : un refresh ne
+        // doit jamais la transformer en choix confirmé.
+        this.selectionPlanEnAttente = null;
 
         this.annulerActualisation();
         this.requeteEnCours?.abort();
@@ -1337,6 +1376,8 @@ export default class extends Controller {
             return;
         }
 
+        this.selectionPlanEnAttente = null;
+
         for (const cle of this.clesPlan()) {
             const select = this.selectPlan(cle);
             const valeur = etat.selections?.[cle] ?? '';
@@ -1359,6 +1400,7 @@ export default class extends Controller {
     reinitialiserPlanPourNouveauTour() {
         this.effacerEtatPlan();
         this.effacerPassifOuvert();
+        this.selectionPlanEnAttente = null;
 
         for (const cle of this.clesPlan()) {
             const select = this.selectPlan(cle);
@@ -1422,6 +1464,7 @@ export default class extends Controller {
         this.planSectionTarget.hidden = !peutJouer;
 
         if (!peutJouer) {
+            this.selectionPlanEnAttente = null;
             delete this.combatActifTarget.dataset.guidagePhase;
 
             return;
@@ -1565,6 +1608,7 @@ export default class extends Controller {
     selectionnerCiblePlan(camp, slot) {
         if (
             this.planSectionTarget.hidden
+            || this.planEstComplet()
             || camp !== this.campPourActionPlan(this.actionPlanActive)
         ) {
             return;
@@ -1578,7 +1622,23 @@ export default class extends Controller {
             return;
         }
 
+        const selectionEnAttente = this.selectionPlanEnAttente;
+
+        if (
+            selectionEnAttente?.cle !== this.actionPlanActive
+            || selectionEnAttente.slot !== slot
+        ) {
+            this.selectionPlanEnAttente = {
+                cle: this.actionPlanActive,
+                slot,
+            };
+            this.mettreAJourPlanTactique();
+
+            return;
+        }
+
         select.value = slot;
+        this.selectionPlanEnAttente = null;
         this.actionPlanActive = this.prochaineActionPlan(
             this.actionPlanActive,
             true,
@@ -1638,9 +1698,12 @@ export default class extends Controller {
             }
         }
 
+        const selectionEnAttente = this.selectionPlanEnAttente;
         this.instructionPlanTarget.textContent = planComplet
             ? 'Plan complet — vérifie les attaques et les protections avant de lancer le tour.'
-            : libelles[this.actionPlanActive] ?? 'Choisis une cible.';
+            : selectionEnAttente?.cle === this.actionPlanActive
+                ? 'Cible en attente — clique une seconde fois sur la même carte pour confirmer.'
+                : libelles[this.actionPlanActive] ?? 'Choisis une cible.';
         this.envoyerPlanButtonTarget.disabled = this.clesPlan().some(
             (cle) => this.selectPlan(cle)?.value === ''
         );
@@ -1661,6 +1724,7 @@ export default class extends Controller {
             '.carte-combattant[data-slot][data-camp]'
         );
         const planComplet = this.planEstComplet();
+        const selectionEnAttente = this.selectionPlanEnAttente;
         const campActif = this.campPourActionPlan(this.actionPlanActive);
         const choixParCarte = new Map();
         const libelles = {
@@ -1690,6 +1754,10 @@ export default class extends Controller {
                 && carte.dataset.camp === campActif;
             const identifiant = `${carte.dataset.camp}:${carte.dataset.slot}`;
             const choix = choixParCarte.get(identifiant) ?? [];
+            const estEnAttente = selectionEnAttente?.cle
+                === this.actionPlanActive
+                && selectionEnAttente.slot === carte.dataset.slot
+                && carte.dataset.camp === campActif;
             const conteneur = carte.querySelector(
                 '.carte-combattant-choix'
             );
@@ -1699,6 +1767,7 @@ export default class extends Controller {
                 estSelectionnable,
             );
             carte.classList.toggle('est-choisie', choix.length > 0);
+            carte.classList.toggle('est-en-attente', estEnAttente);
             carte.tabIndex = estSelectionnable ? 0 : -1;
 
             if (estSelectionnable) {
@@ -1710,7 +1779,9 @@ export default class extends Controller {
             carte.setAttribute(
                 'aria-label',
                 estSelectionnable
-                    ? `Choisir ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                    ? estEnAttente
+                        ? `Confirmer ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                        : `Choisir ${carte.dataset.slot} pour ${this.actionPlanActive}`
                     : carte.textContent.trim(),
             );
 

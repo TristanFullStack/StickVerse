@@ -8841,6 +8841,17 @@ de compte.
 - Le joueur peut ainsi vérifier les previews des quatre actions avant de
   valider le tour.
 
+## J116 — Confirmation sécurisée et remise à zéro manuelle
+
+- Une carte ciblée doit maintenant être pressée une première fois pour être
+  mise en attente, puis une seconde fois pour confirmer réellement l’action.
+- Un état visuel et un message indiquent la carte en attente de confirmation,
+  y compris sur téléphone et au clavier.
+- Un bouton permet de vider manuellement les quatre choix, les previews et les
+  passifs avant de recommencer le round en cours.
+- Les sélections en attente ne sont jamais restaurées après un refresh et les
+  cartes deviennent non sélectionnables une fois le plan complet.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
