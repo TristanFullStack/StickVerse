@@ -1575,9 +1575,9 @@ body:has(#rapport-combat) {
     .combat-equipe-moi .carte-combattant,
 #combat-en-ligne .combat-actif[data-guidage-phase="defense"]
     .combat-equipe-adversaire .carte-combattant {
-    opacity: 0.38;
-    filter: saturate(0.45) brightness(0.72);
-    transform: scale(0.96);
+    opacity: 0.66;
+    filter: saturate(0.78) brightness(0.88);
+    transform: scale(0.985);
 }
 
 #combat-en-ligne .combat-actif[data-guidage-phase="attaque"]

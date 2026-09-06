@@ -8805,6 +8805,23 @@ de compte.
 - Le panneau tactique et la validation restent placés sous les deux grilles,
   avec le bouton d’envoi accessible en bas à droite.
 
+## J113 — Préserver l’état du tour pendant les actualisations
+
+- Les choix des quatre cibles et l’étape active sont désormais sauvegardés en
+  session avant chaque actualisation du combat, puis restaurés uniquement si
+  le même round est encore jouable.
+- Le formulaire ne revient plus automatiquement sur ATK X lorsqu’un joueur
+  était en train de préparer une défense ; un échec réseau conserve également
+  le brouillon au lieu de vider le formulaire.
+- Les previews déjà sélectionnées restent visibles pendant toute la saisie,
+  y compris lors du passage des attaques aux défenses et lorsque les cartes du
+  camp opposé deviennent temporairement non sélectionnables.
+- Une fiche de passif ouverte est refermée dès que le joueur change de camp
+  d’action, afin de ne pas afficher un passif de défense pendant la phase
+  d’attaque.
+- Le rythme d’actualisation est ralenti pendant la saisie d’un brouillon et
+  les cartes non actives sont moins désaturées pour conserver leur lisibilité.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

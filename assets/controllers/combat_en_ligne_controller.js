@@ -129,6 +129,7 @@ export default class extends Controller {
             return;
         }
 
+        this.effacerEtatPlan();
         this.combatActifIdCourant = null;
         this.combat = null;
         this.signatureCombatAffiche = null;
@@ -149,18 +150,16 @@ export default class extends Controller {
         }
 
         this.actionPlanActive = cle;
+        this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();
     }
 
     synchroniserPlan() {
-        const premiereActionIncomplete = this.clesPlan().find(
-            (cle) => this.selectPlan(cle)?.value === ''
-        );
-
-        if (premiereActionIncomplete) {
-            this.actionPlanActive = premiereActionIncomplete;
+        if (!this.clesPlan().includes(this.actionPlanActive)) {
+            this.actionPlanActive = 'cibleAttaqueX';
         }
 
+        this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();
     }
 
@@ -199,7 +198,6 @@ export default class extends Controller {
                 this.combat?.csrf?.plan,
             );
 
-            this.planFormTarget.reset();
             await this.chargerCombat(combatId);
         });
     }
@@ -541,6 +539,7 @@ export default class extends Controller {
         this.combatActifIdCourant = null;
         this.combat = null;
         this.signatureCombatAffiche = null;
+        this.effacerEtatPlan();
         this.annulerActualisation();
         this.combatActifTarget.hidden = true;
         this.salonTarget.hidden = false;
@@ -549,6 +548,9 @@ export default class extends Controller {
     }
 
     async chargerCombat(combatId) {
+        const etatPlanAvantActualisation =
+            this.sauvegarderEtatPlan() ?? this.lireEtatPlan(combatId);
+
         this.annulerActualisation();
         this.requeteEnCours?.abort();
 
@@ -639,6 +641,16 @@ export default class extends Controller {
             } else {
                 this.afficherPreparation();
                 this.afficherEtatRound();
+            }
+
+            if (planDisponible) {
+                this.restaurerEtatPlan(
+                    etatPlanAvantActualisation,
+                    donnees,
+                );
+                this.restaurerPassifOuvert();
+            } else {
+                this.effacerEtatPlan(combatId);
             }
 
             if (donnees.forfaitPreparationAutomatique === true) {
@@ -740,8 +752,6 @@ export default class extends Controller {
             'Équipe adverse',
             'adversaire',
         );
-
-        this.restaurerPassifOuvert();
 
         this.afficherCapacitesTactiques();
         this.afficherMenacesFocus();
@@ -1206,7 +1216,145 @@ export default class extends Controller {
             && combat?.planSoumis === false;
     }
 
+    cleEtatPlan(combatId = this.combatActifIdCourant) {
+        const id = this.entierPositif(combatId);
+
+        return id === null
+            ? null
+            : `stickverse.combat.${id}.plan-brouillon`;
+    }
+
+    lireEtatPlan(combatId = this.combatActifIdCourant) {
+        const cle = this.cleEtatPlan(combatId);
+
+        if (cle === null) {
+            return null;
+        }
+
+        try {
+            const valeur = JSON.parse(
+                window.sessionStorage.getItem(cle) ?? 'null'
+            );
+            const id = this.entierPositif(valeur?.combatId);
+            const round = this.entierPositif(valeur?.numeroRound);
+
+            if (
+                id === null
+                || round === null
+                || id !== this.entierPositif(combatId)
+                || !this.clesPlan().every(
+                    (planCle) => typeof valeur?.selections?.[planCle]
+                        === 'string'
+                )
+                || !this.clesPlan().includes(valeur?.actionPlanActive)
+            ) {
+                return null;
+            }
+
+            return {
+                combatId: id,
+                numeroRound: round,
+                actionPlanActive: valeur.actionPlanActive,
+                selections: Object.fromEntries(
+                    this.clesPlan().map((planCle) => [
+                        planCle,
+                        valeur.selections[planCle],
+                    ])
+                ),
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    sauvegarderEtatPlan() {
+        if (
+            !this.combat
+            || !this.planEstDisponible(this.combat)
+            || this.cleEtatPlan() === null
+        ) {
+            return null;
+        }
+
+        const etat = {
+            combatId: this.combatActifIdCourant,
+            numeroRound: this.entierPositif(this.combat.numeroRound),
+            actionPlanActive: this.actionPlanActive,
+            selections: Object.fromEntries(
+                this.clesPlan().map((cle) => [
+                    cle,
+                    this.selectPlan(cle)?.value ?? '',
+                ])
+            ),
+        };
+
+        if (etat.numeroRound === null) {
+            return etat;
+        }
+
+        try {
+            window.sessionStorage.setItem(
+                this.cleEtatPlan(),
+                JSON.stringify(etat),
+            );
+        } catch {
+            // L’état retourné reste utilisable pendant cette actualisation.
+        }
+
+        return etat;
+    }
+
+    effacerEtatPlan(combatId = this.combatActifIdCourant) {
+        const cle = this.cleEtatPlan(combatId);
+
+        if (cle === null) {
+            return;
+        }
+
+        try {
+            window.sessionStorage.removeItem(cle);
+        } catch {
+            // Rien à faire : la session active est déjà prioritaire.
+        }
+    }
+
+    restaurerEtatPlan(etat, combat) {
+        const combatId = this.entierPositif(combat?.combatId);
+        const numeroRound = this.entierPositif(combat?.numeroRound);
+
+        if (
+            !etat
+            || combatId === null
+            || numeroRound === null
+            || etat.combatId !== combatId
+            || etat.numeroRound !== numeroRound
+            || !this.planEstDisponible(combat)
+        ) {
+            return;
+        }
+
+        for (const cle of this.clesPlan()) {
+            const select = this.selectPlan(cle);
+            const valeur = etat.selections?.[cle] ?? '';
+            const optionValide = Array.from(select?.options ?? [])
+                .some((option) => option.value === valeur);
+
+            if (select && (valeur === '' || optionValide)) {
+                select.value = valeur;
+            }
+        }
+
+        if (this.clesPlan().includes(etat.actionPlanActive)) {
+            this.actionPlanActive = etat.actionPlanActive;
+        }
+
+        this.fermerPassifIncompatible();
+        this.mettreAJourPlanTactique();
+    }
+
     reinitialiserPlanPourNouveauTour() {
+        this.effacerEtatPlan();
+
         for (const cle of this.clesPlan()) {
             const select = this.selectPlan(cle);
 
@@ -1321,14 +1469,6 @@ export default class extends Controller {
 
         if (!this.clesPlan().includes(this.actionPlanActive)) {
             this.actionPlanActive = 'cibleAttaqueX';
-        }
-
-        const premiereActionIncomplete = this.clesPlan().find(
-            (cle) => this.selectPlan(cle)?.value === ''
-        );
-
-        if (premiereActionIncomplete) {
-            this.actionPlanActive = premiereActionIncomplete;
         }
 
         this.mettreAJourPlanTactique();
@@ -1454,6 +1594,7 @@ export default class extends Controller {
         this.actionPlanActive = this.prochaineActionPlan(
             this.actionPlanActive,
         );
+        this.fermerPassifIncompatible();
         this.mettreAJourPlanTactique();
     }
 
@@ -1823,7 +1964,10 @@ export default class extends Controller {
     }
 
     afficherApercuCible(carte, camp, slot) {
-        if (this.planEstComplet()) {
+        if (
+            this.planEstComplet()
+            || this.carteEstCiblePlan(carte)
+        ) {
             return;
         }
 
@@ -1992,7 +2136,10 @@ export default class extends Controller {
     }
 
     masquerApercuCible(carte) {
-        if (this.planEstComplet()) {
+        if (
+            this.planEstComplet()
+            || this.carteEstCiblePlan(carte)
+        ) {
             return;
         }
 
@@ -2000,17 +2147,10 @@ export default class extends Controller {
     }
 
     actualiserApercusSurvoles() {
+        this.actualiserApercusPlan();
+
         if (this.planEstComplet()) {
-            this.actualiserApercusPlan();
-
             return;
-        }
-
-        for (const carte of this.participantsTarget.querySelectorAll(
-            '.carte-combattant.affiche-preview-degats, '
-            + '.carte-combattant.affiche-preview-defense'
-        )) {
-            this.masquerApercuCible(carte);
         }
 
         for (const carte of this.participantsTarget.querySelectorAll(
@@ -2039,7 +2179,7 @@ export default class extends Controller {
             '.carte-combattant.affiche-preview-degats, '
             + '.carte-combattant.affiche-preview-defense'
         )) {
-            this.masquerApercuCible(carte);
+            this.masquerApercuDegats(carte);
         }
 
         for (const cle of this.clesPlan()) {
@@ -2062,6 +2202,17 @@ export default class extends Controller {
                 this.afficherApercuDefense(carte, camp, slot, false);
             }
         }
+    }
+
+    carteEstCiblePlan(carte) {
+        if (!carte?.dataset?.camp || !carte?.dataset?.slot) {
+            return false;
+        }
+
+        return this.clesPlan().some((cle) =>
+            this.campPourActionPlan(cle) === carte.dataset.camp
+            && this.selectPlan(cle)?.value === carte.dataset.slot
+        );
     }
 
     afficherPressionAttaque() {
@@ -2366,6 +2517,15 @@ export default class extends Controller {
             return;
         }
 
+        const brouillonActif = this.planEstDisponible(this.combat)
+            && (
+                this.actionPlanActive !== 'cibleAttaqueX'
+                || this.clesPlan().some(
+                    (cle) => this.selectPlan(cle)?.value !== ''
+                )
+            );
+        const delai = brouillonActif ? 7000 : 3000;
+
         this.minuterieActualisation = window.setTimeout(() => {
             if (this.combatActifIdCourant !== null) {
                 if (
@@ -2380,7 +2540,7 @@ export default class extends Controller {
 
                 this.chargerCombat(this.combatActifIdCourant);
             }
-        }, 3000);
+        }, delai);
     }
 
     programmerNouvelEssaiSalon() {
@@ -2588,6 +2748,22 @@ export default class extends Controller {
         this.enregistrerPassifOuvert(carte, bouton.dataset.passifIndex);
     }
 
+    fermerPassifIncompatible() {
+        if (
+            !this.passifOuvert
+            || !this.clesPlan().includes(this.actionPlanActive)
+        ) {
+            return;
+        }
+
+        if (
+            this.passifOuvert.camp
+            !== this.campPourActionPlan(this.actionPlanActive)
+        ) {
+            this.effacerPassifOuvert();
+        }
+    }
+
     restaurerPassifOuvert() {
         const ouvert = this.passifOuvert;
 
@@ -2595,6 +2771,15 @@ export default class extends Controller {
             !ouvert
             || ouvert.combatId !== this.combatActifIdCourant
         ) {
+            return;
+        }
+
+        if (
+            !this.clesPlan().includes(this.actionPlanActive)
+            || ouvert.camp !== this.campPourActionPlan(this.actionPlanActive)
+        ) {
+            this.effacerPassifOuvert();
+
             return;
         }
 
