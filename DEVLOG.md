@@ -8891,6 +8891,17 @@ de compte.
   des équipes pour rester lisibles quand une carte est agrandie pendant une
   sélection d’attaque ou de défense.
 
+## J122 — Preview des PV et infobulles de passifs exclusives
+
+- La preview d’attaque met maintenant à jour les PV affichés sur la carte en
+  cumulant les dégâts sélectionnés, avec un minimum garanti à `0 / PV max`.
+- L’affichage original est restauré dès que la preview disparaît, sans
+  modifier les PV réels du combat.
+- Une seule infobulle de passif peut être ouverte à la fois ; en ouvrir une
+  autre ferme automatiquement la précédente.
+- L’infobulle mobile est légèrement plus haute et son texte encore réduit
+  pour laisser davantage de place aux descriptions longues.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

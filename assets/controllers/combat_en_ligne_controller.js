@@ -2149,6 +2149,8 @@ export default class extends Controller {
             return;
         }
 
+        this.afficherPvPrevisualises(carte, apercu.pvRestants);
+
         const pourcentageActuel = Number(carte.dataset.pourcentageVie ?? 0);
         bande.dataset.mode = 'degats';
         bande.style.left = `${apercu.pourcentageRestant}%`;
@@ -2162,6 +2164,31 @@ export default class extends Controller {
             : '0 dégât sans défense';
         previsualisation.hidden = false;
         carte.classList.add('affiche-preview-degats');
+    }
+
+    afficherPvPrevisualises(carte, pv) {
+        const maximum = Math.max(
+            0,
+            Math.round(Number(carte.dataset.pvMaximum ?? 0)),
+        );
+        const valeurPv = Math.min(
+            maximum,
+            Math.max(0, Math.round(Number(pv) || 0)),
+        );
+        const valeur = carte.querySelector('.carte-combattant-vie-valeur');
+        const barre = carte.querySelector('.carte-combattant-vie-barre');
+
+        if (valeur) {
+            valeur.textContent = `PV ${valeurPv} / ${maximum}`;
+        }
+
+        if (barre) {
+            barre.setAttribute('aria-valuenow', String(valeurPv));
+            barre.setAttribute(
+                'aria-valuetext',
+                `${valeurPv} points de vie sur ${maximum} — aperçu`,
+            );
+        }
     }
 
     afficherApercuDefense(carte, camp, slot, inclureCibleActive = true) {
@@ -2243,6 +2270,7 @@ export default class extends Controller {
             previsualisation.hidden = true;
         }
 
+        this.afficherPvPrevisualises(carte, carte.dataset.pvActuels);
         carte.classList.remove('affiche-preview-degats');
         carte.classList.remove('affiche-preview-defense');
     }
@@ -2878,6 +2906,37 @@ export default class extends Controller {
         }
     }
 
+    fermerAutresInfobullesPassif(infobulleAConserver) {
+        const conteneur = this.participantsTarget;
+
+        if (!conteneur) {
+            return;
+        }
+
+        conteneur.querySelectorAll('.carte-combattant-passif-details')
+            .forEach((infobulle) => {
+                if (infobulle === infobulleAConserver) {
+                    return;
+                }
+
+                infobulle.hidden = true;
+                infobulle.textContent = '';
+                delete infobulle.dataset.passifIndex;
+            });
+
+        conteneur.querySelectorAll(
+            '.carte-combattant-passif[aria-expanded="true"]'
+        ).forEach((bouton) => {
+            const infobulle = bouton
+                .closest('.carte-combattant')
+                ?.querySelector('.carte-combattant-passif-details');
+
+            if (infobulle !== infobulleAConserver) {
+                bouton.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
     sauvegarderPassifOuvert() {
         const bouton = this.participantsTarget?.querySelector(
             '.carte-combattant-passif[aria-expanded="true"]'
@@ -3040,6 +3099,7 @@ export default class extends Controller {
                         return;
                     }
 
+                    this.fermerAutresInfobullesPassif(passifDetails);
                     passifDetails.textContent = libelle;
                     passifDetails.dataset.passifIndex = emplacement.dataset.passifIndex;
                     passifDetails.hidden = false;
