@@ -8925,6 +8925,15 @@ de compte.
 - L’apparition et l’évolution de la barre de dégâts ou de défense sont
   animées progressivement au lieu d’apparaître instantanément.
 
+## J126 — Sélection adaptée au support
+
+- Sur ordinateur, un seul clic valide désormais immédiatement une cible et le
+  survol conserve la preview animée pour préparer un focus.
+- Sur téléphone et tablette tactile, le premier appui prépare la cible et le
+  second appui la confirme, avec un guidage adapté et sans preview de survol.
+- Les états en attente restaurés depuis le brouillon ne sont conservés que sur
+  les appareils tactiles afin d’éviter une confirmation inutile sur PC.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

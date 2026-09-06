@@ -403,7 +403,7 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .carte-combattant.est-en-attente::after {
-    content: "Clique à nouveau pour confirmer";
+    content: "Appuie à nouveau pour confirmer";
     position: absolute;
     z-index: 3;
     right: 6px;

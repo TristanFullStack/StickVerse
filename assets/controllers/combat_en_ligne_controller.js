@@ -1441,7 +1441,8 @@ export default class extends Controller {
                     && !option.disabled
                 ));
 
-        this.selectionPlanEnAttente = optionEnAttenteValide
+        this.selectionPlanEnAttente = this.selectionConfirmationRequise()
+            && optionEnAttenteValide
             ? selectionEnAttente
             : null;
 
@@ -1626,6 +1627,19 @@ export default class extends Controller {
             : 'moi';
     }
 
+    selectionConfirmationRequise() {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        const mediaPointeur = window.matchMedia?.('(pointer: coarse)');
+        const mediaSurvol = window.matchMedia?.('(hover: none)');
+        const pointeurTactile = mediaPointeur?.matches === true;
+        const absenceSurvol = mediaSurvol?.matches === true;
+
+        return pointeurTactile || absenceSurvol;
+    }
+
     synchroniserPhaseGuidage() {
         if (
             this.planSectionTarget.hidden
@@ -1674,6 +1688,19 @@ export default class extends Controller {
             return;
         }
 
+        if (!this.selectionConfirmationRequise()) {
+            select.value = slot;
+            this.selectionPlanEnAttente = null;
+            this.actionPlanActive = this.prochaineActionPlan(
+                this.actionPlanActive,
+                true,
+            );
+            this.fermerPassifIncompatible();
+            this.mettreAJourPlanTactique();
+
+            return;
+        }
+
         const selectionEnAttente = this.selectionPlanEnAttente;
 
         if (
@@ -1719,6 +1746,12 @@ export default class extends Controller {
             return;
         }
 
+        const confirmationRequise = this.selectionConfirmationRequise();
+
+        if (!confirmationRequise) {
+            this.selectionPlanEnAttente = null;
+        }
+
         const planComplet = this.planEstComplet();
         const libelles = {
             cibleAttaqueX: 'ATTAQUES — Sélectionne la cible de ATK X.',
@@ -1750,11 +1783,13 @@ export default class extends Controller {
             }
         }
 
-        const selectionEnAttente = this.selectionPlanEnAttente;
+        const selectionEnAttente = confirmationRequise
+            ? this.selectionPlanEnAttente
+            : null;
         this.instructionPlanTarget.textContent = planComplet
             ? 'Plan complet — vérifie les attaques et les protections avant de lancer le tour.'
             : selectionEnAttente?.cle === this.actionPlanActive
-                ? 'Cible en attente — clique une seconde fois sur la même carte pour confirmer.'
+                ? 'Cible en attente — appuie une seconde fois sur la même carte pour confirmer.'
                 : libelles[this.actionPlanActive] ?? 'Choisis une cible.';
         this.envoyerPlanButtonTarget.disabled = this.clesPlan().some(
             (cle) => this.selectPlan(cle)?.value === ''
@@ -1828,12 +1863,18 @@ export default class extends Controller {
                 carte.removeAttribute('role');
             }
 
+            const libelleSelection = estEnAttente
+                ? this.selectionConfirmationRequise()
+                    ? `Appuie à nouveau pour confirmer ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                    : `Clique pour confirmer ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                : this.selectionConfirmationRequise()
+                    ? `Appuie pour choisir ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                    : `Clique pour choisir ${carte.dataset.slot} pour ${this.actionPlanActive}`;
+
             carte.setAttribute(
                 'aria-label',
                 estSelectionnable
-                    ? estEnAttente
-                        ? `Confirmer ${carte.dataset.slot} pour ${this.actionPlanActive}`
-                        : `Choisir ${carte.dataset.slot} pour ${this.actionPlanActive}`
+                    ? libelleSelection
                     : carte.textContent.trim(),
             );
 
@@ -2066,6 +2107,10 @@ export default class extends Controller {
                 this.selectionnerCiblePlan(camp, combattant.slot);
             });
             carte.addEventListener('mouseenter', () => {
+                if (this.selectionConfirmationRequise()) {
+                    return;
+                }
+
                 this.afficherApercuCible(carte, camp, combattant.slot);
             });
             carte.addEventListener('mouseleave', () => {
@@ -2364,7 +2409,10 @@ export default class extends Controller {
     actualiserApercusSurvoles() {
         this.actualiserApercusPlan();
 
-        if (this.planEstComplet()) {
+        if (
+            this.planEstComplet()
+            || this.selectionConfirmationRequise()
+        ) {
             return;
         }
 
