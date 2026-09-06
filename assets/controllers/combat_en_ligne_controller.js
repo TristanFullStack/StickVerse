@@ -2982,6 +2982,23 @@ export default class extends Controller {
         passifDetails.setAttribute('aria-live', 'polite');
         passifDetails.hidden = true;
 
+        const fermerPassif = () => {
+            passifDetails.hidden = true;
+            passifDetails.textContent = '';
+            delete passifDetails.dataset.passifIndex;
+            passifs.querySelectorAll('.carte-combattant-passif[aria-expanded="true"]')
+                .forEach((bouton) => bouton.setAttribute('aria-expanded', 'false'));
+            this.effacerPassifOuvert();
+        };
+
+        // Toute la fiche est interactive : un clic ou un tap la referme,
+        // sans déclencher la sélection de la carte située dessous.
+        passifDetails.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            fermerPassif();
+        });
+
         // Les emplacements restent prêts pour les futurs passifs, mais une
         // carte sans passif ne doit afficher aucun carré.
         const passifsCarte = Array.isArray(combattant.passifs)
@@ -3018,11 +3035,7 @@ export default class extends Controller {
                             === emplacement.dataset.passifIndex;
 
                     if (estOuvert) {
-                        passifDetails.hidden = true;
-                        passifDetails.textContent = '';
-                        delete passifDetails.dataset.passifIndex;
-                        emplacement.setAttribute('aria-expanded', 'false');
-                        this.effacerPassifOuvert();
+                        fermerPassif();
 
                         return;
                     }
@@ -3046,11 +3059,7 @@ export default class extends Controller {
                         return;
                     }
 
-                    passifDetails.hidden = true;
-                    passifDetails.textContent = '';
-                    delete passifDetails.dataset.passifIndex;
-                    emplacement.setAttribute('aria-expanded', 'false');
-                    this.effacerPassifOuvert();
+                    fermerPassif();
                 });
             } else {
                 emplacement.setAttribute('aria-hidden', 'true');

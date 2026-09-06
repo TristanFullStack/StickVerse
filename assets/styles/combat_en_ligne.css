@@ -2353,10 +2353,13 @@ body:has(#rapport-combat) {
         max-height: min(34dvh, 240px);
         padding: 10px 12px;
         border-radius: 8px;
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1.35;
         text-align: left;
-        pointer-events: none;
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
     }
 }
 
@@ -2621,9 +2624,12 @@ body:has(#rapport-combat) {
         max-height: min(30dvh, 230px);
         padding: 9px 10px;
         border-radius: 8px;
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1.35;
-        pointer-events: none;
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
     }
 
     #combat-en-ligne .combat-arene .combat-centre {

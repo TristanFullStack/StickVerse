@@ -8877,6 +8877,14 @@ de compte.
 - L’infobulle ne bloque plus le bouton du passif en dessous : une seconde
   pression peut donc bien la refermer.
 
+## J120 — Infobulle des passifs défilable et refermable au clic
+
+- Les descriptions longues restent consultables grâce au défilement vertical
+  de l’infobulle sur téléphone.
+- Le texte mobile est légèrement réduit sans perdre sa lisibilité.
+- Toute la fiche de passif est maintenant cliquable ou tapable pour la fermer,
+  sans déclencher la sélection de la carte.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
