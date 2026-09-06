@@ -8870,6 +8870,13 @@ de compte.
   les cartes ne sont plus reconstruites lorsque le polling ne rapporte aucun
   changement utile.
 
+## J119 — Infobulle des passifs lisible et refermable sur mobile
+
+- La fiche de passif utilise une taille de texte compacte sur téléphone pour
+  rester lisible sans recouvrir toute la carte.
+- L’infobulle ne bloque plus le bouton du passif en dessous : une seconde
+  pression peut donc bien la refermer.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
