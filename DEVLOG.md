@@ -8885,6 +8885,12 @@ de compte.
 - Toute la fiche de passif est maintenant cliquable ou tapable pour la fermer,
   sans déclencher la sélection de la carte.
 
+## J121 — Pseudos d’arène plus visibles
+
+- Les noms des deux joueurs sont légèrement plus grands et remontés au-dessus
+  des équipes pour rester lisibles quand une carte est agrandie pendant une
+  sélection d’attaque ou de défense.
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

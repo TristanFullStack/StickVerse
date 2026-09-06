@@ -1472,9 +1472,12 @@ body:has(#rapport-combat) {
 }
 
 #combat-en-ligne .combat-arene h3 {
-    margin: 0 0 7px;
+    position: relative;
+    z-index: 4;
+    margin: -2px 0 7px;
     color: #41bfff;
-    font-size: 15px;
+    font-size: 17px;
+    line-height: 1.1;
     text-align: center;
 }
 
@@ -2105,8 +2108,8 @@ body:has(#rapport-combat) {
     }
 
     #combat-en-ligne .combat-arene h3 {
-        margin-bottom: 3px;
-        font-size: 9px;
+        margin: -1px 0 3px;
+        font-size: 11px;
         line-height: 1.15;
     }
 
