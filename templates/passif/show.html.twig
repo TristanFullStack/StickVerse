@@ -15,7 +15,7 @@
     <section class="admin-list-panel">
         <div class="admin-list-heading"><strong>{{ stickmen|length }} carte{% if stickmen|length != 1 %}s{% endif %} équipée{% if stickmen|length != 1 %}s{% endif %}</strong><span>Les cartes sont mises à jour lors de chaque modification.</span></div>
         <div class="admin-detail-list">
-            {% for stickman in stickmen %}<div><dt>{{ stickman.nom }}</dt><dd><a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">Voir la carte</a></dd></div>{% else %}<p class="admin-empty-inline">Ce passif n’est utilisé par aucune carte.</p>{% endfor %}
+            {% for stickman in stickmen %}<div><dt>{{ stickman.nomAffiche }}</dt><dd><a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">Voir la carte</a></dd></div>{% else %}<p class="admin-empty-inline">Ce passif n’est utilisé par aucune carte.</p>{% endfor %}
         </div>
     </section>
     <div class="admin-secondary-actions"><a href="{{ path('app_passif_index') }}">← Retour au catalogue</a></div>

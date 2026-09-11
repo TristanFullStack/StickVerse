@@ -3,6 +3,7 @@
 {% block title %}Confirmation d’adresse e-mail — StickVerse{% endblock %}
 
 {% block body %}
+<section class="account-panel">
     <h1>Confirmation d’adresse e-mail</h1>
 
     {% if valide %}
@@ -14,4 +15,5 @@
         </p>
         <p><a href="{{ path('app_login') }}">Retour à la connexion</a></p>
     {% endif %}
+</section>
 {% endblock %}

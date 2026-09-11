@@ -110,7 +110,7 @@
                             data-team-composer-target="inventoryCard"
                             data-action="team-composer#selectionnerCarte"
                             data-stickman-id="{{ stickmanId }}"
-                            data-stickman-name="{{ stickman.nom }}"
+                            data-stickman-name="{{ stickman.nomAffiche }}"
                             data-stickman-image="{{ asset('images/stickmen/' ~ stickman.image) }}"
                             data-stickman-rarete="{{ stickman.rarete|default(1) }}"
                             data-stickman-pv="{{ stickman.pv|default(0) }}"
@@ -120,7 +120,7 @@
                             data-stickman-passifs="{{ stickman.passifs|default([])|json_encode|e('html_attr') }}"
                         >
                             <span class="team-inventory-card-top">
-                                <strong>{{ stickman.nom }}</strong>
+                                <strong>{{ stickman.nomAffiche }}</strong>
                                 <small>R{{ stickman.rarete|default(1) }}</small>
                             </span>
                             <img src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="">
@@ -130,7 +130,7 @@
                                 <span>DÉF {{ stickman.defense }}</span>
                             </span>
                             <span class="team-inventory-card-power">Puissance {{ puissances_stickmen[stickmanId]|default(0) }}</span>
-                            <span class="team-inventory-card-passifs" aria-label="Passifs de {{ stickman.nom }}">
+                            <span class="team-inventory-card-passifs" aria-label="Passifs de {{ stickman.nomAffiche }}">
                                 {% for passif in stickman.passifs|default([])|slice(0, 6) %}
                                     {% set nomPassif = passif.nom|default('Passif') %}
                                     {% set descriptionPassif = passif.description|default('') %}

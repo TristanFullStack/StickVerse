@@ -10,6 +10,7 @@ use App\Exception\OuvertureCaisseImpossibleException;
 use App\Exception\SoldePiecesInsuffisantException;
 use App\Repository\CaisseRepository;
 use App\Service\BoutiqueService;
+use App\Service\CollectionJoueurService;
 use App\Service\LimitationActionsSensiblesService;
 use App\Service\OuvertureCaisseService;
 use App\Service\ScorePuissanceService;
@@ -25,12 +26,13 @@ final class CaissePubliqueController extends AbstractController
 {
     #[Route('/caisses', name: 'app_caisse_publique', methods: ['GET'])]
     #[Route('/boutique', name: 'app_boutique', methods: ['GET'])]
-    public function index(CaisseRepository $caisseRepository, Request $request): Response
+    public function index(CaisseRepository $caisseRepository, Request $request, CollectionJoueurService $collectionService): Response
     {
         $caisses = $caisseRepository->trouverDisponibles();
 
         return $this->sansCache($this->render('caisse_publique/index.html.twig', [
             'caisses' => $caisses,
+            'progressions' => $this->getUser() instanceof User ? $collectionService->construire($this->getUser()) : [],
             'jetons_ouverture' => $this->genererJetons($caisses),
             'boutique' => $request->attributes->get('_route') === 'app_boutique',
         ]));

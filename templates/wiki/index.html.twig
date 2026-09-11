@@ -3,7 +3,10 @@
 {% block title %}Wiki des Stickmans - StickVerse{% endblock %}
 
 {% block body %}
-    <h1>Wiki des Stickmans</h1>
+    <header class="page-heading"><div><span class="page-kicker">Encyclopédie</span><h1>Wiki des Stickmans</h1><p>Découvre leurs forces. Trouve les passifs qui feront la différence.</p></div><span class="count-badge">{{ stickmen|length }} Stickmans</span></header>
+    <section data-catalog aria-label="Catalogue des Stickmans">
+    {% include 'components/_catalog_filters.html.twig' %}
+    <p class="empty-state" data-catalog-empty hidden>Aucune carte ne correspond. Essaie une autre recherche ou efface les filtres.</p>
 
     {% if stickmen is empty %}
         <p>Aucun Stickman actif pour le moment.</p>
@@ -19,4 +22,5 @@
 
         </div>
     {% endif %}
+</section>
 {% endblock %}

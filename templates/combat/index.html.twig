@@ -3,7 +3,7 @@
 {% block title %}Combat - StickVerse{% endblock %}
 
 {% block body %}
-    <main class="combat-page">
+    <section class="combat-page">
         <h1>Combat local</h1>
         <p class="combat-context-links"><a href="{{ path('app_classement') }}">Voir le classement</a></p>
 
@@ -53,14 +53,14 @@
                             {% for slot, stickman in slots %}
                                 <article class="combat-stickman">
                                     <h4>
-                                        Slot {{ slot }} — {{ stickman.nom }}
+                                        Slot {{ slot }} — {{ stickman.nomAffiche }}
                                     </h4>
 
                                     <img
                                         src="{{ asset(
                                             'images/stickmen/' ~ stickman.image
                                         ) }}"
-                                        alt="{{ stickman.nom }}"
+                                        alt="{{ stickman.nomAffiche }}"
                                         width="160"
                                     >
 
@@ -160,5 +160,5 @@
                 </section>
             {% endif %}
         {% endif %}
-    </main>
+    </section>
 {% endblock %}

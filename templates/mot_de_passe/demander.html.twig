@@ -3,6 +3,7 @@
 {% block title %}Mot de passe oublié — StickVerse{% endblock %}
 
 {% block body %}
+<section class="account-panel">
     <h1>Mot de passe oublié</h1>
 
     {% for message in app.flashes('success') %}
@@ -20,4 +21,5 @@
     {{ form_end(form) }}
 
     <p><a href="{{ path('app_login') }}">Retour à la connexion</a></p>
+</section>
 {% endblock %}

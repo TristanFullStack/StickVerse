@@ -73,6 +73,17 @@ class Stickman
         return $this->nom;
     }
 
+    /** Libellé de présentation uniquement : ne change ni le nom stocké ni le slug. */
+    public function getNomAffiche(): ?string
+    {
+        return match ($this->nom) {
+            'Assasin' => 'Assassin',
+            'Archer2' => 'Archer II',
+            'Arbalétrier2' => 'Arbalétrier II',
+            default => $this->nom,
+        };
+    }
+
     public function setNom(string $nom): static
     {
         $this->nom = $nom;

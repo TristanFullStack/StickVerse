@@ -1,0 +1,11 @@
+<form class="catalog-filters" data-catalog-filters hidden role="search" aria-label="Filtrer les Stickmans">
+    <label class="catalog-search">Rechercher une carte<input type="search" name="recherche" placeholder="Nom, passif…" autocomplete="off"></label>
+    <label>Rareté<select name="rarete"><option value="">Toutes les raretés</option>
+        {% for niveau, nom in {1: 'Commune', 2: 'Peu commune', 3: 'Rare', 4: 'Épique', 5: 'Légendaire'} %}
+            <option value="{{ niveau }}">R{{ niveau }} · {{ nom }}</option>
+        {% endfor %}
+    </select></label>
+    <label>Collection<select name="collection"><option value="">Toutes les collections</option></select></label>
+    <button type="reset" class="button-secondary">Effacer</button>
+    <output data-catalog-count aria-live="polite"></output>
+</form>

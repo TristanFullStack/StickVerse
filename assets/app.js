@@ -4,7 +4,8 @@
  * This file will be included onto the page via the importmap() Twig function,
  * which should already be in your base.html.twig.
  */
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+import './ui/navigation.js';
+import './ui/catalog.js';
 
 document.addEventListener('click', (event) => {
     const target = event.target instanceof Element
@@ -55,9 +56,11 @@ function passifViewerTrigger(event) {
         : null;
 }
 
-function fermerPassifViewer() {
+function fermerPassifViewer(restoreFocus = false) {
     if (passifViewer.trigger instanceof HTMLElement) {
         passifViewer.trigger.setAttribute('aria-expanded', 'false');
+        passifViewer.trigger.removeAttribute('aria-controls');
+        if (restoreFocus) passifViewer.trigger.focus({ preventScroll: true });
     }
 
     passifViewer.popover?.remove();
@@ -147,7 +150,7 @@ document.addEventListener('click', (event) => {
         && passifViewer.popover.contains(cible)) {
         event.preventDefault();
         event.stopPropagation();
-        fermerPassifViewer();
+        fermerPassifViewer(true);
 
         return;
     }
@@ -170,7 +173,7 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && passifViewer.popover) {
         event.preventDefault();
         event.stopPropagation();
-        fermerPassifViewer();
+        fermerPassifViewer(true);
 
         return;
     }

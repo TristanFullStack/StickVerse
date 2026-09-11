@@ -4,7 +4,7 @@
 
 {% block body %}
     <section class="team-builder">
-        <h1>Mes équipes</h1>
+        <span class="page-kicker">Prépare ta stratégie</span><h1>Mes équipes</h1><div class="team-pair-guide" aria-label="Composition des groupes"><span>Équipe X = A + B</span><span>Équipe Y = C + D</span></div>
 
         <p>
             Crée plusieurs compositions selon la puissance recherchée.
@@ -37,7 +37,7 @@
                                 <article class="team-member-mini team-member-mini--rarete-{{ membre.stickman.rarete|default(1) }}">
                                     <div class="team-member-mini-heading">
                                         <span>{{ membre.slot }}</span>
-                                        <strong>{{ membre.stickman.nom }}</strong>
+                                        <strong>{{ membre.stickman.nomAffiche }}</strong>
                                     </div>
                                     <img
                                         src="{{ asset('images/stickmen/' ~ membre.stickman.image) }}"
@@ -45,7 +45,7 @@
                                     >
                                     <small>Puissance {{ membre.puissance }}</small>
                                     <small>PV {{ membre.stickman.pv }} · ATQ {{ membre.stickman.attaque }} · DÉF {{ membre.stickman.defense }}</small>
-                                    <div class="team-member-mini-passifs" aria-label="Passifs de {{ membre.stickman.nom }}">
+                                    <div class="team-member-mini-passifs" aria-label="Passifs de {{ membre.stickman.nomAffiche }}">
                                         {% for passif in membre.stickman.passifs|default([])|slice(0, 6) %}
                                             {% set nomPassif = passif.nom|default('Passif') %}
                                             {% set descriptionPassif = passif.description|default('') %}

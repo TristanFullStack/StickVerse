@@ -3,6 +3,7 @@
 {% block title %}Supprimer mon compte — StickVerse{% endblock %}
 
 {% block body %}
+<section class="account-panel account-panel--danger">
     <h1>Supprimer mon compte</h1>
 
     <p class="alert-danger">
@@ -16,4 +17,5 @@
         <button type="submit">Supprimer définitivement mon compte</button>
         <a href="{{ path('app_profil') }}">Annuler</a>
     {{ form_end(form) }}
+</section>
 {% endblock %}

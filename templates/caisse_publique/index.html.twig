@@ -4,8 +4,8 @@
 
 {% block body %}
 <div data-controller="caisse-ouverture">
-    <h1>Boutique StickVerse</h1>
-    <p class="page-intro">Achète ici les caisses disponibles. Elles apparaîtront ensuite une par une dans ton inventaire.</p>
+    <span class="page-kicker">Découvre ta prochaine carte</span><h1>Boutique StickVerse</h1>
+    <p class="page-intro">Explore les collections, consulte leurs probabilités et choisis ta prochaine caisse. Tes achats t’attendent dans l’inventaire.</p>
 
     {% if app.user %}
         <p data-solde-pieces-page>
@@ -32,10 +32,12 @@
                         <h2>{{ caisse.nom }}</h2>
                         <img src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}" width="250">
                         <p>{{ caisse.description }}</p>
-                        <p>Collection : {{ caisse.collectionJeu ? caisse.collectionJeu.nom : 'Catalogue général' }}</p>
+                        <p>{{ caisse.collectionJeu ? 'Saison ' ~ caisse.collectionJeu.saison ~ ' · ' ~ caisse.collectionJeu.nom : 'Catalogue général' }}</p>
                         <p>Prix : <strong>{{ caisse.prix }} pièces</strong></p>
                     </a>
 
+                    {% include 'caisse_publique/_rarities.html.twig' with {contenus: caisse.contenus} only %}
+                    {% if caisse.collectionJeu %}{% for progression in progressions %}{% if progression.collection.id == caisse.collectionJeu.id %}<p class="crate-collection-progress">{{ progression.possedes }} / {{ progression.total }} cartes collectionnées · {{ progression.pourcentage }} %</p>{% endif %}{% endfor %}{% endif %}
                     {% if app.user %}
                         <form
                             method="post"

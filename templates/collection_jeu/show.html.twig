@@ -6,7 +6,7 @@
     <section class="admin-list-panel">
         <div class="admin-list-heading"><strong>Catalogue de la collection</strong><span>{{ collection.stickmen|length }} Stickman(s), {{ collection.caisses|length }} caisse(s)</span></div>
         <div class="admin-caisse-groups">
-            <div class="admin-empty-inline"><strong>Stickmans :</strong> {% for stickman in collection.stickmen %}<a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">{{ stickman.nom }}</a>{% if not loop.last %}, {% endif %}{% else %}Aucun{% endfor %}</div>
+            <div class="admin-empty-inline"><strong>Stickmans :</strong> {% for stickman in collection.stickmen %}<a href="{{ path('app_stickman_show', {'id': stickman.id}) }}">{{ stickman.nomAffiche }}</a>{% if not loop.last %}, {% endif %}{% else %}Aucun{% endfor %}</div>
             <div class="admin-empty-inline"><strong>Caisses :</strong> {% for caisse in collection.caisses %}<a href="{{ path('app_caisse_show', {'id': caisse.id}) }}">{{ caisse.nom }}</a>{% if not loop.last %}, {% endif %}{% else %}Aucune{% endfor %}</div>
         </div>
     </section>
