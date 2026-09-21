@@ -8,14 +8,13 @@
 
     <section class="catalogue-detail caisse-detail">
         <div>
-            <span class="page-kicker">Une nouvelle découverte</span><h1>{{ caisse.nom }}</h1>
+            <h1>{{ caisse.nom }}</h1>
             <img class="caisse-detail-image" src="{{ asset('images/caisses/' ~ caisse.image) }}" alt="{{ caisse.nom }}">
         </div>
         <div>
             <p>{{ caisse.description }}</p>
             <p><strong>Collection :</strong> {{ caisse.collectionJeu ? caisse.collectionJeu.nom ~ ' (saison ' ~ caisse.collectionJeu.saison ~ ')' : 'Catalogue général' }}</p>
             <p><strong>Prix :</strong> {{ caisse.prix }} pièces</p>
-            {% include 'caisse_publique/_rarities.html.twig' with {contenus: contenus} only %}
 
             {% if app.user %}
                 <form
@@ -82,11 +81,11 @@
             {% for contenu in contenus %}
                 <article class="caisse-content-row">
                     <a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">
-                        <img src="{{ asset('images/stickmen/' ~ contenu.stickman.image) }}" alt="{{ contenu.stickman.nomAffiche }}">
+                        <img src="{{ asset('images/stickmen/' ~ contenu.stickman.image) }}" alt="{{ contenu.stickman.nom }}">
                     </a>
                     <div>
-                        <h3><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">{{ contenu.stickman.nomAffiche }}</a></h3>
-                        <p>R{{ contenu.stickman.rarete }} · Probabilité : {{ contenu.probabilite|number_format(2, ',', ' ') }} %</p>
+                        <h3><a href="{{ path('app_wiki_show', {slug: contenu.stickman.slug}) }}">{{ contenu.stickman.nom }}</a></h3>
+                        <p>Probabilité : {{ contenu.probabilite|number_format(2, ',', ' ') }} %</p>
                     </div>
                 </article>
             {% else %}

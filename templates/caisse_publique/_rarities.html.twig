@@ -1,9 +1,0 @@
-{% set raretesDisponibles = [] %}
-{% for contenu in contenus %}
-    {% if contenu.stickman and contenu.stickman.rarete not in raretesDisponibles %}
-        {% set raretesDisponibles = raretesDisponibles|merge([contenu.stickman.rarete]) %}
-    {% endif %}
-{% endfor %}
-<div class="crate-rarities" aria-label="Raretés disponibles">
-    {% for rarete in raretesDisponibles|sort %}<span data-rarity="{{ rarete }}">R{{ rarete }}</span>{% endfor %}
-</div>

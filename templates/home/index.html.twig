@@ -7,39 +7,13 @@
         <div class="auth-alert auth-alert--success" role="status">{{ message }}</div>
     {% endfor %}
 
-    <section class="home-hero" aria-labelledby="hero-title">
-        <div class="home-hero-copy">
-            <span class="page-kicker">Collection · Stratégie · Combat</span>
-            <h1 id="hero-title">STICK<span>VERSE</span></h1>
-            <p class="hero-description">Collectionne des Stickmans, construis ton équipe et affronte d’autres joueurs.</p>
-            <div class="hero-actions">
-                <a class="button-primary" href="{{ path(app.user ? 'app_combats_en_ligne' : 'app_register') }}">{{ app.user ? 'JOUER' : 'JOUER GRATUITEMENT' }} <span aria-hidden="true">↗</span></a>
-                <a class="hero-secondary" href="{{ path('app_wiki') }}">Découvrir les cartes <span aria-hidden="true">→</span></a>
-            </div>
-            {% if not app.user %}<p class="starter-gift"><span aria-hidden="true">✦</span> <strong>5 caisses de départ offertes.</strong><br>Découvre tes premières cartes et compose ton équipe.</p>{% else %}<p class="starter-gift">Prêt pour la suite, <strong>{{ app.user.pseudo }}</strong> ? Chaque choix compte.</p>{% endif %}
-        </div>
-        <div class="home-showcase" aria-label="Un aperçu des vraies cartes StickVerse">
-            {% for stickman in vitrine|slice(0, 3) %}
-                {% include 'stickman/_card.html.twig' with {stickman: stickman, puissance: puissances[stickman.id]} only %}
-            {% else %}<div class="hero-emblem" aria-hidden="true"><img src="{{ asset('images/brand/stickverse.svg') }}" width="200" height="200" alt=""></div>{% endfor %}
-        </div>
-    </section>
-    <section class="game-loop" aria-label="Comment jouer à StickVerse">
-        {% for titre, description in {
-            'Collectionne': 'Ouvre des caisses et découvre de nouveaux Stickmans.',
-            'Construis ton équipe': 'Combine statistiques et passifs. Quatre cartes, ta stratégie.',
-            'Combats': 'Affronte d’autres formations. Anticipe les choix adverses.',
-            'Progresse': 'Gagne des récompenses et complète tes collections.'
-        } %}<article><span class="loop-number">0{{ loop.index }}</span><h2>{{ titre }}</h2><p>{{ description }}</p></article>{% endfor %}
-    </section>
-
     {% if app.user and tableau_de_bord %}
-        <h2 class="home-section-title">Ton espace de jeu</h2>
+        <h1>Tableau de bord</h1>
 
         <p>Bienvenue, {{ app.user.pseudo }}.</p>
 
         <section class="dashboard-section" aria-labelledby="resume-titre">
-            <h2 id="resume-titre">Ta prochaine aventure</h2>
+            <h2 id="resume-titre">Résumé du compte</h2>
 
             <div class="dashboard-grid">
                 <article class="dashboard-card">
@@ -136,6 +110,23 @@
             {% endif %}
         </section>
     {% else %}
-        <section class="home-invitation"><div><span class="page-kicker">À toi de jouer</span><h2>Une collection qui te ressemble.</h2><p>Explore les raretés, lis les passifs et imagine ta première formation.</p></div><a class="button-secondary" href="{{ path('app_boutique') }}">Explorer les caisses →</a></section>
+        <h1>Bienvenue sur StickVerse</h1>
+
+        <p>
+            Collectionne des Stickmans, prépare une équipe et affronte
+            d'autres joueurs en ligne.
+        </p>
+
+        <p>
+            <a href="{{ path('app_register') }}">Créer un compte</a>
+            ou
+            <a href="{{ path('app_login') }}">se connecter</a>.
+        </p>
+
+        <h2>Découvrir le jeu</h2>
+        <ul>
+            <li><a href="{{ path('app_wiki') }}">Consulter le wiki</a></li>
+            <li><a href="{{ path('app_boutique') }}">Visiter la boutique</a></li>
+        </ul>
     {% endif %}
 {% endblock %}

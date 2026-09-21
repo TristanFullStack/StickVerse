@@ -1,17 +1,12 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}StickVerse{% endblock %}</title>
-        <meta name="description" content="Collectionne des Stickmans, construis ton équipe et affronte d’autres joueurs. Découvre StickVerse, le jeu gratuit de collection et de stratégie.">
-        <meta name="theme-color" content="#080f1b">
-        <link rel="icon" href="{{ asset('images/brand/stickverse.svg') }}" type="image/svg+xml">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
-            <link rel="stylesheet" href="{{ asset('styles/design-system.css') }}">
-            <link rel="stylesheet" href="{{ asset('styles/cards.css') }}">
-            <link rel="stylesheet" href="{{ asset('styles/pages.css') }}">
         {% endblock %}
 
         {% block javascripts %}
@@ -28,15 +23,12 @@
     <body>
         {% set navigation_route = app.request.attributes.get('_route')|default('') %}
 
-        <a class="skip-link" href="#main-content">Aller au contenu</a>
-        <header class="site-header" data-site-header>
+        <header class="site-header">
             <a class="site-name" href="{{ path('app_home') }}">
-                <img src="{{ asset('images/brand/stickverse.svg') }}" alt="" width="32" height="32">
-                Stick<span>Verse</span>
+                StickVerse
             </a>
-            <button class="navigation-toggle" type="button" aria-expanded="false" aria-controls="main-navigation" data-navigation-toggle hidden>Menu <span aria-hidden="true">☰</span></button>
 
-            <nav id="main-navigation" class="site-navigation" aria-label="Navigation principale">
+            <nav class="site-navigation" aria-label="Navigation principale">
                 <a
                     href="{{ path('app_home') }}"
                     {% if navigation_route == 'app_home' %}aria-current="page"{% endif %}
@@ -119,9 +111,8 @@
             {% endif %}
         </header>
 
-        <main id="main-content" class="site-content" tabindex="-1">
+        <div class="site-content">
             {% block body %}{% endblock %}
-        </main>
-        <footer class="site-footer"><a href="{{ path('app_home') }}">StickVerse</a><span>Ta collection. Ton équipe. Ta stratégie.</span><a href="{{ path('app_wiki') }}">Explorer le Wiki</a></footer>
+        </div>
     </body>
 </html>

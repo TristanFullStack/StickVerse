@@ -1,19 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ stickman.nomAffiche }} - StickVerse{% endblock %}
+{% block title %}{{ stickman.nom }} - StickVerse{% endblock %}
 
 {% block body %}
     <p><a href="{{ path('app_wiki') }}">← Retour au wiki</a></p>
-    <h1>{{ stickman.nomAffiche }}</h1>
+    <h1>{{ stickman.nom }}</h1>
     <section class="wiki-detail-grid">
-        {% include 'stickman/_card.html.twig' with {stickman: stickman, puissance: puissance} only %}
+        <article class="stickman-card stickman-card--rarete-{{ stickman.rarete }} wiki-detail-card">
+            <h2>{{ stickman.nom }}</h2>
+            <img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
+            <p><strong>Puissance : {{ puissance }}</strong></p>
+            <p>PV : {{ stickman.pv }}</p><p>Attaque : {{ stickman.attaque }}</p><p>Défense : {{ stickman.defense }}</p>
+        </article>
         <div class="wiki-detail-content">
             <h2>Description</h2><p>{{ stickman.description }}</p>
             <h2>Passifs</h2>
             {% if stickman.passifs is not empty %}
-                {% for passif in stickman.passifs %}
-                    <article class="wiki-passif"><h3>{{ passif.nom|default('Passif') }}</h3><p>{{ passif.description|default('Aucune description disponible.') }}</p></article>
-                {% endfor %}
+                <ul class="wiki-passifs-list">
+                    {% for passif in stickman.passifs|slice(0, 6) %}
+                        {% set nomPassif = passif.nom|default('Passif') %}
+                        {% set descriptionPassif = passif.description|default('') %}
+                        <li
+                            data-passif-viewer-trigger
+                            data-passif-name="{{ nomPassif|e('html_attr') }}"
+                            data-passif-description="{{ descriptionPassif|e('html_attr') }}"
+                            role="button"
+                            tabindex="0"
+                            aria-expanded="false"
+                        ><strong>{{ nomPassif }}</strong>{% if descriptionPassif %} — {{ descriptionPassif }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
             {% else %}
                 <p>Cette carte ne possède aucun passif.</p>
             {% endif %}

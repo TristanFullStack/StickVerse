@@ -3,7 +3,7 @@
 {% block title %}Ma collection - StickVerse{% endblock %}
 
 {% block body %}
-    <header class="page-heading"><div><span class="page-kicker">Ton album StickVerse</span><h1>Ma collection</h1><p>Chaque nouvelle carte ouvre une nouvelle possibilité.</p></div><a class="button-secondary" href="{{ path('app_inventaire') }}">Voir mon inventaire →</a></header>
+    <h1>Ma collection</h1>
 
     {% for message in app.flashes('success') %}
         <p class="flash-success" role="status">
@@ -11,7 +11,7 @@
         </p>
     {% endfor %}
 
-    <section class="collection-journey" aria-labelledby="progression-joueur-titre">
+    <section aria-labelledby="progression-joueur-titre">
         <h2 id="progression-joueur-titre">Tes prochaines étapes</h2>
 
         <ol>
@@ -56,7 +56,6 @@
                         <strong>{{ groupe.possedes }} / {{ groupe.total }} Stickman(s) ({{ groupe.pourcentage }} %)</strong>
                     </div>
 
-                    <progress class="collection-progress" value="{{ groupe.possedes }}" max="{{ groupe.total > 0 ? groupe.total : 1 }}" aria-label="Progression de {{ groupe.collection.nom }}">{{ groupe.pourcentage }} %</progress>
                     {% if groupe.stickmen is not empty %}
                         <div class="stickmen-list">
                             {% for stickman in groupe.stickmen %}

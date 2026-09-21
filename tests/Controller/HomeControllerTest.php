@@ -61,10 +61,7 @@ final class HomeControllerTest extends WebTestCase
         $this->client->request('GET', '/home');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'STICKVERSE');
-        self::assertSelectorTextContains('.hero-actions', 'JOUER GRATUITEMENT');
-        self::assertSelectorTextContains('.starter-gift', '5 caisses de départ offertes.');
-        self::assertSelectorCount(4, '.game-loop article');
+        self::assertSelectorTextContains('h1', 'Bienvenue sur StickVerse');
         self::assertSelectorExists('a[href="/register"]');
         self::assertSelectorExists('a[href="/login"]');
         self::assertSelectorNotExists('.dashboard-section');
@@ -83,9 +80,7 @@ final class HomeControllerTest extends WebTestCase
         $this->client->request('GET', '/home');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'STICKVERSE');
-        self::assertSelectorTextContains('.home-section-title', 'Ton espace de jeu');
-        self::assertSelectorExists('.hero-actions a[href="/combats"]');
+        self::assertSelectorTextContains('h1', 'Tableau de bord');
         self::assertSelectorTextContains(
             '.site-content',
             '0 Stickman(s) différent(s)',

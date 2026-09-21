@@ -75,12 +75,11 @@
         </section>
     {% endif %}
 
-    <section data-catalog class="inventory-cards-section" aria-labelledby="inventaire-cartes-titre">
+    <section class="inventory-cards-section" aria-labelledby="inventaire-cartes-titre">
         <div class="section-heading">
             <h2 id="inventaire-cartes-titre">Mes Stickmans</h2>
             <strong>{{ inventaires|length }} carte(s) différentes</strong>
         </div>
-        {% if not mode_vente %}{% include 'components/_catalog_filters.html.twig' %}<p class="empty-state" data-catalog-empty hidden>Aucune carte ne correspond à ces filtres.</p>{% endif %}
         {% if inventaires is empty %}
             <p class="empty-state">Tu ne possèdes encore aucune carte. Ouvre une caisse pour commencer ta collection.</p>
         {% elseif mode_vente %}
@@ -101,11 +100,11 @@
                         {% if equipeProtegee %}title="Dernier exemplaire réservé à une équipe"{% endif %}
                         {% if equipeProtegee and inventaire.quantite <= 1 %}disabled aria-disabled="true"{% endif %}
                     >
-                        <h3>{{ stickman.nomAffiche }}</h3>
-                        <img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nomAffiche }}">
+                        <h3>{{ stickman.nom }}</h3>
+                        <img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nom }}">
                         <p>Quantité : {{ inventaire.quantite }}</p>
                         <p>Puissance : {{ puissances[stickman.id]|default('—') }}</p>
-                        <span class="stickman-card-passifs" aria-label="Passifs de {{ stickman.nomAffiche }}">
+                        <span class="stickman-card-passifs" aria-label="Passifs de {{ stickman.nom }}">
                             {% for passif in stickman.passifs|default([])|slice(0, 6) %}
                                 {% set nomPassif = passif.nom|default('Passif') %}
                                 {% set descriptionPassif = passif.description|default('') %}
@@ -119,7 +118,7 @@
                                     role="button"
                                     tabindex="0"
                                     aria-expanded="false"
-                                >{{ nomPassif }}</span>
+                                >{{ nomPassif|slice(0, 2)|upper }}</span>
                             {% else %}
                                 <small>Aucun passif</small>
                             {% endfor %}
@@ -137,7 +136,6 @@
                         stickman: inventaire.stickman,
                         inventaire: inventaire,
                         puissance: puissances[inventaire.stickman.id]|default(null),
-                            equipee: inventaire.stickman.id in stickman_ids_equipes,
                     } only %}
                 {% endfor %}
             </div>

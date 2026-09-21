@@ -3,7 +3,7 @@
 {% block title %}Mon profil — StickVerse{% endblock %}
 
 {% block body %}
-    <header class="page-heading"><div><span class="page-kicker">Ton identité de joueur</span><h1>Mon profil</h1><p>Ta progression, tes trophées et les réglages de ton compte.</p></div><span class="count-badge">{{ app.user.pseudo }}</span></header>
+    <h1>Mon profil</h1>
 
     {% for message in app.flashes('success') %}
         <p class="alert-success" role="status">{{ message }}</p>

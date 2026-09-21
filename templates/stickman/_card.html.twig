@@ -1,27 +1,54 @@
 {% set carteObtenue = possede is defined ? possede : true %}
-{% set rarete = stickman.rarete|default(1) %}
-{% set raretes = {1: 'Commune', 2: 'Peu commune', 3: 'Rare', 4: 'Épique', 5: 'Légendaire'} %}
-{% set passifsCarte = stickman.passifs|default([]) %}
-<article class="collectible stickman-card stickman-card--rarete-{{ rarete }}{{ carteObtenue ? '' : ' collectible--missing' }}"
-    data-rarete="{{ rarete }}" data-obtenue="{{ carteObtenue ? 'true' : 'false' }}"
-    data-catalog-card data-rarity="{{ rarete }}" data-collection="{{ stickman.collectionJeu ? stickman.collectionJeu.nom : '' }}"
-    data-search="{{ stickman.nomAffiche }} {% for passif in passifsCarte %}{{ passif.nom|default('') }} {% endfor %}">
-    <div class="collectible-topline"><span class="rarity-label">R{{ rarete }} · {{ raretes[rarete]|default('Commune') }}</span><span class="collectible-power" title="Puissance">✦ {{ puissance|default('—') }}</span></div>
-    <a class="stickman-card-link{{ carteObtenue ? '' : ' stickman-card-link--non-obtenue' }}" href="{{ path('app_wiki_show', {slug: stickman.slug}) }}" aria-label="Voir la fiche de {{ stickman.nomAffiche }}">
-        <h2>{{ stickman.nomAffiche }}</h2>
-        <div class="collectible-art"><img class="stickman-card-image" src="{{ asset('images/stickmen/' ~ stickman.image) }}" alt="{{ stickman.nomAffiche }}" width="240" height="280" loading="lazy"></div>
-    </a>
-    <dl class="collectible-stats"><div><dt>PV</dt><dd>{{ stickman.pv }}</dd></div><div><dt>ATQ</dt><dd>{{ stickman.attaque }}</dd></div><div><dt>DÉF</dt><dd>{{ stickman.defense }}</dd></div></dl>
-    <div class="stickman-card-passifs" aria-label="Passifs de la carte">
-        {% for passif in passifsCarte %}
-            <button type="button" class="stickman-card-passif" data-passif-viewer-trigger data-passif-name="{{ passif.nom|default('Passif') }}" data-passif-description="{{ passif.description|default('') }}" aria-expanded="false" aria-label="Lire le passif {{ passif.nom|default('Passif') }}">{{ passif.nom|default('Passif') }} <span aria-hidden="true">ⓘ</span></button>
-        {% else %}<span class="collectible-no-passive">Sans passif</span>{% endfor %}
-    </div>
-    {% if inventaire is defined and inventaire is not null or not carteObtenue or equipee|default(false) %}
-        <div class="collectible-ownership">
-            {% if not carteObtenue %}<span>À découvrir</span>{% endif %}
-            {% if inventaire is defined and inventaire is not null %}<span>Quantité : {{ inventaire.quantite }}</span>{% endif %}
-            {% if equipee|default(false) %}<span class="equipped-badge">En équipe</span>{% endif %}
+<a
+    class="stickman-card-link{{ carteObtenue ? '' : ' stickman-card-link--non-obtenue' }}"
+    href="{{ path('app_wiki_show', {'slug': stickman.slug}) }}"
+    aria-label="Voir la fiche de {{ stickman.nom }}"
+>
+    <article
+        class="stickman-card stickman-card--rarete-{{ stickman.rarete|default(1) }}"
+        data-rarete="{{ stickman.rarete|default(1) }}"
+        data-obtenue="{{ carteObtenue ? 'true' : 'false' }}"
+    >
+        <h2>{{ stickman.nom }}</h2>
+
+        <img
+            class="stickman-card-image"
+            src="{{ asset('images/stickmen/' ~ stickman.image) }}"
+            alt="{{ stickman.nom }}"
+        >
+
+        {% if inventaire is defined and inventaire is not null %}
+            <p>
+                <strong>Quantité : {{ inventaire.quantite }}</strong>
+            </p>
+        {% endif %}
+
+        {% if not carteObtenue %}
+            <p class="stickman-card-status">Non obtenue</p>
+        {% endif %}
+
+        <p>Puissance : <strong>{{ puissance|default('—') }}</strong></p>
+        <p>PV : {{ stickman.pv }}</p>
+        <p>Attaque : {{ stickman.attaque }}</p>
+        <p>Défense : {{ stickman.defense }}</p>
+
+        {% set passifsCarte = stickman.passifs|default([])|slice(0, 6) %}
+        <div class="stickman-card-passifs" aria-label="Passifs de la carte">
+            {% for passif in passifsCarte %}
+                {% set nomPassif = passif.nom|default('Passif') %}
+                {% set descriptionPassif = passif.description|default('') %}
+                <span
+                    class="stickman-card-passif"
+                    title="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                    aria-label="{{ (nomPassif ~ (descriptionPassif ? ' — ' ~ descriptionPassif : ''))|e }}"
+                    data-passif-viewer-trigger
+                    data-passif-name="{{ nomPassif|e('html_attr') }}"
+                    data-passif-description="{{ descriptionPassif|e('html_attr') }}"
+                    role="button"
+                    tabindex="0"
+                    aria-expanded="false"
+                >{{ nomPassif|slice(0, 2)|upper }}</span>
+            {% endfor %}
         </div>
-    {% endif %}
-</article>
+    </article>
+</a>
