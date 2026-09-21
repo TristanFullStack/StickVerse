@@ -293,13 +293,10 @@ final class InterfaceCombatEnLigneControllerTest extends WebTestCase
             $joueur->getEmail(),
         );
         self::assertSelectorExists('.site-name[href="/home"]');
-        self::assertSelectorExists('.site-navigation a[href="/wiki"]');
-        self::assertSelectorExists('.site-navigation a[href="/caisses"]');
-        self::assertSelectorExists('.site-navigation a[href="/ma-collection"]');
-        self::assertSelectorExists('.site-navigation a[href="/equipe"]');
         self::assertSelectorExists(
-            '.site-navigation a[href="/combats"][aria-current="page"]',
+            '.site-navigation a[href="/hub"][aria-current="page"]',
         );
+        self::assertSelectorExists('.site-context-back[href="/hub"]');
         self::assertSelectorExists('.site-account a[href="/logout"]');
         self::assertSelectorExists('.site-account a[href="/profil"]');
         self::assertSelectorNotExists('[data-navigation-admin]');

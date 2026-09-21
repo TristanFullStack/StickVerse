@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Découvrir StickVerse{% endblock %}
+
+{% block body %}
+    <section class="navigation-page navigation-page--discover" aria-labelledby="decouvrir-titre">
+        <div class="navigation-page-heading">
+            <p class="navigation-eyebrow">L’univers StickVerse</p>
+            <h1 id="decouvrir-titre">Découvrir</h1>
+            <p>Retrouve tout ce qui présente le jeu, son univers et ses nouveautés.</p>
+        </div>
+
+        <nav class="navigation-card-grid" aria-label="Contenu à découvrir">
+            <a class="navigation-card" href="{{ path('app_wiki') }}">
+                <span class="navigation-card-icon" aria-hidden="true">✦</span>
+                <span><strong>Wiki</strong><small>Explore les Stickmans, leurs statistiques et leurs passifs.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_actualite_index') }}">
+                <span class="navigation-card-icon" aria-hidden="true">▤</span>
+                <span><strong>Actualités</strong><small>Les annonces et les nouveautés de StickVerse.</small></span>
+            </a>
+            {% if app.user %}
+                <a class="navigation-card" href="{{ path('app_saison') }}">
+                    <span class="navigation-card-icon" aria-hidden="true">◷</span>
+                    <span><strong>Saison</strong><small>Découvre la saison en cours et sa progression.</small></span>
+                </a>
+                <a class="navigation-card" href="{{ path('app_collection') }}">
+                    <span class="navigation-card-icon" aria-hidden="true">▦</span>
+                    <span><strong>Collection</strong><small>Retrouve les Stickmans que tu as collectionnés.</small></span>
+                </a>
+            {% else %}
+                <a class="navigation-card" href="{{ path('app_login') }}">
+                    <span class="navigation-card-icon" aria-hidden="true">◷</span>
+                    <span><strong>Saison</strong><small>Connecte-toi pour suivre ta progression.</small></span>
+                </a>
+                <a class="navigation-card" href="{{ path('app_login') }}">
+                    <span class="navigation-card-icon" aria-hidden="true">▦</span>
+                    <span><strong>Collection</strong><small>Connecte-toi pour retrouver ta collection.</small></span>
+                </a>
+            {% endif %}
+        </nav>
+    </section>
+{% endblock %}

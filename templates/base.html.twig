@@ -30,48 +30,14 @@
 
             <nav class="site-navigation" aria-label="Navigation principale">
                 <a
-                    href="{{ path('app_home') }}"
-                    {% if navigation_route == 'app_home' %}aria-current="page"{% endif %}
-                >Accueil</a>
-                <a
-                    href="{{ path('app_wiki') }}"
-                    {% if navigation_route starts with 'app_wiki' %}aria-current="page"{% endif %}
-                >Wiki</a>
-                <a
-                    href="{{ path('app_caisse_publique') }}"
-                    {% if navigation_route in ['app_boutique', 'app_caisse_publique'] %}aria-current="page"{% endif %}
-                >Boutique</a>
-                <a
-                    href="{{ path('app_actualite_index') }}"
-                    {% if navigation_route starts with 'app_actualite' %}aria-current="page"{% endif %}
-                >Actualités</a>
-
+                    href="{{ path('app_decouvrir') }}"
+                    {% if navigation_route == 'app_decouvrir' or navigation_route starts with 'app_wiki' or navigation_route starts with 'app_actualite' or navigation_route in ['app_saison', 'app_collection'] %}aria-current="page"{% endif %}
+                >Découvrir</a>
                 {% if app.user %}
                     <a
-                        href="{{ path('app_inventaire') }}"
-                        {% if navigation_route == 'app_inventaire' %}aria-current="page"{% endif %}
-                    >Inventaire</a>
-                    <a
-                        href="{{ path('app_collection') }}"
-                        {% if navigation_route == 'app_collection' %}aria-current="page"{% endif %}
-                    >Collection</a>
-                    <a
-                        href="{{ path('app_saison') }}"
-                        {% if navigation_route == 'app_saison' %}aria-current="page"{% endif %}
-                    >Saison</a>
-                    <a
-                        href="{{ path('app_equipe') }}"
-                        {% if navigation_route == 'app_equipe' %}aria-current="page"{% endif %}
-                    >Équipe</a>
-                    <a
-                        href="{{ path('app_combats_en_ligne') }}"
-                        {% if navigation_route == 'app_combats_en_ligne' or navigation_route == 'app_rapport_combat_en_ligne' or navigation_route starts with 'app_combat_en_ligne_' %}aria-current="page"{% endif %}
-                    >Combats</a>
-                    <a
-                        href="{{ path('app_recompenses') }}"
-                        class="site-rewards-link"
-                        {% if navigation_route == 'app_recompenses' %}aria-current="page"{% endif %}
-                    >Récompenses{% if recompenses_disponibles(app.user) %} <span class="notification-bubble" title="Récompense disponible">!</span>{% endif %}</a>
+                        href="{{ path('app_hub') }}"
+                        {% if navigation_route == 'app_hub' or navigation_route starts with 'app_inventaire' or navigation_route starts with 'app_boutique' or navigation_route starts with 'app_caisse_publique' or navigation_route starts with 'app_equipe' or navigation_route starts with 'app_recompense' or navigation_route starts with 'app_classement' or navigation_route starts with 'app_profil' or navigation_route starts with 'app_combat' or navigation_route starts with 'app_rapport_combat' or navigation_route starts with 'app_objectif_' or navigation_route starts with 'app_mission_' %}aria-current="page"{% endif %}
+                    >HUB</a>
                 {% endif %}
             </nav>
 
@@ -112,6 +78,14 @@
         </header>
 
         <div class="site-content">
+            {% set routes_decouvrir = ['app_wiki', 'app_wiki_show', 'app_actualite_index', 'app_actualite_show', 'app_saison', 'app_collection'] %}
+            {% set routes_hub = ['app_inventaire', 'app_boutique', 'app_caisse_publique', 'app_caisse_publique_show', 'app_equipe', 'app_equipe_modifier', 'app_recompenses', 'app_classement', 'app_profil'] %}
+            {% set est_route_hub = navigation_route in routes_hub or navigation_route starts with 'app_combat' or navigation_route starts with 'app_rapport_combat' or navigation_route starts with 'app_recompense_' or navigation_route starts with 'app_objectif_' or navigation_route starts with 'app_mission_' %}
+            {% if navigation_route in routes_decouvrir %}
+                <a class="site-context-back" href="{{ path('app_decouvrir') }}" aria-label="Revenir à la page Découvrir">← Découvrir</a>
+            {% elseif est_route_hub %}
+                <a class="site-context-back" href="{{ path('app_hub') }}" aria-label="Revenir au HUB joueur">← HUB</a>
+            {% endif %}
             {% block body %}{% endblock %}
         </div>
     </body>

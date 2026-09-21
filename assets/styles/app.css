@@ -3104,6 +3104,213 @@ canvas {
     }
 }
 
+/* Navigation compacte : l'en-tête reste centré sur les deux espaces du jeu. */
+.site-navigation a {
+    min-width: 108px;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.site-name {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+.site-context-back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    margin-bottom: 16px;
+    padding: 7px 12px;
+    border: 1px solid #777;
+    background: #fff;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.site-context-back:hover,
+.site-context-back:focus-visible {
+    background: #e9e9e9;
+}
+
+.navigation-page {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.navigation-page-heading {
+    margin-bottom: 24px;
+}
+
+.navigation-page-heading h1 {
+    margin: 0 0 8px;
+    font-size: clamp(30px, 5vw, 46px);
+}
+
+.navigation-page-heading p {
+    max-width: 62ch;
+    margin: 0;
+    font-size: clamp(16px, 2vw, 20px);
+    line-height: 1.45;
+}
+
+.navigation-eyebrow {
+    margin-bottom: 8px !important;
+    color: #555;
+    font-size: 13px !important;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.navigation-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0;
+}
+
+.navigation-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    min-height: 116px;
+    padding: 18px;
+    border: 1px solid #999;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.navigation-card:hover,
+.navigation-card:focus-visible {
+    position: relative;
+    z-index: 1;
+    border-color: #245b8e;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .14);
+    transform: translateY(-2px);
+}
+
+.navigation-card:focus-visible,
+.site-context-back:focus-visible {
+    outline: 3px solid #245b8e;
+    outline-offset: 3px;
+}
+
+.navigation-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #555;
+    background: #f1f1f1;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.navigation-card > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.navigation-card strong {
+    font-size: 19px;
+}
+
+.navigation-card small {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+    .site-header {
+        align-items: stretch;
+    }
+
+    .site-name {
+        flex: 1 1 auto;
+        font-size: 20px;
+    }
+
+    .site-navigation {
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+        overflow: visible;
+    }
+
+    .site-navigation a {
+        min-width: 96px;
+        padding-inline: 12px;
+    }
+
+    .site-account {
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+    }
+
+    .navigation-page-heading {
+        margin-bottom: 18px;
+    }
+
+    .navigation-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .navigation-card {
+        min-height: 126px;
+        flex-direction: column;
+        gap: 9px;
+        padding: 13px;
+    }
+
+    .navigation-card-icon {
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .navigation-card strong {
+        font-size: 16px;
+    }
+
+    .navigation-card small {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+}
+
+@media (max-width: 380px) {
+    .site-navigation {
+        flex: 1 1 100%;
+    }
+
+    .site-navigation a {
+        flex: 1 1 0;
+    }
+
+    .navigation-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .navigation-card {
+        min-height: 94px;
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
 /* Collection mobile : préserver le format portrait d'une carte à jouer et
    montrer davantage de cartes sans imposer un long défilement vertical. */
 @media (max-width: 700px) {

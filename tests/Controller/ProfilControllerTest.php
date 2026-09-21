@@ -131,7 +131,8 @@ final class ProfilControllerTest extends WebTestCase
         );
         self::assertSelectorNotExists('[data-profile-mouvements]');
         self::assertSelectorNotExists('[data-profile-recompenses]');
-        self::assertSelectorExists('.site-navigation a[href="/recompenses"]');
+        self::assertSelectorExists('.site-navigation a[href="/hub"][aria-current="page"]');
+        self::assertSelectorExists('.site-context-back[href="/hub"]');
         self::assertSelectorExists('a[href="/profil/pseudo"]');
         self::assertSelectorTextContains(
             '[data-profile-account-type]',

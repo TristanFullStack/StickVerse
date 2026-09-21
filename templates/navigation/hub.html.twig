@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HUB joueur - StickVerse{% endblock %}
+
+{% block body %}
+    <section class="navigation-page navigation-page--hub" aria-labelledby="hub-titre">
+        <div class="navigation-page-heading">
+            <p class="navigation-eyebrow">Ton espace joueur</p>
+            <h1 id="hub-titre">HUB</h1>
+            <p>Accède rapidement à tes cartes, tes équipes et tes activités.</p>
+        </div>
+
+        <nav class="navigation-card-grid" aria-label="Espace joueur">
+            <a class="navigation-card" href="{{ path('app_inventaire') }}">
+                <span class="navigation-card-icon" aria-hidden="true">▣</span>
+                <span><strong>Inventaire</strong><small>Gère tes caisses et tes Stickmans disponibles.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_boutique') }}">
+                <span class="navigation-card-icon" aria-hidden="true">◇</span>
+                <span><strong>Boutique</strong><small>Découvre les caisses et prépare tes ouvertures.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_equipe') }}">
+                <span class="navigation-card-icon" aria-hidden="true">♙</span>
+                <span><strong>Équipe</strong><small>Compose l’équipe avec laquelle tu veux jouer.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_recompenses') }}">
+                <span class="navigation-card-icon" aria-hidden="true">★</span>
+                <span><strong>Récompenses{% if recompenses_disponibles(app.user) %} <span class="notification-bubble">!</span>{% endif %}</strong><small>Récupère tes récompenses disponibles.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_combats_en_ligne') }}">
+                <span class="navigation-card-icon" aria-hidden="true">⚔</span>
+                <span><strong>Combats</strong><small>Lance une partie et défends ta stratégie.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_classement') }}">
+                <span class="navigation-card-icon" aria-hidden="true">↗</span>
+                <span><strong>Classement</strong><small>Consulte ton classement de saison.</small></span>
+            </a>
+            <a class="navigation-card" href="{{ path('app_profil') }}">
+                <span class="navigation-card-icon" aria-hidden="true">●</span>
+                <span><strong>Profil</strong><small>Gère ton compte et tes statistiques.</small></span>
+            </a>
+        </nav>
+    </section>
+{% endblock %}

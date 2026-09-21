@@ -9386,3 +9386,16 @@ de compte.
   caisses « Origine » et « Saison 1 » avec leurs cartes.
 - La collection ne s’affiche plus à `0 / 0` alors que les cartes existent en
   base.
+
+## J134 — Navigation Découvrir et HUB
+
+- La barre supérieure est allégée : le logo ouvre l’accueil, puis deux espaces
+  regroupent les destinations principales : « Découvrir » et « HUB ».
+- « Découvrir » rassemble le Wiki, les actualités, la saison et la collection.
+- Le HUB rassemble l’inventaire, la boutique, les équipes, les récompenses, les
+  combats, le classement et le profil.
+- Les pages de ces espaces disposent maintenant d’un retour contextuel vers
+  leur catégorie.
+- La navigation et les cartes de destination sont adaptées aux petits écrans,
+  avec des zones tactiles et une grille qui se replie sur mobile.
+- Les tests de navigation ont été mis à jour et la suite complète reste verte.

@@ -53,19 +53,32 @@ final class SecurityControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(
-            '.site-navigation a[href="/home"][aria-current="page"]',
+            '.site-name[href="/home"]',
         );
-        self::assertSelectorExists('.site-navigation a[href="/wiki"]');
-        self::assertSelectorExists('.site-navigation a[href="/caisses"]');
+        self::assertSelectorExists('.site-navigation a[href="/decouvrir"]');
         self::assertSelectorExists('.site-account a[href="/login"]');
         self::assertSelectorExists('.site-account a[href="/register"]');
-        self::assertSelectorNotExists(
-            '.site-navigation a[href="/ma-collection"]',
-        );
+        self::assertSelectorNotExists('.site-navigation a[href="/home"]');
+        self::assertSelectorNotExists('.site-navigation a[href="/wiki"]');
+        self::assertSelectorNotExists('.site-navigation a[href="/caisses"]');
         self::assertSelectorNotExists('.site-navigation a[href="/equipe"]');
-        self::assertSelectorNotExists('.site-navigation a[href="/combats"]');
         self::assertSelectorNotExists('.site-account a[href="/profil"]');
+        self::assertSelectorNotExists('.site-navigation a[href="/hub"]');
         self::assertSelectorNotExists('[data-navigation-admin]');
+    }
+
+    public function testLesPagesDeNavigationRegroupentLeContenuEtLeHub(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/decouvrir');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1#decouvrir-titre', 'Découvrir');
+        self::assertSelectorExists('.navigation-card[href="/wiki"]');
+        self::assertSelectorExists('.navigation-card[href="/actualites"]');
+
+        $client->request('GET', '/hub');
+        self::assertResponseRedirects('/login');
     }
 
     public function testBloqueApresCinqConnexionsEchouees(): void
